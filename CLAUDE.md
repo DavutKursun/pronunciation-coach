@@ -61,6 +61,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 4. First run with the real model
 - [x] 5. Sanity check on speechocean762
 - [x] 5b. Fix false alarms on vowels before r
+- [x] 5c. Reduce false alarms with data
 - [ ] 6. Test with my own voice
 - [ ] 7. Fix issues from voice tests
 - [ ] 8. Word-level detection metrics
