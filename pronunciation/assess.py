@@ -25,6 +25,9 @@ GOP_BAD = -2.0         # lpr below this counts as a badly pronounced phoneme
 # A word's differences are reported only if its GOP is below this. Chosen on speechocean762
 # train (scripts/evaluate_words.py --sweep): fewer false alarms without losing detected errors.
 GOP_CONFIRM: float | None = -2.5
+# Typical Turkish-speaker errors need less evidence: learners are likely to make them. Chosen on
+# the Speech Accent Archive dev half, checked on speechocean762 train and the synthetic set.
+GOP_CONFIRM_PATTERN: float | None = -1.0
 
 
 @dataclass
@@ -104,7 +107,8 @@ def compute_features(
 
 
 def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_id: dict[str, int], blank_id: int,
-            gop_threshold: float | None = GOP_CONFIRM) -> Assessment:
+            gop_threshold: float | None = GOP_CONFIRM,
+            pattern_threshold: float | None = GOP_CONFIRM_PATTERN) -> Assessment:
     """Everything after recognition. Kept separate from the model so it can be unit-tested."""
     words = tokenize(text)
     heard = normalize(recognition.phones)
@@ -124,7 +128,7 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
         for w, word in enumerate(word_results):
             word_lpr = lpr[target_word == w]
             word.gop = float(word_lpr.min()) if word_lpr.size else None
-            confirm_with_gop(word, gop_threshold)
+            confirm_with_gop(word, gop_threshold, pattern_threshold)
     else:
         lpp = lpr = np.array([GOP_FLOOR])
 

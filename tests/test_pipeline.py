@@ -97,3 +97,24 @@ def test_gop_confirmation_is_on_by_default():
     recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ")
     [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK).words
     assert word.issues == [] and len(word.dismissed) == 1
+
+
+def test_known_pattern_needs_less_gop_evidence():
+    # GOP of θ is log(0.15 / 0.8) = -1.7: not enough for an unknown difference (-2.5),
+    # enough for a typical Turkish-speaker error (-1.0)
+    recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ", p_said=0.8, p_expected=0.15)
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK, gop_threshold=-2.5, pattern_threshold=-1.0).words
+    assert [i.tip for i in word.issues] == ["th_voiceless"]
+    assert -2.5 < word.gop < -1.0
+
+
+def test_unknown_difference_needs_full_gop_evidence():
+    recognition = near_tie(["k", "ɪ", "ŋ", "k"], said="k", expected="θ", p_said=0.8, p_expected=0.15)
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK, gop_threshold=-2.5, pattern_threshold=-1.0).words
+    assert word.issues == [] and [i.heard for i in word.dismissed] == ["k"]
+
+
+def test_pattern_threshold_is_looser_by_default():
+    recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ", p_said=0.8, p_expected=0.15)
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK).words
+    assert [i.tip for i in word.issues] == ["th_voiceless"]

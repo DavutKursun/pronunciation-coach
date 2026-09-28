@@ -173,14 +173,14 @@ def load_log_probs(rows: list[dict]) -> tuple[Decoder, dict[str, np.ndarray], di
     return decoder, cache, seconds
 
 
-def analyze_recordings(rows: list[dict]) -> None:
+def analyze_recordings(rows: list[dict], **analyze_options) -> None:
     decoder, cache, seconds = load_log_probs(rows)
     for row in rows:
         key = str(row["path"].relative_to(ROOT))
         text = f"{PREFIX} {row['word']} {SUFFIX}"
         words = tokenize(text)
         result = analyze(text, phonemize_words(words), decoder(cache[key], seconds[key]),
-                         decoder.token_to_id, decoder.blank_id)
+                         decoder.token_to_id, decoder.blank_id, **analyze_options)
         word = result.words[TARGET]
         row.update({
             "flagged": bool(word.issues),

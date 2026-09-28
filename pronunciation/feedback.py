@@ -133,20 +133,28 @@ def build_word_results(
     return results
 
 
-def confirm_with_gop(word: WordResult, threshold: float | None) -> None:
+def confirm_with_gop(word: WordResult, threshold: float | None, pattern_threshold: float | None = None) -> None:
     """Report a word's differences only when GOP agrees that it was not said well.
 
     Greedy decoding picks the single most likely sound per frame, so a near tie can turn a
-    good "think" into a heard "t". If every expected sound of the word still has a GOP of at
-    least `threshold`, its differences are most likely mishearings and are moved to `dismissed`.
-    Added sounds that match a known pattern (the extra vowel in "is-chool", "sing-ging") stay:
+    good "think" into a heard "t". A difference is reported only if the word's GOP (its worst
+    expected sound) is below `threshold`; otherwise it is most likely a mishearing and is moved
+    to `dismissed`. A difference that matches a typical Turkish-speaker pattern (it has a tip)
+    needs less evidence: `pattern_threshold`, since these speakers are likely to make it.
+    Added sounds of a known pattern (the extra vowel in "is-chool", "sing-ging") always stay:
     GOP only scores the expected sounds, so it cannot judge an added one.
     """
-    if threshold is None or word.gop is None or word.gop < threshold:
+    if threshold is None or word.gop is None:
         return
-    keep = [i for i in word.issues if i.kind == "ins" and i.tip]
-    word.dismissed = [i for i in word.issues if not (i.kind == "ins" and i.tip)]
-    word.issues = keep
+    pattern_threshold = threshold if pattern_threshold is None else pattern_threshold
+
+    def confirmed(issue: Issue) -> bool:
+        if issue.kind == "ins" and issue.tip:
+            return True
+        return word.gop < (pattern_threshold if issue.tip else threshold)
+
+    word.dismissed = [i for i in word.issues if not confirmed(i)]
+    word.issues = [i for i in word.issues if confirmed(i)]
 
 
 def top_tips(results: list[WordResult], limit: int | None = None) -> list[str]:
