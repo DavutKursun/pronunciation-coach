@@ -1,0 +1,6 @@
+{
+  "name": "v2-2",
+  "recognizer": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+  "decision": "detector",
+  "settings": {"detector": "models/detector_v2-2.joblib"}
+}

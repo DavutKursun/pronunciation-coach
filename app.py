@@ -51,7 +51,9 @@ GREEN, AMBER, RED = "22, 163, 74", "217, 119, 6", "220, 38, 38"
 
 
 def word_color(word) -> str:
-    """Green unless an error was reported (differences GOP did not confirm don't count)."""
+    """Learned detector (v2): its level. Rules (v1): green unless an error was reported."""
+    if word.error_prob is not None:
+        return {"red": RED, "yellow": AMBER}.get(word.level, GREEN)
     if not word.issues:
         return GREEN
     return AMBER if word.score >= 0.6 else RED
@@ -94,8 +96,12 @@ def render_result(result) -> str:
              for w in result.words for i in w.issues if not i.tip]
     other_html = f"<details><summary>Other differences ({len(other)})</summary><ul>{''.join(other)}</ul></details>" if other else ""
 
-    legend = ("<div style='opacity:0.75;font-size:0.9em'>green = correct · amber = small problem · red = needs work "
-              "(hover a word for details). Differences the recognizer was unsure about are not counted.</div>")
+    if any(w.error_prob is not None for w in result.words):
+        legend = ("<div style='opacity:0.75;font-size:0.9em'>red = sure error · amber = possible error: "
+                  "listen and compare with the reference · green = correct (hover a word for details)</div>")
+    else:
+        legend = ("<div style='opacity:0.75;font-size:0.9em'>green = correct · amber = small problem · red = needs work "
+                  "(hover a word for details). Differences the recognizer was unsure about are not counted.</div>")
     focus = "<h4>What to practise</h4>" + "".join(tips) if tips else "<p>No typical Turkish-speaker errors found. Well done!</p>"
     return f"<div style='font-size:1.1em'>{headline}</div><div style='margin:12px 0'>{''.join(words)}</div>{legend}{focus}{other_html}"
 

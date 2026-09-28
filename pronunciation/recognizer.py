@@ -71,6 +71,7 @@ class PhonemeRecognizer:
     def __init__(self, model_id: str = DEFAULT_MODEL, device: str | None = None):
         from transformers import AutoFeatureExtractor, AutoModelForCTC, AutoTokenizer
 
+        self.model_id = model_id
         self.device = device or pick_device()
         self.feature_extractor = AutoFeatureExtractor.from_pretrained(model_id)
         # The model's tokenizer config has do_phonemize=True, which starts an eSpeak backend

@@ -97,6 +97,7 @@ def evaluate(decoder: Decoder, data, system: System = V1) -> pd.DataFrame:
                 "flagged": bool(ours.issues), "our_tips": sorted({i.tip for i in ours.issues if i.tip}),
                 "our_pairs": [f"{i.expected or '-'} → {i.heard or '-'}" for i in ours.issues],
                 "dismissed": bool(ours.dismissed) and not ours.issues, "gop": ours.gop,
+                "level": ours.level, "error_prob": ours.error_prob,
             })
     return pd.DataFrame(rows)
 
@@ -169,6 +170,8 @@ def summarize(rows: pd.DataFrame) -> dict:
     for version, label in LABELS.items():
         summary[version] = {group: with_ci(rows[rows.group == group], label) for group in ("english", "turkish")}
     summary["main"]["turkish_error_level"] = error_level_with_ci(turkish)
+    if rows.level.notna().any():   # learned detector: red words alone
+        summary["main"]["turkish_red"] = detection(turkish.assign(flagged=turkish.level == "red"))
     summary["main"]["turkish_patterns"] = pattern_table(turkish).reset_index().to_dict(orient="records")
     return summary
 

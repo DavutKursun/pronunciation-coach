@@ -38,7 +38,7 @@ System tools: `espeak-ng` (brew install espeak-ng). Feature extraction on all 5,
 2. **Honest evaluation.** Choose models only with cross-validation on the training split (GroupKFold by speaker). Use the test split once, for the final numbers. Never tune on it. The same holds for the Speech Accent Archive: tune rules on the dev half only; the test half (`evaluate_saa.py --final`) is used once, in roadmap step 8b.
 3. **Honest results.** Report metrics exactly as the scripts print them; never edit numbers by hand.
 4. **Feature order.** `FEATURE_NAMES` in `assess.py` must match the trained scorer. Changing features means re-running extraction and training.
-5. **scikit-learn version.** The version pinned in `requirements.txt` must equal the one that trained `models/scorer.joblib`.
+5. **scikit-learn version.** The version pinned in `requirements.txt` must equal the one that trained `models/scorer.joblib` and `models/detector.joblib` (the detector stores its version, recognizer id and feature list; retrain it with `python scripts/train_detector.py` whenever the recognizer or the features change).
 6. **Privacy.** Never commit recordings of other people. Recordings of friends only with their permission, and don't publish them.
 7. **Secrets.** Log in with `hf auth login`; never write tokens into files or commits.
 8. **Tips.** Every entry in `TIPS` has `title`, `en` and `tr`. Keep explanations short and practical.

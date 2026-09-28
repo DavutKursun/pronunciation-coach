@@ -31,6 +31,17 @@ GOP_CONFIRM_PATTERN: float | None = -1.0
 
 
 @dataclass
+class GopAlignment:
+    """Forced alignment of the expected sounds (see expected_targets) and their GOP scores."""
+    target_ids: list[int]
+    target_word: list[int]
+    phone_target: list[int | None]
+    spans: list[tuple[int, int]] | None      # None when the audio is too short for the expected sounds
+    lpp: np.ndarray | None
+    lpr: np.ndarray | None
+
+
+@dataclass
 class Assessment:
     text: str
     words: list[WordResult]
@@ -39,6 +50,7 @@ class Assessment:
     features: dict[str, float]
     tips: list[str] = field(default_factory=list)
     score: float | None = None   # 0-10, predicted by the trained scorer (None without one)
+    alignment: GopAlignment | None = None
 
 
 def prepare_expected(words: list[str], raw_word_phones: list[list[str]]):
@@ -60,6 +72,35 @@ def compare(words: list[str], raw_word_phones: list[list[str]], heard: list[str]
     variants = [WEAK_FORMS.get(w.lower(), {}).get(p, set()) for w, phones in zip(words, word_phones) for p in phones]
     ops = align(flat, heard, function_flags, variants)
     return build_word_results(words, word_phones, ops, exp_word)
+
+
+def expected_targets(raw_word_phones: list[list[str]], token_to_id: dict[str, int]):
+    """Model tokens to force-align, the word of each token, and the token behind every expected phoneme.
+
+    Returns (target_ids, target_word, phone_target): target_ids are phones_to_ids() word by word;
+    phone_target[k] is the index in target_ids of the token that covers the k-th expected phoneme
+    of prepare_expected() (None if no token does). One token can cover two phonemes: "store" is
+    s t ɔːɹ for the model but s t oː ɹ for the comparison, and both oː and ɹ get the ɔːɹ token.
+    """
+    target_ids, target_word, phone_target = [], [], []
+    for w, phones in enumerate(raw_word_phones):
+        parts: list[tuple[str, int | None]] = []
+        for p in phones:
+            if p in token_to_id:
+                target_ids.append(token_to_id[p])
+                target_word.append(w)
+                parts += [(q, len(target_ids) - 1) for q in normalize([p])]
+                continue
+            for q in normalize([p]):              # the same splitting as phones_to_ids
+                if q in SPLITS.get(p, []) and q in token_to_id:
+                    target_ids.append(token_to_id[q])
+                    target_word.append(w)
+                    parts.append((q, len(target_ids) - 1))
+                else:
+                    parts.append((q, None))
+        # like merge_repeats() in prepare_expected: a repeated phoneme keeps the first one's token
+        phone_target += [t for k, (q, t) in enumerate(parts) if k == 0 or parts[k - 1][0] != q]
+    return target_ids, target_word, phone_target
 
 
 def phones_to_ids(phones: list[str], token_to_id: dict[str, int]) -> list[int]:
@@ -116,14 +157,11 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
     n_expected = sum(len(w.expected) for w in word_results)
 
     # GOP: force-align the expected sounds (as model tokens) to the audio, remembering their word
-    target_ids, target_word = [], []
-    for w, phones in enumerate(raw_word_phones):
-        ids = phones_to_ids(phones, token_to_id)
-        target_ids += ids
-        target_word += [w] * len(ids)
+    target_ids, target_word, phone_target = expected_targets(raw_word_phones, token_to_id)
     spans = forced_align(recognition.log_probs, target_ids, blank_id) if target_ids else None
+    alignment = GopAlignment(target_ids, target_word, phone_target, spans, None, None)
     if spans is not None:
-        lpp, lpr = gop_scores(recognition.log_probs, target_ids, spans, blank_id)
+        alignment.lpp, alignment.lpr = lpp, lpr = gop_scores(recognition.log_probs, target_ids, spans, blank_id)
         target_word = np.array(target_word)
         for w, word in enumerate(word_results):
             word_lpr = lpr[target_word == w]
@@ -140,13 +178,19 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
         phone_accuracy=features["phone_accuracy"],
         features=features,
         tips=top_tips(word_results),
+        alignment=alignment,
     )
 
 
 class PronunciationCoach:
-    """Load once, then call assess() for every recording."""
+    """Load once, then call assess() for every recording.
 
-    def __init__(self, recognizer=None, scorer_path: str | Path | None = "models/scorer.joblib"):
+    Uses the learned error detector (v2) when models/detector.joblib exists and was trained on
+    this recognizer's output; otherwise the v1 rules.
+    """
+
+    def __init__(self, recognizer=None, scorer_path: str | Path | None = "models/scorer.joblib",
+                 detector_path: str | Path | None = "models/detector.joblib"):
         if recognizer is None:
             from .recognizer import PhonemeRecognizer
 
@@ -157,6 +201,11 @@ class PronunciationCoach:
             import joblib
 
             self.scorer = joblib.load(scorer_path)
+        self.detector = None
+        if detector_path:
+            from .detector import detector_for
+
+            self.detector = detector_for(detector_path, getattr(recognizer, "model_id", None))
 
     def assess(self, audio: np.ndarray, text: str) -> Assessment:
         """audio: mono float32 at 16 kHz."""
@@ -165,8 +214,8 @@ class PronunciationCoach:
             raise ValueError("The sentence has no words.")
         raw_word_phones = phonemize_words(words)
         recognition = self.recognizer.recognize(audio)
-        result = analyze(text, raw_word_phones, recognition,
-                         self.recognizer.token_to_id, self.recognizer.blank_id)
+        decide = self.detector.assess if self.detector else analyze
+        result = decide(text, raw_word_phones, recognition, self.recognizer.token_to_id, self.recognizer.blank_id)
         if self.scorer is not None:
             row = [[result.features[name] for name in self.scorer["features"]]]
             result.score = float(np.clip(self.scorer["model"].predict(row)[0], 0, 10))

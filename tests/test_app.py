@@ -74,3 +74,18 @@ def test_headline_counts_only_reported_errors():
     assert app.reported_accuracy(unsure) == 1.0
     assert app.reported_accuracy(wrong) == 0.75
     assert "Sounds said correctly: <b>100%</b>" in app.render_result(unsure)
+
+
+def test_detector_levels_set_the_word_colors_and_the_legend():
+    import app
+    from pronunciation.assess import Assessment
+
+    red = think(reported=True)
+    red.level, red.error_prob = "red", 0.95
+    yellow = think(reported=True)
+    yellow.level, yellow.error_prob = "yellow", 0.6
+    green = think(reported=False)
+    green.level, green.error_prob = None, 0.1
+    assert [app.word_color(w) for w in (red, yellow, green)] == [app.RED, app.AMBER, app.GREEN]
+    page = app.render_result(Assessment("think", [red, yellow, green], [], 0.0, {}))
+    assert "sure error" in page and "possible error" in page

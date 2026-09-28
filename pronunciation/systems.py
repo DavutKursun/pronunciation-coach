@@ -7,7 +7,8 @@ by a small JSON file in experiments/, e.g. experiments/v1.json:
      "decision": "rules", "settings": {"gop_threshold": -2.5, "pattern_threshold": -1.0}}
 
 Decision mechanisms:
-  rules   v1: alignment differences, confirmed with GOP (settings are passed to analyze())
+  rules      v1: alignment differences, confirmed with GOP (settings are passed to analyze())
+  detector   v2: a learned error detector; settings: {"detector": path or Detector, "thresholds": optional}
 """
 
 from __future__ import annotations
@@ -32,6 +33,13 @@ class System:
         """Feedback for one recording, from the recognizer's output."""
         if self.decision == "rules":
             return analyze(text, raw_word_phones, recognition, token_to_id, blank_id, **self.settings)
+        if self.decision == "detector":
+            from .detector import Detector, load_detector
+
+            detector = self.settings["detector"]
+            detector = detector if isinstance(detector, Detector) else load_detector(str(detector))
+            return detector.assess(text, raw_word_phones, recognition, token_to_id, blank_id,
+                                   self.settings.get("thresholds"))
         raise ValueError(f"unknown decision mechanism: {self.decision}")
 
 

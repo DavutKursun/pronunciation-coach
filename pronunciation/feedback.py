@@ -27,6 +27,8 @@ class WordResult:
     issues: list[Issue] = field(default_factory=list)      # differences we report
     dismissed: list[Issue] = field(default_factory=list)   # differences GOP did not confirm
     gop: float | None = None                               # lowest GOP (lpr) of the word's sounds
+    level: str | None = None          # learned detector only: "red" (sure error), "yellow" (possible error) or None
+    error_prob: float | None = None   # learned detector only: highest error probability of the word's sounds
 
     @property
     def heard(self) -> list[str]:

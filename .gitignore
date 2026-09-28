@@ -9,3 +9,4 @@ data/cache/
 .venv-tts/
 data/synthetic/
 data/saa/
+models/detector*.joblib

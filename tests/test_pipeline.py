@@ -118,3 +118,23 @@ def test_pattern_threshold_is_looser_by_default():
     recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ", p_said=0.8, p_expected=0.15)
     [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK).words
     assert [i.tip for i in word.issues] == ["th_voiceless"]
+
+
+def test_expected_targets_link_every_expected_phoneme_to_its_token():
+    from pronunciation.assess import expected_targets, phones_to_ids, prepare_expected
+
+    words = ["store", "during", "zero", "think", "little"]
+    raw = [["s", "t", "ɔːɹ"], ["d", "ʊɹ", "ɹ", "ɪ", "ŋ"], ["z", "iə", "ɹ", "oʊ"], ["θ", "ɪ", "ŋ", "k"], ["l", "ɪ", "ɾ", "əl"]]
+    target_ids, target_word, phone_target = expected_targets(raw, TOKEN_TO_ID)
+    assert target_ids == [i for phones in raw for i in phones_to_ids(phones, TOKEN_TO_ID)]
+    flat = prepare_expected(words, raw)[1]
+    assert len(phone_target) == len(flat)
+    # "store": s t oː ɹ -> the two sounds split from ɔːɹ share its token
+    assert [target_ids[t] for t in phone_target[:4]] == [TOKEN_TO_ID[p] for p in ["s", "t", "ɔːɹ", "ɔːɹ"]]
+    # "during": d ʊə ɹ ɪ ŋ (the repeated ɹ is merged) -> ʊə and ɹ from the ʊɹ token
+    during = phone_target[4:9]
+    assert [target_ids[t] for t in during] == [TOKEN_TO_ID[p] for p in ["d", "ʊɹ", "ʊɹ", "ɪ", "ŋ"]]
+    exp_word = prepare_expected(words, raw)[2]
+    assert all(target_word[t] == w for t, w in zip(phone_target, exp_word) if t is not None)
+    # "zero": the test vocabulary has no iə token, so that sound gets no GOP
+    assert phone_target[9:13][1] is None and None not in phone_target[9:13][::2]
