@@ -32,6 +32,25 @@ def pick_device() -> str:
     return "cpu"
 
 
+class Decoder:
+    """Turns the model's log-probabilities into a Recognition.
+
+    Kept apart from the model so that cached log-probabilities (scripts/evaluate_words.py)
+    and tests go through exactly the same decoding as the app.
+    """
+
+    def __init__(self, vocab: dict[str, int], blank_id: int, special_ids: set[int]):
+        self.token_to_id: dict[str, int] = dict(vocab)
+        self.id_to_token: dict[int, str] = {i: t for t, i in vocab.items()}
+        self.blank_id = blank_id
+        self.special_ids = set(special_ids)
+
+    def __call__(self, log_probs: np.ndarray, seconds: float) -> Recognition:
+        decoded = greedy_decode(log_probs, self.blank_id, self.special_ids)
+        phones = [self.id_to_token[token] for token, _ in decoded]
+        return Recognition(log_probs=log_probs, phones=phones, seconds=seconds)
+
+
 class PhonemeRecognizer:
     """Wraps facebook/wav2vec2-lv-60-espeak-cv-ft (IPA phonemes in eSpeak style)."""
 
@@ -46,20 +65,21 @@ class PhonemeRecognizer:
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, do_phonemize=False)
         self.model = AutoModelForCTC.from_pretrained(model_id).to(self.device).eval()
 
-        vocab = self.tokenizer.get_vocab()
-        self.token_to_id: dict[str, int] = dict(vocab)
-        self.id_to_token: dict[int, str] = {i: t for t, i in vocab.items()}
-        self.blank_id: int = self.tokenizer.pad_token_id
-        self.special_ids = {i for i in self.tokenizer.all_special_ids if i != self.blank_id}
+        blank_id = self.tokenizer.pad_token_id
+        special_ids = {i for i in self.tokenizer.all_special_ids if i != blank_id}
+        self.decoder = Decoder(self.tokenizer.get_vocab(), blank_id, special_ids)
+        self.token_to_id = self.decoder.token_to_id
+        self.blank_id = blank_id
 
-    def recognize(self, audio: np.ndarray) -> Recognition:
-        """audio: mono float32 at 16 kHz (see audio.to_model_input)."""
+    def log_probs(self, audio: np.ndarray) -> np.ndarray:
+        """Raw [frames, vocab] log-probabilities for mono float32 16 kHz audio."""
         import torch
 
         inputs = self.feature_extractor(audio, sampling_rate=SAMPLE_RATE, return_tensors="pt")
         with torch.no_grad():
             logits = self.model(inputs.input_values.to(self.device)).logits[0]
-        log_probs = torch.log_softmax(logits.float(), dim=-1).cpu().numpy()
-        decoded = greedy_decode(log_probs, self.blank_id, self.special_ids)
-        phones = [self.id_to_token[token] for token, _ in decoded]
-        return Recognition(log_probs=log_probs, phones=phones, seconds=len(audio) / SAMPLE_RATE)
+        return torch.log_softmax(logits.float(), dim=-1).cpu().numpy()
+
+    def recognize(self, audio: np.ndarray) -> Recognition:
+        """audio: mono float32 at 16 kHz (see audio.to_model_input)."""
+        return self.decoder(self.log_probs(audio), seconds=len(audio) / SAMPLE_RATE)
