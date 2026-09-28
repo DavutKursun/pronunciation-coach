@@ -88,7 +88,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 8b. Speech Accent Archive: final evaluation on held-out speakers
 - [ ] 9. GitHub Actions CI
 - [x] v2-1. Experiment setup
-- [ ] v2-2. Learned error detector
+- [x] v2-2. Learned error detector
 - [ ] v2-3. Fine-tune the recognizer
 - [ ] v2-4. Final v1 vs v2 comparison
 - [ ] 10. Train on Colab

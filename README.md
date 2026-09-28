@@ -121,6 +121,29 @@ The main labels leave out differences we accept as correct English (the American
 
 The test half is clearly worse than the dev half for Turkish speakers (recall 42% → 34%, precision 82% → 70%, F1 0.56 → 0.45), and the gap is smaller with the raw labels (F1 0.45 → 0.41), which do not depend on the variants we accepted while looking at dev. So part of the dev result is overfitting to the 12 dev speakers; the rest is speaker-to-speaker variation, which is large (per-speaker recall ranges from 0% to 65%). The test numbers are the ones to quote.
 
+### v2 experiments (development sets only)
+
+**v2-2: a learned error detector.** A gradient-boosting model (`pronunciation/detector.py`, `scripts/train_detector.py`) predicts an error probability for every expected sound from GOP scores, the probability of the typical Turkish replacement, the alignment, the sound class, position and timing. It is trained on the speechocean762 phone scores of the "fit" speakers; its red/yellow thresholds are chosen on the Speech Accent Archive dev half. Compared with v1 on the same speakers (paired bootstrap over speakers; "real" = the 95% interval excludes zero):
+
+| Metric | v1 | v2-2 | Difference | 95% CI | Real? |
+| --- | --- | --- | --- | --- | --- |
+| SAA dev, Turkish: recall | 42.4% | 11.4% | -31.0% | [-37.1%, -23.7%] | yes |
+| SAA dev, Turkish: precision | 82.3% | 71.9% | -10.3% | [-23.9%, +0.5%] | no |
+| SAA dev, Turkish: F1 | 55.9% | 19.6% | -36.3% | [-42.5%, -29.0%] | yes |
+| SAA dev, Turkish: false alarm | 7.1% | 3.5% | -3.7% | [-7.2%, -1.1%] | yes |
+| SAA dev, Turkish: error-level catch | 39.7% | 7.8% | -31.9% | [-38.3%, -24.1%] | yes |
+| SAA dev, Turkish: final devoicing catch | 38.4% | 2.7% | -35.6% | [-48.1%, -21.6%] | yes |
+| SAA dev, Turkish: z → s catch | 38.9% | 2.2% | -36.7% | [-56.8%, -19.4%] | yes |
+| SAA dev, Turkish: ð catch | 28.6% | 0.0% | -28.6% | [-41.7%, -16.4%] | yes |
+| SAA dev, Turkish: θ catch | 88.6% | 2.9% | -85.7% | [-96.9%, -70.6%] | yes |
+| SAA dev, English: false alarm | 2.1% | 2.0% | -0.2% | [-1.0%, +0.6%] | no |
+| speechocean val: recall | 83.5% | 81.8% | -1.7% | [-5.8%, +0.3%] | no |
+| speechocean val: precision | 31.8% | 39.6% | +7.7% | [+5.5%, +10.1%] | yes |
+| speechocean val: false alarm | 26.8% | 18.8% | -8.1% | [-10.3%, -6.2%] | yes |
+| speechocean val: F1 | 46.1% | 53.4% | +7.3% | [+5.3%, +9.2%] | yes |
+
+The detector is better on speechocean762 (the kind of speakers it was trained on) but much worse on Turkish speakers: speechocean's Mandarin-speaking experts rarely mark the typical Turkish errors (θ, ð, final devoicing) as wrong, so the model learns to ignore the very signals that matter here, even though they are in the recognizer's output (for example, the probability of *s* in the frames of a final *z* separates the experts' z → s errors with AUC 0.70 on dev). It is therefore not shipped with the demo, which keeps using v1; `python scripts/train_detector.py` rebuilds it, and it will be retrained on the output of a fine-tuned recognizer in v2-3.
+
 ## Project structure
 
 ```
@@ -137,6 +160,8 @@ pronunciation/
   metrics.py      word- and error-level detection metrics, bootstrap intervals, system comparison
   cache.py        recognizer output cached per model and data set
   systems.py      a "system": recognizer + decision mechanism + settings (for experiments)
+  speechocean.py  speechocean762 phone labels (ARPAbet) moved onto our expected phonemes
+  detector.py     v2 learned error detector: features per expected sound, red/yellow decision
 scripts/
   extract_features.py   run the pipeline on speechocean762
   evaluate_words.py     word-level false alarm / catch rates on speechocean762 (val speakers)
@@ -149,6 +174,7 @@ scripts/
   kokoro_tts.py         Kokoro-82M synthesis, run in its own environment (.venv-tts)
   run_experiment.py     run a system on every development set -> results/experiments/<name>.json
   compare_experiments.py  compare two systems on the same speakers (paired bootstrap)
+  train_detector.py     train the v2 error detector and choose its thresholds (one command)
 experiments/      system definitions (v1.json, ...)
   train_scorer.py       train and evaluate the scoring model
   deploy_space.py       publish the demo to Hugging Face Spaces
