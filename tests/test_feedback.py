@@ -125,3 +125,20 @@ def test_weak_forms_are_not_errors(word, raw, heard):
 def test_weak_forms_do_not_hide_real_errors(word, raw, heard):
     [r] = compare([word], [raw], heard)
     assert r.issues
+
+
+# American English has no /a/ vs /ɑ/ contrast, and no /ɔ/ vs /o/ contrast before r.
+@pytest.mark.parametrize("word, raw, heard", [
+    ("bob", ["b", "ɑː", "b"], ["b", "a", "b"]),
+    ("call", ["k", "ɔː", "l"], ["k", "a", "l"]),
+    ("store", ["s", "t", "ɔːɹ"], ["s", "t", "o", "ɹ"]),
+    ("store", ["s", "t", "ɔːɹ"], ["s", "t", "ɔ", "ɹ"]),
+])
+def test_back_vowel_variants_are_not_errors(word, raw, heard):
+    [r] = run([word], [raw], heard)
+    assert r.issues == []
+
+
+def test_o_for_the_vowel_of_call_is_still_an_error():
+    [r] = run(["call"], [["k", "ɔː", "l"]], ["k", "o", "l"])
+    assert r.issues
