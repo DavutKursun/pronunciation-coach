@@ -17,7 +17,7 @@ Used by scripts/evaluate_words.py, scripts/evaluate_saa.py and scripts/train_sco
 from __future__ import annotations
 
 from collections import Counter
-from typing import Iterable, Sequence
+from typing import Callable, Iterable, Sequence
 
 import numpy as np
 
@@ -33,8 +33,13 @@ SPEECHOCEAN_WRONG_BELOW = 10
 def word_detection_metrics(expert_wrong: Sequence[bool], flagged: Sequence[bool]) -> dict:
     wrong = np.asarray(expert_wrong, dtype=bool)
     ours = np.asarray(flagged, dtype=bool)
-    tp, fp = int((wrong & ours).sum()), int((~wrong & ours).sum())
-    fn, tn = int((wrong & ~ours).sum()), int((~wrong & ~ours).sum())
+    return detection_from_counts(int((wrong & ours).sum()), int((~wrong & ours).sum()),
+                                 int((wrong & ~ours).sum()), int((~wrong & ~ours).sum()))
+
+
+def detection_from_counts(tp: int, fp: int, fn: int, tn: int) -> dict:
+    """The same metrics from the four cells of the confusion matrix."""
+    tp, fp, fn, tn = int(tp), int(fp), int(fn), int(tn)
     precision = tp / (tp + fp) if tp + fp else 0.0
     recall = tp / (tp + fn) if tp + fn else 0.0
     return {
@@ -114,6 +119,19 @@ def error_level_catch(words: Iterable[tuple[list[Issue], list[Issue]]]) -> dict:
 def format_detection(name: str, m: dict) -> str:
     return (f"{name:12} words {m['words']:5}  expert wrong {m['expert_wrong']:5}   false alarm {m['false_alarm']:6.1%}  "
             f"recall {m['recall']:6.1%}  precision {m['precision']:6.1%}  F1 {m['f1']:.3f}")
+
+
+def bootstrap_ci(units: Sequence, statistic: Callable[[list], float], n_resamples: int = 2000,
+                 seed: int = 0) -> tuple[float, float]:
+    """95% confidence interval of `statistic` by resampling whole units (speakers) with replacement.
+
+    With few speakers, most of the uncertainty comes from who was recorded, not from how many
+    words they said, so the speaker is the unit that gets resampled.
+    """
+    rng = np.random.default_rng(seed)
+    values = [statistic([units[i] for i in rng.integers(0, len(units), len(units))]) for _ in range(n_resamples)]
+    low, high = np.percentile(values, [2.5, 97.5])
+    return float(low), float(high)
 
 
 def format_confusion(m: dict) -> str:

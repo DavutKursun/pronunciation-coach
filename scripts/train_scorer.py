@@ -37,6 +37,9 @@ from pronunciation.assess import FEATURE_NAMES  # noqa: E402
 from pronunciation.metrics import SPEECHOCEAN_WRONG_BELOW, pearson, word_detection_metrics  # noqa: E402
 
 
+SCORER_KEYS = {"target", "n_train", "n_test", "selected_model", "models", "word_detection", "word_level_pcc"}
+
+
 def candidate_models() -> dict:
     return {
         "Baseline: phone accuracy only": make_pipeline(
@@ -131,7 +134,10 @@ def main() -> int:
     joblib.dump({"model": best["fitted"], "features": FEATURE_NAMES, "target": args.target,
                  "sklearn_version": sklearn.__version__, "test_pcc": best["test_pcc"]}, args.out)
     args.metrics.parent.mkdir(parents=True, exist_ok=True)
-    args.metrics.write_text(json.dumps(metrics, indent=2))
+    # keep results written by other scripts (e.g. "speech_accent_archive" from evaluate_saa.py)
+    previous = json.loads(args.metrics.read_text()) if args.metrics.exists() else {}
+    kept = {k: v for k, v in previous.items() if k not in SCORER_KEYS}
+    args.metrics.write_text(json.dumps({**metrics, **kept}, indent=2))
     print(f"\nSaved the selected model to {args.out} and metrics to {args.metrics}")
     return 0
 

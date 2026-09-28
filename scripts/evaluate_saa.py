@@ -11,15 +11,21 @@ with the words our feedback flags:
                 ("things" said "tins" has two: θ → t and z → s)
   per pattern   word- and error-level catch rates for each Turkish-speaker pattern
 
+Two labels are reported: the main one (accepted variants such as the flap in "better" or "æn"
+for "and" are not errors) and the raw one (every deviation the expert wrote is an error).
+95% confidence intervals come from resampling speakers (bootstrap).
+
 The calculations are shared with evaluate_words.py (pronunciation/metrics.py).
 
 The model runs once per half; its output is cached in data/cache/. Only the dev half is used while
-we change rules. The test half is for the final evaluation (roadmap step 8b) and needs --final.
+we change rules. The test half is for the final evaluation (roadmap step 8b) and needs --final,
+which reports both halves side by side and writes them to results/metrics.json.
 
 Usage:
     python scripts/download_saa.py && python scripts/split_saa.py    # once
     python scripts/evaluate_saa.py                                   # dev half
     python scripts/evaluate_saa.py --gop-sweep                       # compare GOP thresholds
+    python scripts/evaluate_saa.py --final                           # step 8b only
 """
 
 from __future__ import annotations
@@ -38,14 +44,24 @@ from pronunciation import analyze  # noqa: E402
 from pronunciation.assess import prepare_expected  # noqa: E402
 from pronunciation.audio import SAMPLE_RATE, load_audio  # noqa: E402
 from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
-from pronunciation.metrics import error_level_catch, format_confusion, format_detection, top_pairs, word_detection_metrics  # noqa: E402
+from pronunciation.metrics import (bootstrap_ci, detection_from_counts, error_level_catch, format_confusion,  # noqa: E402
+                                   format_detection, match_errors, top_pairs, word_detection_metrics)
 from pronunciation.phonemes import FUNCTION_WORDS, TIPS  # noqa: E402
 from pronunciation.recognizer import Decoder  # noqa: E402
-from pronunciation.saa import PARAGRAPH, align_words, expert_labels, narrow_to_broad, parse_transcription  # noqa: E402
+from pronunciation.saa import (PARAGRAPH, align_words, expert_labels, narrow_to_broad,  # noqa: E402
+                               parse_transcription, raw_wrong)
 
 SAA_DIR = ROOT / "data" / "saa"
 SPLIT_FILE = ROOT / "data" / "saa_split.json"
 CACHE_DIR = ROOT / "data" / "cache"
+METRICS_FILE = ROOT / "results" / "metrics.json"
+LABELS = {"main": "expert_wrong", "raw": "expert_wrong_raw"}
+DEFINITIONS = {
+    "main": "a word is wrong when the expert transcription differs from the expected phonemes "
+            "outside our accepted variants (flap, reduced vowels, weak forms of function words...)",
+    "raw": "a word is wrong when the expert transcription differs from the expected phonemes at all "
+           "(only narrow-IPA detail and vowel length are ignored)",
+}
 
 
 def load(half: str):
@@ -90,7 +106,8 @@ def evaluate(decoder: Decoder, data, **analyze_options) -> pd.DataFrame:
         for k, (label, ours) in enumerate(zip(labels, result.words)):
             rows.append({
                 "speaker": speaker, "group": speaker.rstrip("0123456789"), "word_idx": k, "word": words[k],
-                "expert_wrong": label.wrong, "expert_tips": sorted(label.tips), "expert_pairs": label.pairs,
+                "expert_wrong": label.wrong, "expert_wrong_raw": raw_wrong(word_phones[k], expert[k]),
+                "expert_tips": sorted(label.tips), "expert_pairs": label.pairs,
                 "expert_errors": label.errors, "our_errors": ours.issues,
                 "flagged": bool(ours.issues), "our_tips": sorted({i.tip for i in ours.issues if i.tip}),
                 "our_pairs": [f"{i.expected or '-'} → {i.heard or '-'}" for i in ours.issues],
@@ -99,10 +116,10 @@ def evaluate(decoder: Decoder, data, **analyze_options) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def detection(rows: pd.DataFrame) -> dict:
+def detection(rows: pd.DataFrame, label: str = "expert_wrong") -> dict:
     """Word-level metrics; words the speaker skipped are left out."""
-    rows = rows[rows.expert_wrong.notna()]
-    return word_detection_metrics(rows.expert_wrong.astype(bool), rows.flagged)
+    rows = rows[rows[label].notna()]
+    return word_detection_metrics(rows[label].astype(bool), rows.flagged)
 
 
 def pattern_table(rows: pd.DataFrame) -> pd.DataFrame:
@@ -119,11 +136,47 @@ def pattern_table(rows: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out).set_index("pattern")
 
 
+def with_ci(rows: pd.DataFrame, label: str) -> dict:
+    """Word-level metrics of one group, with 95% intervals from resampling its speakers."""
+    rows = rows[rows[label].notna()]
+    units = []
+    for _, speaker in rows.groupby("speaker"):
+        wrong, flagged = speaker[label].astype(bool), speaker.flagged
+        units.append(((wrong & flagged).sum(), (~wrong & flagged).sum(), (wrong & ~flagged).sum(), (~wrong & ~flagged).sum()))
+    result = detection(rows, label)
+    result["speakers"] = len(units)
+    result["ci95"] = {key: bootstrap_ci(units, lambda u, key=key: detection_from_counts(*np.sum(u, axis=0))[key])
+                      for key in ("false_alarm", "recall", "precision", "f1")}
+    return result
+
+
+def error_level_with_ci(rows: pd.DataFrame) -> dict:
+    result = error_level_catch(zip(rows.expert_errors, rows.our_errors))
+    units = [(sum(match_errors(e, o)[0] for e, o in zip(s.expert_errors, s.our_errors)), sum(map(len, s.expert_errors)))
+             for _, s in rows.groupby("speaker")]
+    result["ci95"] = {"catch": bootstrap_ci(units, lambda u: sum(x[0] for x in u) / max(sum(x[1] for x in u), 1))}
+    return result
+
+
+def summarize(rows: pd.DataFrame) -> dict:
+    """Everything that goes to metrics.json for one half."""
+    turkish = rows[(rows.group == "turkish") & rows.expert_wrong.notna()]
+    summary = {"definitions": DEFINITIONS}
+    for version, label in LABELS.items():
+        summary[version] = {group: with_ci(rows[rows.group == group], label) for group in ("english", "turkish")}
+    summary["main"]["turkish_error_level"] = error_level_with_ci(turkish)
+    summary["main"]["turkish_patterns"] = pattern_table(turkish).reset_index().to_dict(orient="records")
+    return summary
+
+
 def report(rows: pd.DataFrame) -> None:
     for group in ("english", "turkish"):
         print(format_detection(group, detection(rows[rows.group == group])))
+    for group in ("english", "turkish"):
+        print(format_detection(f"{group} raw", detection(rows[rows.group == group], "expert_wrong_raw")))
     skipped = rows.expert_wrong.isna().sum()
-    print(f"(paragraph words the speaker skipped or could not be matched: {skipped}, left out)")
+    print(f"(raw: every deviation the expert wrote is an error; words the speaker skipped or could not be "
+          f"matched: {skipped}, left out)")
 
     turkish = rows[(rows.group == "turkish") & rows.expert_wrong.notna()]
     print(f"\nTurkish speakers, confusion matrix:\n{format_confusion(detection(turkish))}")
@@ -153,16 +206,51 @@ def report(rows: pd.DataFrame) -> None:
         print(f"  {n:4}  {pair}")
 
 
+def cell(m: dict, key: str) -> str:
+    low, high = m["ci95"][key]
+    return f"{m[key]:.1%} [{low:.1%}–{high:.1%}]" if key != "f1" else f"{m[key]:.3f} [{low:.3f}–{high:.3f}]"
+
+
+def markdown_tables(halves: dict[str, dict]) -> str:
+    """Dev and test side by side, ready for the README (values as computed, 95% CI in brackets)."""
+    dev, test = halves["dev"], halves["test"]
+    header = (f"| | Dev ({dev['main']['english']['speakers']} English / {dev['main']['turkish']['speakers']} Turkish speakers) "
+              f"| Test ({test['main']['english']['speakers']} English / {test['main']['turkish']['speakers']} Turkish speakers) |\n"
+              "| --- | --- | --- |\n")
+    lines = []
+    for version in ("main", "raw"):
+        lines.append(f"**{version.capitalize()} labels** ({DEFINITIONS[version]})\n\n" + header + "".join([
+            f"| English speakers: false alarm | {cell(dev[version]['english'], 'false_alarm')} | {cell(test[version]['english'], 'false_alarm')} |\n",
+            f"| Turkish speakers: false alarm | {cell(dev[version]['turkish'], 'false_alarm')} | {cell(test[version]['turkish'], 'false_alarm')} |\n",
+            f"| Turkish speakers: recall | {cell(dev[version]['turkish'], 'recall')} | {cell(test[version]['turkish'], 'recall')} |\n",
+            f"| Turkish speakers: precision | {cell(dev[version]['turkish'], 'precision')} | {cell(test[version]['turkish'], 'precision')} |\n",
+            f"| Turkish speakers: F1 | {cell(dev[version]['turkish'], 'f1')} | {cell(test[version]['turkish'], 'f1')} |\n",
+        ]))
+    d, t = dev["main"]["turkish_error_level"], test["main"]["turkish_error_level"]
+    lines[0] += f"| Turkish speakers: error-level catch | {cell(d, 'catch')} | {cell(t, 'catch')} |\n"
+    patterns = {"dev": {p["pattern"]: p for p in dev["main"]["turkish_patterns"]},
+                "test": {p["pattern"]: p for p in test["main"]["turkish_patterns"]}}
+    table = ("**Per pattern, Turkish speakers** (errors the expert heard → share we found on the same sound)\n\n"
+             "| Pattern | Dev | Test |\n| --- | --- | --- |\n")
+    for tip in TIPS:
+        cells = [f"{patterns[h][tip]['error_caught']:.0%} of {patterns[h][tip]['errors']}" if tip in patterns[h] else "–"
+                 for h in ("dev", "test")]
+        if cells != ["–", "–"]:
+            table += f"| {TIPS[tip]['title']} | {cells[0]} | {cells[1]} |\n"
+    return "\n".join(lines) + "\n" + table
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--final", action="store_true", help="evaluate the held-out test half (step 8b only)")
-    parser.add_argument("--gop-sweep", action="store_true", help="compare GOP confirmation thresholds")
+    parser.add_argument("--gop-sweep", action="store_true", help="compare GOP confirmation thresholds (dev half)")
+    parser.add_argument("--metrics", type=Path, default=METRICS_FILE, help="where --final writes its results")
     args = parser.parse_args()
 
     half = "test" if args.final else "dev"
     decoder, data = load(half)
     print(f"Speech Accent Archive, {half} half: {len(data)} speakers\n")
-    if args.gop_sweep:
+    if args.gop_sweep and not args.final:
         for threshold in [None, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0]:
             rows = evaluate(decoder, data, gop_threshold=threshold)
             print(format_detection(f"GOP {threshold}", detection(rows[rows.group == "turkish"])))
@@ -170,6 +258,15 @@ def main() -> None:
     rows = evaluate(decoder, data)
     report(rows)
     rows.drop(columns=["expert_errors", "our_errors"]).to_csv(CACHE_DIR / f"saa_{half}_words.csv", index=False)
+
+    if args.final:
+        dev_decoder, dev_data = load("dev")
+        halves = {"dev": summarize(evaluate(dev_decoder, dev_data)), "test": summarize(rows)}
+        metrics = json.loads(args.metrics.read_text()) if args.metrics.exists() else {}
+        metrics["speech_accent_archive"] = halves
+        args.metrics.parent.mkdir(parents=True, exist_ok=True)
+        args.metrics.write_text(json.dumps(metrics, indent=2))
+        print(f"\n{markdown_tables(halves)}\nSaved to {args.metrics} under \"speech_accent_archive\"")
 
 
 if __name__ == "__main__":

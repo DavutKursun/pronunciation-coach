@@ -1,7 +1,8 @@
 import pytest
 
 from pronunciation.feedback import Issue
-from pronunciation.metrics import error_level_catch, match_errors, pearson, top_pairs, word_detection_metrics
+from pronunciation.metrics import (bootstrap_ci, error_level_catch, match_errors, pearson, top_pairs,
+                                   word_detection_metrics)
 
 
 def test_word_detection_metrics_on_a_small_table():
@@ -76,3 +77,15 @@ def test_error_level_catch_on_a_small_table():
     assert m["by_tip"]["th_voiceless"] == {"errors": 2, "found": 2}
     assert m["by_tip"]["final_voicing"] == {"errors": 1, "found": 0}
     assert m["by_tip"]["w"] == {"errors": 1, "found": 0}
+
+
+def test_bootstrap_ci_over_speakers():
+    def share(units):
+        return sum(u[0] for u in units) / sum(u[1] for u in units)
+
+    same = [(1, 2)] * 5                      # every speaker: 1 of 2 -> no uncertainty
+    assert bootstrap_ci(same, share) == pytest.approx((0.5, 0.5))
+    mixed = [(0, 10), (5, 10), (10, 10)]
+    low, high = bootstrap_ci(mixed, share, n_resamples=500, seed=1)
+    assert 0.0 <= low < share(mixed) < high <= 1.0
+    assert bootstrap_ci(mixed, share, n_resamples=500, seed=1) == (low, high)   # reproducible

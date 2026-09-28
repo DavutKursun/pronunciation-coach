@@ -38,3 +38,18 @@ def test_metrics_json_has_word_detection(tmp_path, monkeypatch):
     assert words["confusion"] == {"tp": 2, "fp": 1, "fn": 1, "tn": 2}
     assert words["precision"] == pytest.approx(2 / 3) and words["recall"] == pytest.approx(2 / 3)
     assert -1 <= words["pcc"] <= 1
+
+
+def test_train_scorer_keeps_other_results(tmp_path, monkeypatch):
+    import train_scorer
+
+    rng = np.random.default_rng(1)
+    fake_features(30, rng).to_csv(tmp_path / "train.csv", index=False)
+    fake_features(12, rng).to_csv(tmp_path / "test.csv", index=False)
+    metrics_path = tmp_path / "metrics.json"
+    metrics_path.write_text(json.dumps({"speech_accent_archive": {"test": "kept"}}))
+    monkeypatch.setattr(sys, "argv", ["train_scorer.py", "--features-dir", str(tmp_path),
+                                      "--out", str(tmp_path / "scorer.joblib"), "--metrics", str(metrics_path)])
+    assert train_scorer.main() == 0
+    metrics = json.loads(metrics_path.read_text())
+    assert metrics["speech_accent_archive"] == {"test": "kept"} and "models" in metrics

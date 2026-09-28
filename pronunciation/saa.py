@@ -141,3 +141,16 @@ def expert_labels(words: list[str], expected: list[list[str]], expert: list[list
         [result] = compare([text], [exp], heard)
         labels.append(Label(wrong=bool(result.issues), errors=result.issues))
     return labels
+
+
+def raw_wrong(expected: list[str], heard: list[str] | None) -> bool | None:
+    """The raw label: any deviation the expert wrote counts, accepted variants included.
+
+    Only the narrow-to-broad notation and vowel length are ignored (SAA does not transcribe
+    length as a phoneme, and narrow_to_broad drops it). None when the speaker skipped the word.
+    """
+    if heard is None:
+        return None
+    def strip(phones: list[str]) -> list[str]:
+        return [p.replace("ː", "") for p in phones]
+    return strip(expected) != strip(heard)

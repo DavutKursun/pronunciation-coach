@@ -1,6 +1,6 @@
 import pytest
 
-from pronunciation.saa import PARAGRAPH, align_words, expert_labels, narrow_to_broad, parse_transcription
+from pronunciation.saa import PARAGRAPH, align_words, expert_labels, narrow_to_broad, parse_transcription, raw_wrong
 
 
 @pytest.mark.parametrize("narrow, broad", [
@@ -68,3 +68,10 @@ def test_expert_labels_keep_every_error():
     [label] = expert_labels(["things"], [["θ", "ɪ", "ŋ", "z"]], [["t", "i", "ŋ", "s"]])
     assert [(e.expected, e.heard) for e in label.errors] == [("θ", "t"), ("ɪ", "i"), ("z", "s")]
     assert label.pairs == ["θ → t", "ɪ → i", "z → s"]
+
+
+def test_raw_label_counts_every_deviation():
+    assert raw_wrong(["t", "uː"], ["ɾ", "ə"])                          # flap and reduced vowel: accepted, but a deviation
+    assert raw_wrong(["æ", "n", "d"], ["æ", "n"])                      # weak form of "and"
+    assert not raw_wrong(["p", "l", "iː", "z"], ["p", "l", "i", "z"])  # SAA does not transcribe length as a phoneme
+    assert raw_wrong(["θ", "ɪ", "ŋ"], None) is None                    # skipped word
