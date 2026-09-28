@@ -1,14 +1,11 @@
 import pytest
 
-from pronunciation.align import align
-from pronunciation.assess import prepare_expected
-from pronunciation.feedback import build_word_results, top_tips
+from pronunciation.assess import compare
+from pronunciation.feedback import top_tips
 
 
 def run(words, raw_phones, heard):
-    word_phones, flat, exp_word, flags = prepare_expected(words, raw_phones)
-    ops = align(flat, heard, flags)
-    return build_word_results(words, word_phones, ops, exp_word)
+    return compare(words, raw_phones, heard)
 
 
 def tips(results):
@@ -101,3 +98,30 @@ def test_short_vowel_errors_are_still_caught(word, raw, heard, tip):
 def test_during_has_one_r():
     [r] = run(["during"], [["d", "ʊɹ", "ɹ", "ɪ", "ŋ"]], ["d", "ʊ", "ɹ", "ɪ", "ŋ"])
     assert r.issues == []
+
+
+# Weak forms of function words: how English speakers say them in connected speech.
+@pytest.mark.parametrize("word, raw, heard", [
+    ("and", ["æ", "n", "d"], ["æ", "n"]),
+    ("and", ["æ", "n", "d"], ["ɛ", "n"]),
+    ("her", ["h", "ɜː"], ["ɚ"]),
+    ("for", ["f", "ɔːɹ"], ["f", "ɚ"]),
+    ("for", ["f", "ɔːɹ"], ["f", "ə"]),
+    ("with", ["w", "ɪ", "ð"], ["w", "ɪ", "θ"]),
+    ("of", ["ʌ", "v"], ["ɔ", "v"]),
+    ("from", ["f", "ɹ", "ʌ", "m"], ["f", "ɹ", "ɑː", "m"]),
+])
+def test_weak_forms_are_not_errors(word, raw, heard):
+    [r] = compare([word], [raw], heard)
+    assert r.issues == []
+
+
+@pytest.mark.parametrize("word, raw, heard", [
+    ("hat", ["h", "æ", "t"], ["æ", "t"]),          # only function words may drop h
+    ("band", ["b", "æ", "n", "d"], ["b", "æ", "n"]),
+    ("with", ["w", "ɪ", "ð"], ["w", "ɪ", "d"]),     # th said as d is still an error
+    ("of", ["ʌ", "v"], ["ʌ", "f"]),                 # final devoicing is still an error
+])
+def test_weak_forms_do_not_hide_real_errors(word, raw, heard):
+    [r] = compare([word], [raw], heard)
+    assert r.issues

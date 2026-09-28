@@ -15,8 +15,8 @@ import unicodedata
 from dataclasses import dataclass, field
 
 from .align import align, edit_cost
-from .feedback import build_word_results
-from .phonemes import FUNCTION_WORDS, VOWEL_CHARS, normalize
+from .assess import compare
+from .phonemes import VOWEL_CHARS, normalize
 
 PARAGRAPH = (
     "Please call Stella. Ask her to bring these things with her from the store: Six spoons of fresh snow peas, "
@@ -130,9 +130,7 @@ def expert_labels(words: list[str], expected: list[list[str]], expert: list[list
         if heard is None:
             labels.append(Label(wrong=None))
             continue
-        flags = [text.lower() in FUNCTION_WORDS] * len(exp)
-        ops = align(exp, heard, flags)
-        [result] = build_word_results([text], [exp], ops, [0] * len(exp))
+        [result] = compare([text], [exp], heard)
         labels.append(Label(
             wrong=bool(result.issues),
             tips={i.tip for i in result.issues if i.tip},

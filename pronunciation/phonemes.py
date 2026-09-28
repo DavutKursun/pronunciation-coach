@@ -72,6 +72,20 @@ FUNCTION_WORDS = {
     "then", "there", "some", "just", "into", "onto", "with", "by", "in", "on", "it",
 }
 
+# Weak forms: how English speakers say these function words in connected speech (checked on the
+# US English speakers of the Speech Accent Archive dev half). For each expected sound, the extra
+# realizations that are fine in this word; None means the sound may be left out.
+_R_DROP = {"ɹ": {None}}      # "for" -> fɚ / fə: the r is part of the r-coloured vowel or dropped
+_H_DROP = {"h": {None}}      # "ask her" -> "ask 'er"
+_BACK_VOWEL = {"ʌ": {"ɔ", "ɑː", "ɒ"}}
+WEAK_FORMS: dict[str, dict[str, set[str | None]]] = {
+    "and": {"æ": {"ɛ"}, "d": {None}},          # æn, ɛn, ən, n̩
+    "with": {"ð": {"θ"}},                      # wɪθ is as common as wɪð
+    "of": _BACK_VOWEL, "from": _BACK_VOWEL,    # ɔv, fɹɑm
+    **{w: _R_DROP for w in ("for", "or", "nor", "are", "were", "your", "our", "their", "there")},
+    **{w: _H_DROP for w in ("her", "him", "his", "he", "have", "has", "had")},
+}
+
 # voiced -> voiceless pairs (Turkish devoices consonants at the end of words: kitap/kitabı)
 DEVOICED = {"b": "p", "d": "t", "ɡ": "k", "v": "f", "z": "s", "ð": "θ", "ʒ": "ʃ", "dʒ": "tʃ"}
 
@@ -234,8 +248,8 @@ def merge_repeats(phones: list[str]) -> list[str]:
     return [p for k, p in enumerate(phones) if k == 0 or phones[k - 1] != p]
 
 
-def is_acceptable(expected: str, heard: str, function_word: bool = False) -> bool:
-    if expected == heard or heard in ACCEPT.get(expected, ()):
+def is_acceptable(expected: str, heard: str, function_word: bool = False, extra: set = frozenset()) -> bool:
+    if expected == heard or heard in ACCEPT.get(expected, ()) or heard in extra:
         return True
     return function_word and is_vowel(expected) and heard in REDUCED_VOWELS
 

@@ -11,7 +11,7 @@ from .align import align
 from .ctc import forced_align, gop_scores
 from .feedback import WordResult, build_word_results, confirm_with_gop, top_tips
 from .g2p import phonemize_words, tokenize
-from .phonemes import FUNCTION_WORDS, SPLITS, merge_repeats, normalize
+from .phonemes import FUNCTION_WORDS, SPLITS, WEAK_FORMS, merge_repeats, normalize
 
 # Order matters: the trained scorer expects exactly these columns.
 FEATURE_NAMES = [
@@ -49,6 +49,14 @@ def prepare_expected(words: list[str], raw_word_phones: list[list[str]]):
             exp_word.append(w)
             function_flags.append(is_function)
     return word_phones, flat, exp_word, function_flags
+
+
+def compare(words: list[str], raw_word_phones: list[list[str]], heard: list[str]) -> list[WordResult]:
+    """Align what was heard with the expected phonemes and turn the differences into per-word results."""
+    word_phones, flat, exp_word, function_flags = prepare_expected(words, raw_word_phones)
+    variants = [WEAK_FORMS.get(w.lower(), {}).get(p, set()) for w, phones in zip(words, word_phones) for p in phones]
+    ops = align(flat, heard, function_flags, variants)
+    return build_word_results(words, word_phones, ops, exp_word)
 
 
 def phones_to_ids(phones: list[str], token_to_id: dict[str, int]) -> list[int]:
@@ -99,11 +107,9 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
             gop_threshold: float | None = GOP_CONFIRM) -> Assessment:
     """Everything after recognition. Kept separate from the model so it can be unit-tested."""
     words = tokenize(text)
-    word_phones, flat, exp_word, function_flags = prepare_expected(words, raw_word_phones)
     heard = normalize(recognition.phones)
-
-    ops = align(flat, heard, function_flags)
-    word_results = build_word_results(words, word_phones, ops, exp_word)
+    word_results = compare(words, raw_word_phones, heard)
+    n_expected = sum(len(w.expected) for w in word_results)
 
     # GOP: force-align the expected sounds (as model tokens) to the audio, remembering their word
     target_ids, target_word = [], []
@@ -122,7 +128,7 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
     else:
         lpp = lpr = np.array([GOP_FLOOR])
 
-    features = compute_features(word_results, len(flat), heard, lpp, lpr, spans is not None, recognition.seconds)
+    features = compute_features(word_results, n_expected, heard, lpp, lpr, spans is not None, recognition.seconds)
     return Assessment(
         text=text,
         words=word_results,

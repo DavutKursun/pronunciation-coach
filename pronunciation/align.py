@@ -26,42 +26,48 @@ CROSS_CLASS_COST = 1.2   # vowel <-> consonant (rare in real speech)
 class Op:
     kind: str                # "match" | "sub" | "del" | "ins"
     expected: str | None     # expected phone (None for insertions)
-    heard: str | None        # heard phone (None for deletions)
+    heard: str | None        # heard phone (None for deletions, and for an optional sound left out)
     exp_pos: int | None      # index in the expected sequence
     heard_pos: int | None    # index in the heard sequence
 
 
-def substitution_cost(expected: str, heard: str, function_word: bool = False) -> float:
+def substitution_cost(expected: str, heard: str, function_word: bool = False, extra: set = frozenset()) -> float:
     if expected == heard:
         return 0.0
-    if is_acceptable(expected, heard, function_word):
+    if is_acceptable(expected, heard, function_word, extra):
         return VARIANT_COST
     return SAME_CLASS_COST if is_vowel(expected) == is_vowel(heard) else CROSS_CLASS_COST
 
 
-def align(expected: list[str], heard: list[str], function_flags: list[bool] | None = None) -> list[Op]:
+def align(expected: list[str], heard: list[str], function_flags: list[bool] | None = None,
+          variants: list[set] | None = None) -> list[Op]:
     """Return the cheapest sequence of operations that turns `expected` into `heard`.
 
     function_flags[i] is True when expected[i] belongs to a function word ("the", "to"...),
-    where reduced vowels are accepted.
+    where reduced vowels are accepted. variants[i] holds extra accepted realizations of
+    expected[i] in this word (weak forms, e.g. θ in "with"); None in it means the sound may be
+    left out (the h of "her"). Leaving it out is then a match, not a deletion.
     """
     n, m = len(expected), len(heard)
     flags = function_flags or [False] * n
+    extra = variants or [frozenset()] * n
 
     # cost[i][j] = cheapest way to align expected[:i] with heard[:j]
     cost = [[0.0] * (m + 1) for _ in range(n + 1)]
     move = [[""] * (m + 1) for _ in range(n + 1)]  # which step reached this cell
     for i in range(1, n + 1):
-        cost[i][0], move[i][0] = i * INDEL_COST, "del"
+        cost[i][0] = cost[i - 1][0] + (VARIANT_COST if None in extra[i - 1] else INDEL_COST)
+        move[i][0] = "del"
     for j in range(1, m + 1):
         cost[0][j], move[0][j] = j * INDEL_COST, "ins"
 
     for i in range(1, n + 1):
         for j in range(1, m + 1):
-            sub = substitution_cost(expected[i - 1], heard[j - 1], flags[i - 1])
+            sub = substitution_cost(expected[i - 1], heard[j - 1], flags[i - 1], extra[i - 1])
+            skip = VARIANT_COST if None in extra[i - 1] else INDEL_COST
             candidates = (
                 (cost[i - 1][j - 1] + sub, "diag"),     # match or substitution
-                (cost[i - 1][j] + INDEL_COST, "del"),   # expected sound was skipped
+                (cost[i - 1][j] + skip, "del"),         # expected sound was skipped
                 (cost[i][j - 1] + INDEL_COST, "ins"),   # an extra sound was said
             )
             # min() keeps the first of equal candidates: prefer diag, then del, then ins
@@ -74,11 +80,12 @@ def align(expected: list[str], heard: list[str], function_flags: list[bool] | No
         step = move[i][j]
         if step == "diag":
             e, h = expected[i - 1], heard[j - 1]
-            kind = "match" if is_acceptable(e, h, flags[i - 1]) else "sub"
+            kind = "match" if is_acceptable(e, h, flags[i - 1], extra[i - 1]) else "sub"
             ops.append(Op(kind, e, h, i - 1, j - 1))
             i, j = i - 1, j - 1
         elif step == "del":
-            ops.append(Op("del", expected[i - 1], None, i - 1, None))
+            kind = "match" if None in extra[i - 1] else "del"
+            ops.append(Op(kind, expected[i - 1], None, i - 1, None))
             i -= 1
         else:
             ops.append(Op("ins", None, heard[j - 1], None, j - 1))
@@ -87,13 +94,16 @@ def align(expected: list[str], heard: list[str], function_flags: list[bool] | No
     return ops
 
 
-def edit_cost(ops: list[Op], function_flags: list[bool] | None = None) -> float:
+def edit_cost(ops: list[Op], function_flags: list[bool] | None = None, variants: list[set] | None = None) -> float:
     """Total cost of an alignment (useful for tests and debugging)."""
     total = 0.0
     for op in ops:
         if op.kind in ("del", "ins"):
             total += INDEL_COST
+        elif op.heard is None:
+            total += VARIANT_COST   # an optional sound left out
         else:
             flag = function_flags[op.exp_pos] if function_flags else False
-            total += substitution_cost(op.expected, op.heard, flag)
+            extra = variants[op.exp_pos] if variants else frozenset()
+            total += substitution_cost(op.expected, op.heard, flag, extra)
     return total

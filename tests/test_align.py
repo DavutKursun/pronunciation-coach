@@ -59,3 +59,11 @@ def test_merge_repeats_inside_a_word():
     assert merge_repeats(normalize(["d", "ʊɹ", "ɹ", "ɪ", "ŋ"])) == ["d", "ʊə", "ɹ", "ɪ", "ŋ"]
     assert merge_repeats(["j", "ʊə", "ɹ", "ɹ", "ə", "p"]) == ["j", "ʊə", "ɹ", "ə", "p"]
     assert merge_repeats([]) == []
+
+
+def test_optional_sound_may_be_left_out():
+    # variants[i] lists extra accepted realizations of expected[i]; None = it may be left out ("her" -> "ɚ")
+    ops = align(["h", "ɜː"], ["ɚ"], [True, True], variants=[{None}, set()])
+    assert kinds(ops) == ["match", "match"]
+    assert ops[0].heard is None
+    assert edit_cost(ops, [True, True], [{None}, set()]) < 0.1
