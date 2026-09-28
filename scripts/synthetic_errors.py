@@ -34,15 +34,19 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from pronunciation import PronunciationCoach  # noqa: E402
-from pronunciation.audio import load_audio  # noqa: E402
-from pronunciation.recognizer import PhonemeRecognizer  # noqa: E402
+from pronunciation import analyze  # noqa: E402
+from pronunciation.audio import SAMPLE_RATE, load_audio  # noqa: E402
+from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
+from pronunciation.recognizer import Decoder  # noqa: E402
 
 OUT_DIR = ROOT / "data" / "synthetic"
+CACHE = OUT_DIR / "log_probs.npz"      # model output per recording, so rule changes re-run in seconds
+CACHE_META = OUT_DIR / "model.json"
 KOKORO_PYTHON = ROOT / ".venv-tts" / "bin" / "python"
 PREFIX, SUFFIX = "Please say", "again."
 TARGET = 2  # index of the target word in "Please say <word> again."
@@ -145,11 +149,38 @@ def synthesize_kokoro(rows: list[dict], regenerate: bool) -> None:
         row["phonemes"] = job.get("phonemes", "")
 
 
+def load_log_probs(rows: list[dict]) -> tuple[Decoder, dict[str, np.ndarray], dict[str, float]]:
+    """Model output for every recording, from the cache when possible."""
+    cache = dict(np.load(CACHE)) if CACHE.exists() else {}
+    seconds = {}
+    missing = [row for row in rows if str(row["path"].relative_to(ROOT)) not in cache]
+    if missing or not CACHE_META.exists():
+        from pronunciation.recognizer import PhonemeRecognizer
+
+        recognizer = PhonemeRecognizer()
+        CACHE_META.write_text(json.dumps({"vocab": recognizer.token_to_id, "blank_id": recognizer.blank_id,
+                                          "special_ids": sorted(recognizer.decoder.special_ids)}))
+        for k, row in enumerate(missing, 1):
+            cache[str(row["path"].relative_to(ROOT))] = recognizer.log_probs(load_audio(row["path"]))
+            if k % 200 == 0:
+                print(f"model {k}/{len(missing)}")
+        if missing:
+            np.savez_compressed(CACHE, **cache)
+    meta = json.loads(CACHE_META.read_text())
+    decoder = Decoder(meta["vocab"], meta["blank_id"], set(meta["special_ids"]))
+    for row in rows:
+        seconds[str(row["path"].relative_to(ROOT))] = len(load_audio(row["path"])) / SAMPLE_RATE
+    return decoder, cache, seconds
+
+
 def analyze_recordings(rows: list[dict]) -> None:
-    coach = PronunciationCoach(PhonemeRecognizer(), scorer_path=None)
-    for k, row in enumerate(rows):
+    decoder, cache, seconds = load_log_probs(rows)
+    for row in rows:
+        key = str(row["path"].relative_to(ROOT))
         text = f"{PREFIX} {row['word']} {SUFFIX}"
-        result = coach.assess(load_audio(row["path"]), text)
+        words = tokenize(text)
+        result = analyze(text, phonemize_words(words), decoder(cache[key], seconds[key]),
+                         decoder.token_to_id, decoder.blank_id)
         word = result.words[TARGET]
         row.update({
             "flagged": bool(word.issues),
@@ -159,8 +190,6 @@ def analyze_recordings(rows: list[dict]) -> None:
             "heard": " ".join(word.heard),
             "carrier_flags": sum(bool(w.issues) for i, w in enumerate(result.words) if i != TARGET),
         })
-        if (k + 1) % 200 == 0:
-            print(f"analyzed {k + 1}/{len(rows)}")
 
 
 def pair_table(results: pd.DataFrame) -> pd.DataFrame:
@@ -212,6 +241,8 @@ def main() -> None:
 
     engines = ["espeak", "kokoro"] if args.kokoro else ["espeak"]
     rows = plan_recordings(engines)
+    if args.regenerate:
+        CACHE.unlink(missing_ok=True)
     synthesize_espeak([r for r in rows if r["engine"] == "espeak"], args.regenerate)
     if args.kokoro:
         synthesize_kokoro([r for r in rows if r["engine"] == "kokoro"], args.regenerate)
