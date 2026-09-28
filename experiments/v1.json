@@ -1,0 +1,6 @@
+{
+  "name": "v1",
+  "recognizer": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+  "decision": "rules",
+  "settings": {"gop_threshold": -2.5, "pattern_threshold": -1.0}
+}

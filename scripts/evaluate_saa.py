@@ -40,20 +40,22 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from pronunciation import analyze  # noqa: E402
 from pronunciation.assess import prepare_expected  # noqa: E402
-from pronunciation.audio import SAMPLE_RATE, load_audio  # noqa: E402
+from pronunciation.audio import load_audio  # noqa: E402
+from pronunciation.cache import cached_log_probs  # noqa: E402
 from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
 from pronunciation.metrics import (bootstrap_ci, detection_from_counts, error_level_catch, format_confusion,  # noqa: E402
                                    format_detection, match_errors, top_pairs, word_detection_metrics)
 from pronunciation.phonemes import FUNCTION_WORDS, TIPS  # noqa: E402
-from pronunciation.recognizer import Decoder  # noqa: E402
+from pronunciation.recognizer import DEFAULT_MODEL, Decoder  # noqa: E402
 from pronunciation.saa import (PARAGRAPH, align_words, expert_labels, narrow_to_broad,  # noqa: E402
                                parse_transcription, raw_wrong)
+from pronunciation.systems import System  # noqa: E402
 
 SAA_DIR = ROOT / "data" / "saa"
 SPLIT_FILE = ROOT / "data" / "saa_split.json"
 CACHE_DIR = ROOT / "data" / "cache"
+V1 = System("v1")   # rules with the default GOP thresholds
 METRICS_FILE = ROOT / "results" / "metrics.json"
 LABELS = {"main": "expert_wrong", "raw": "expert_wrong_raw"}
 DEFINITIONS = {
@@ -64,33 +66,17 @@ DEFINITIONS = {
 }
 
 
-def load(half: str):
+def load(half: str, model_id: str = DEFAULT_MODEL):
     """Decoder, and (speaker, log-probabilities, seconds, transcription) for every speaker of the half."""
     speakers = json.loads(SPLIT_FILE.read_text())[half]
-    npz_path, meta_path = CACHE_DIR / f"saa_{half}.npz", CACHE_DIR / f"saa_{half}.json"
-    if not npz_path.exists():
-        from pronunciation.recognizer import PhonemeRecognizer
-
-        print(f"Running the model on the {half} speakers (only once)...")
-        recognizer = PhonemeRecognizer()
-        arrays, seconds = {}, {}
-        for speaker in speakers:
-            audio = load_audio(SAA_DIR / f"{speaker}.mp3")
-            arrays[speaker] = recognizer.log_probs(audio)
-            seconds[speaker] = len(audio) / SAMPLE_RATE
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(npz_path, **arrays)
-        meta_path.write_text(json.dumps({"vocab": recognizer.token_to_id, "blank_id": recognizer.blank_id,
-                                         "special_ids": sorted(recognizer.decoder.special_ids), "seconds": seconds}))
-    meta = json.loads(meta_path.read_text())
-    arrays = np.load(npz_path)
-    decoder = Decoder(meta["vocab"], meta["blank_id"], set(meta["special_ids"]))
-    data = [(s, arrays[s], meta["seconds"][s], (SAA_DIR / f"{s}.txt").read_text(encoding="utf-8")) for s in speakers]
+    audio = {s: (lambda s=s: load_audio(SAA_DIR / f"{s}.mp3")) for s in speakers}
+    decoder, log_probs, seconds = cached_log_probs(model_id, f"saa_{half}", audio)
+    data = [(s, log_probs[s], seconds[s], (SAA_DIR / f"{s}.txt").read_text(encoding="utf-8")) for s in speakers]
     return decoder, data
 
 
-def evaluate(decoder: Decoder, data, **analyze_options) -> pd.DataFrame:
-    """One row per paragraph word per speaker: what the expert heard and what we reported."""
+def evaluate(decoder: Decoder, data, system: System = V1) -> pd.DataFrame:
+    """One row per paragraph word per speaker: what the expert heard and what the system reported."""
     words = tokenize(PARAGRAPH)
     raw = phonemize_words(words)
     word_phones = prepare_expected(words, raw)[0]
@@ -101,8 +87,7 @@ def evaluate(decoder: Decoder, data, **analyze_options) -> pd.DataFrame:
         expert_words = [narrow_to_broad(w) for w in parse_transcription(transcription)]
         expert = align_words(word_phones, expert_words, word_is_function)
         labels = expert_labels(words, word_phones, expert)
-        result = analyze(PARAGRAPH, raw, decoder(log_probs, seconds), decoder.token_to_id, decoder.blank_id,
-                         **analyze_options)
+        result = system.assess(PARAGRAPH, raw, decoder(log_probs, seconds), decoder.token_to_id, decoder.blank_id)
         for k, (label, ours) in enumerate(zip(labels, result.words)):
             rows.append({
                 "speaker": speaker, "group": speaker.rstrip("0123456789"), "word_idx": k, "word": words[k],
@@ -136,13 +121,33 @@ def pattern_table(rows: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out).set_index("pattern")
 
 
+def confusion_units(rows: pd.DataFrame, label: str = "expert_wrong") -> dict[str, list[int]]:
+    """Per speaker: [tp, fp, fn, tn], the unit for bootstrap intervals and system comparisons."""
+    rows = rows[rows[label].notna()]
+    units = {}
+    for name, speaker in rows.groupby("speaker"):
+        wrong, flagged = speaker[label].astype(bool), speaker.flagged
+        units[name] = [int((wrong & flagged).sum()), int((~wrong & flagged).sum()),
+                       int((wrong & ~flagged).sum()), int((~wrong & ~flagged).sum())]
+    return units
+
+
+def error_units(rows: pd.DataFrame, keep=lambda error: True) -> dict[str, list[int]]:
+    """Per speaker: [expert errors we found, expert errors], counting only the errors `keep` selects."""
+    units = {}
+    for name, speaker in rows[rows.expert_wrong.notna()].groupby("speaker"):
+        found = total = 0
+        for expert, ours in zip(speaker.expert_errors, speaker.our_errors):
+            kept = [e for e in expert if keep(e)]
+            found += match_errors(kept, ours)[0]
+            total += len(kept)
+        units[name] = [found, total]
+    return units
+
+
 def with_ci(rows: pd.DataFrame, label: str) -> dict:
     """Word-level metrics of one group, with 95% intervals from resampling its speakers."""
-    rows = rows[rows[label].notna()]
-    units = []
-    for _, speaker in rows.groupby("speaker"):
-        wrong, flagged = speaker[label].astype(bool), speaker.flagged
-        units.append(((wrong & flagged).sum(), (~wrong & flagged).sum(), (wrong & ~flagged).sum(), (~wrong & ~flagged).sum()))
+    units = list(confusion_units(rows, label).values())
     result = detection(rows, label)
     result["speakers"] = len(units)
     result["ci95"] = {key: bootstrap_ci(units, lambda u, key=key: detection_from_counts(*np.sum(u, axis=0))[key])
@@ -152,8 +157,7 @@ def with_ci(rows: pd.DataFrame, label: str) -> dict:
 
 def error_level_with_ci(rows: pd.DataFrame) -> dict:
     result = error_level_catch(zip(rows.expert_errors, rows.our_errors))
-    units = [(sum(match_errors(e, o)[0] for e, o in zip(s.expert_errors, s.our_errors)), sum(map(len, s.expert_errors)))
-             for _, s in rows.groupby("speaker")]
+    units = list(error_units(rows).values())
     result["ci95"] = {"catch": bootstrap_ci(units, lambda u: sum(x[0] for x in u) / max(sum(x[1] for x in u), 1))}
     return result
 
@@ -252,7 +256,7 @@ def main() -> None:
     print(f"Speech Accent Archive, {half} half: {len(data)} speakers\n")
     if args.gop_sweep and not args.final:
         for threshold in [None, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0]:
-            rows = evaluate(decoder, data, gop_threshold=threshold)
+            rows = evaluate(decoder, data, System(f"gop {threshold}", settings={"gop_threshold": threshold}))
             print(format_detection(f"GOP {threshold}", detection(rows[rows.group == "turkish"])))
         return
     rows = evaluate(decoder, data)

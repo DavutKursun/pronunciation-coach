@@ -54,6 +54,8 @@ flowchart LR
 
 ## Results
 
+The results below belong to **v1**, the rule-based version tagged [`v1.0`](https://github.com/DavutKursun/pronunciation-coach/tree/v1.0) in git. v2 work (a learned error detector and a recognizer fine-tuned on non-native speech) is compared with it using `scripts/run_experiment.py` and `scripts/compare_experiments.py`.
+
 Evaluated on the speechocean762 test set (2,500 utterances, speakers not seen in training). PCC = Pearson correlation with the expert scores.
 
 | Model | CV PCC (train speakers) | Test PCC | Test MSE |
@@ -70,7 +72,7 @@ Evaluated on the speechocean762 test set (2,500 utterances, speakers not seen in
 
 <!-- Fill in from the tables printed by scripts/train_scorer.py (also saved in results/metrics.json). -->
 
-False alarm = correct words we flagged; recall = wrong words we flagged; precision = flagged words that were really wrong. `scripts/evaluate_words.py` (speechocean762 train) and `scripts/evaluate_saa.py` (Turkish speakers of the Speech Accent Archive, with an error-level catch rate) report the same metrics during development.
+False alarm = correct words we flagged; recall = wrong words we flagged; precision = flagged words that were really wrong. `scripts/evaluate_words.py` (speechocean762, val speakers of the train split) and `scripts/evaluate_saa.py` (Turkish speakers of the Speech Accent Archive, with an error-level catch rate) report the same metrics during development.
 
 ### Real Turkish speakers: Speech Accent Archive
 
@@ -132,15 +134,22 @@ pronunciation/
   assess.py       the full pipeline and the scoring features
   audio.py        audio loading and resampling to 16 kHz
   saa.py          Speech Accent Archive: narrow IPA -> our phonemes, expert labels
+  metrics.py      word- and error-level detection metrics, bootstrap intervals, system comparison
+  cache.py        recognizer output cached per model and data set
+  systems.py      a "system": recognizer + decision mechanism + settings (for experiments)
 scripts/
   extract_features.py   run the pipeline on speechocean762
-  evaluate_words.py     word-level false alarm / catch rates on speechocean762 train
+  evaluate_words.py     word-level false alarm / catch rates on speechocean762 (val speakers)
+  split_speechocean.py  speaker-level fit/val split of speechocean762 train (data/speechocean_split.json)
   download_saa.py       download Turkish and US English speakers from the Speech Accent Archive
   split_saa.py          speaker-level dev/test split (data/saa_split.json)
   evaluate_saa.py       word-level evaluation against expert IPA transcriptions
   smoke_test_real_model.py  quick check of the real model on synthesized sentences
   synthetic_errors.py   synthetic test set of Turkish-speaker errors (eSpeak NG, Kokoro)
   kokoro_tts.py         Kokoro-82M synthesis, run in its own environment (.venv-tts)
+  run_experiment.py     run a system on every development set -> results/experiments/<name>.json
+  compare_experiments.py  compare two systems on the same speakers (paired bootstrap)
+experiments/      system definitions (v1.json, ...)
   train_scorer.py       train and evaluate the scoring model
   deploy_space.py       publish the demo to Hugging Face Spaces
 tests/            unit tests (pytest), no model download needed

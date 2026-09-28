@@ -17,7 +17,7 @@ A learner reads an English sentence aloud. A wav2vec2 CTC model recognizes the p
 - `pronunciation/`: the library (see README "Project structure"). `assess.py` ties it together; `analyze()` is model-free so it can be unit-tested.
 - `tests/`: pytest; `conftest.py` has `fake_recognition()` to simulate what the model "heard" without downloading it.
 - `scripts/extract_features.py` → `data/features/*.csv`; `scripts/train_scorer.py` → `models/scorer.joblib` + `results/metrics.json`.
-- Word-level checks (model output cached, rule changes re-run in seconds): `scripts/evaluate_words.py` (speechocean762 train), `scripts/evaluate_saa.py` (Speech Accent Archive dev half; `download_saa.py` + `split_saa.py` first), `scripts/synthetic_errors.py --kokoro` (synthetic error set; Kokoro runs in `.venv-tts`). Run all three after every rule change.
+- Word-level checks (model output cached per model in `data/cache/<model>/`, rule changes re-run in seconds): `scripts/evaluate_words.py` (speechocean762 val speakers), `scripts/evaluate_saa.py` (Speech Accent Archive dev half; `download_saa.py` + `split_saa.py` first), `scripts/synthetic_errors.py --kokoro` (synthetic error set; Kokoro runs in `.venv-tts`). Run all three after every rule change.
 - `app.py`: Gradio demo. `space/README.md`: Space config. `scripts/deploy_space.py`: publishing.
 - `notebooks/colab.ipynb`: feature extraction + training on Colab.
 
@@ -44,6 +44,25 @@ System tools: `espeak-ng` (brew install espeak-ng). Feature extraction on all 5,
 8. **Tips.** Every entry in `TIPS` has `title`, `en` and `tr`. Keep explanations short and practical.
 9. Commit in small steps with clear English messages.
 
+## v2: goals and data rules
+
+v1 (git tag `v1.0`) is rule-based; v2 aims at higher recall with a learned error detector and a
+recognizer fine-tuned on non-native speech. Every v2 system is run with `scripts/run_experiment.py`
+and compared with v1 on the same speakers (`scripts/compare_experiments.py`).
+
+**Targets** (final evaluation: SAA test half, Turkish speakers; aim a bit higher on dev, v1 lost
+about 9 points from dev to test):
+- precision at least 70% (kept), recall from 34% to at least 50% (stretch: precision 75%, recall 55%)
+- false alarms for native English speakers at most 2%
+- error-level catch: final devoicing (z → s) at least 60%, ð at least 40%, θ at least 75% (kept)
+
+**Data rules:**
+- The SAA test half and the speechocean762 test split stay locked until v2-4.
+- speechocean762 train is split by speaker (`data/speechocean_split.json`): "fit" (80%) is for
+  training, "val" (20%) for model selection and evaluation during development.
+- The SAA dev half may be used to choose thresholds and for early stopping, never as training data.
+- Synthetic recordings may be used as a regression check, not as training data for the detector.
+
 ## Step workflow
 
 The author gives the work one step at a time. At the end of every step:
@@ -68,6 +87,10 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 8. Word-level detection metrics
 - [x] 8b. Speech Accent Archive: final evaluation on held-out speakers
 - [ ] 9. GitHub Actions CI
+- [x] v2-1. Experiment setup
+- [ ] v2-2. Learned error detector
+- [ ] v2-3. Fine-tune the recognizer
+- [ ] v2-4. Final v1 vs v2 comparison
 - [ ] 10. Train on Colab
 - [ ] 11. Add results to the project
 - [ ] 12. Publish on Hugging Face Spaces

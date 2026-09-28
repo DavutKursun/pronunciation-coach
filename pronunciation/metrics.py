@@ -134,6 +134,27 @@ def bootstrap_ci(units: Sequence, statistic: Callable[[list], float], n_resample
     return float(low), float(high)
 
 
+def paired_bootstrap_diff(units_a: Sequence, units_b: Sequence, statistic: Callable[[list], float],
+                          n_resamples: int = 2000, seed: int = 0) -> dict:
+    """Is system B really better than system A? Both are measured on the same speakers.
+
+    units_a[i] and units_b[i] belong to the same speaker. Each resample draws speakers with
+    replacement and computes statistic(B) - statistic(A) on the SAME speakers, so differences
+    between speakers cancel out and only the difference between the systems remains. The
+    improvement counts as real when the 95% interval of the difference does not contain zero.
+    """
+    if len(units_a) != len(units_b):
+        raise ValueError("both systems must be measured on the same speakers")
+    rng = np.random.default_rng(seed)
+    diffs = []
+    for _ in range(n_resamples):
+        pick = rng.integers(0, len(units_a), len(units_a))
+        diffs.append(statistic([units_b[i] for i in pick]) - statistic([units_a[i] for i in pick]))
+    low, high = (float(x) for x in np.percentile(diffs, [2.5, 97.5]))
+    a, b = statistic(list(units_a)), statistic(list(units_b))
+    return {"a": a, "b": b, "diff": b - a, "ci95": (low, high), "real": low > 0 or high < 0}
+
+
 def format_confusion(m: dict) -> str:
     c = m["confusion"]
     return ("                      we flagged   we did not\n"
