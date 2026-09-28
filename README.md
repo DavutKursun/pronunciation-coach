@@ -62,9 +62,15 @@ Evaluated on the speechocean762 test set (2,500 utterances, speakers not seen in
 | Ridge regression | – | – | – |
 | Gradient boosting | – | – | – |
 
-Word level: PCC between our word scores and expert word accuracy = –
+**Word-level error detection** on the same test set: does the feedback flag the words the experts did not score as perfect (word accuracy below 10)? No threshold or rule was tuned on it.
 
-<!-- Fill in from the table printed by scripts/train_scorer.py (also saved in results/metrics.json). -->
+| Words | Expert: wrong | False alarm | Recall | Precision | F1 | Word score PCC |
+| --- | --- | --- | --- | --- | --- | --- |
+| – | – | – | – | – | – | – |
+
+<!-- Fill in from the tables printed by scripts/train_scorer.py (also saved in results/metrics.json). -->
+
+False alarm = correct words we flagged; recall = wrong words we flagged; precision = flagged words that were really wrong. `scripts/evaluate_words.py` (speechocean762 train) and `scripts/evaluate_saa.py` (Turkish speakers of the Speech Accent Archive, with an error-level catch rate) report the same metrics during development.
 
 ## Project structure
 

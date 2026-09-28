@@ -65,7 +65,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 5c. Reduce false alarms with data
 - [x] 6. Synthetic error test set
 - [x] 7. Speech Accent Archive: dev set analysis and fixes
-- [ ] 8. Word-level detection metrics
+- [x] 8. Word-level detection metrics
 - [ ] 8b. Speech Accent Archive: final evaluation on held-out speakers
 - [ ] 9. GitHub Actions CI
 - [ ] 10. Train on Colab
