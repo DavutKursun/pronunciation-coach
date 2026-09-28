@@ -59,7 +59,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 2. Fix tokenizer loading on macOS
 - [x] 3. Git and GitHub
 - [x] 4. First run with the real model
-- [ ] 5. Sanity check on speechocean762
+- [x] 5. Sanity check on speechocean762
 - [ ] 6. Test with my own voice
 - [ ] 7. Fix issues from voice tests
 - [ ] 8. Word-level detection metrics
