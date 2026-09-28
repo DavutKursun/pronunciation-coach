@@ -1,12 +1,15 @@
-"""Word-level detection metrics on speechocean762 train: do we flag the words the experts flagged?
+"""Word-level analysis on speechocean762 train: do we flag the words the experts flagged?
 
-Five experts score every word 0-10. We call a word "flagged" when our feedback reports at least
-one issue for it. Only utterances where our word list lines up with the experts' are used.
+Five experts score every word 0-10 (speechocean762 README): 10 = the pronunciation is perfect,
+7-9 = most phones are correct but have accents, 4-6 = less than 30% of the phones are wrong,
+2-3 = more than 30% are wrong. A word is "really wrong" when its score is below 10 (not perfect);
+"below 7" (some phone actually wrong) is shown as extra information. We "flagged" a word when our
+feedback reports at least one error for it after GOP confirmation. Only utterances where our word
+list lines up with the experts' are used.
 
-  false alarm rate  flagged words among the words the experts scored 10
-  catch rate        flagged words among the words the experts scored below 10 (recall)
-  precision         share of flagged words that the experts scored below 10
-  F1                harmonic mean of precision and catch rate
+Reports the word score correlation, the confusion matrix, false alarm rate, recall (catch rate),
+precision, F1 and the phoneme pairs behind most false alarms. The calculations live in
+pronunciation/metrics.py and are shared with evaluate_saa.py and train_scorer.py.
 
 The model runs once; its log-probabilities are cached in data/cache/, so a rule change can be
 re-evaluated in seconds. Only the TRAIN split is used: the test split is kept for the final numbers.
@@ -22,7 +25,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +34,8 @@ sys.path.insert(0, str(ROOT))
 from pronunciation import analyze  # noqa: E402
 from pronunciation.audio import SAMPLE_RATE, load_audio  # noqa: E402
 from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
+from pronunciation.metrics import (SPEECHOCEAN_WRONG_BELOW, format_confusion, format_detection, pearson,  # noqa: E402
+                                   top_pairs, word_detection_metrics)
 from pronunciation.recognizer import Decoder  # noqa: E402
 
 DATASET = "mispeech/speechocean762"
@@ -84,8 +88,8 @@ def load_cache(limit: int):
     return meta["vocab"], meta["blank_id"], set(meta["special_ids"]), utterances
 
 
-def evaluate(decoder: Decoder, utterances, **analyze_options) -> list[tuple[int, bool, list[str]]]:
-    """One (expert accuracy, flagged, [expected→heard pairs]) row per comparable word."""
+def evaluate(decoder: Decoder, utterances, **analyze_options) -> list[dict]:
+    """One row per comparable word: expert score, our score, flagged or not, our error pairs."""
     rows = []
     for utterance, log_probs in utterances:
         text = utterance["text"]
@@ -95,27 +99,13 @@ def evaluate(decoder: Decoder, utterances, **analyze_options) -> list[tuple[int,
         if len(result.words) != len(utterance["words"]):
             continue
         for human, ours in zip(utterance["words"], result.words):
-            pairs = [f"{i.expected or '-'} → {i.heard or '-'}" for i in ours.issues]
-            rows.append((human["accuracy"], bool(ours.issues), pairs))
+            rows.append({"accuracy": human["accuracy"], "our_score": ours.score, "flagged": bool(ours.issues),
+                         "pairs": [f"{i.expected or '-'} → {i.heard or '-'}" for i in ours.issues]})
     return rows
 
 
-def summarize(rows) -> dict[str, float]:
-    ok = [flagged for accuracy, flagged, _ in rows if accuracy == 10]
-    bad = [flagged for accuracy, flagged, _ in rows if accuracy < 10]
-    false_alarm = sum(ok) / len(ok) if ok else 0.0
-    catch = sum(bad) / len(bad) if bad else 0.0
-    n_flagged = sum(ok) + sum(bad)
-    precision = sum(bad) / n_flagged if n_flagged else 0.0
-    f1 = 2 * precision * catch / (precision + catch) if precision + catch else 0.0
-    return {"words": len(rows), "expert_ok": len(ok), "expert_bad": len(bad),
-            "false_alarm": false_alarm, "catch": catch, "precision": precision, "f1": f1}
-
-
-def print_summary(stats: dict[str, float]) -> None:
-    print(f"words {stats['words']} (expert = 10: {stats['expert_ok']}, expert < 10: {stats['expert_bad']})")
-    print(f"false alarm {stats['false_alarm']:.1%}   catch {stats['catch']:.1%}   "
-          f"precision {stats['precision']:.1%}   F1 {stats['f1']:.3f}")
+def detection(rows: list[dict], expert_threshold: int = SPEECHOCEAN_WRONG_BELOW) -> dict:
+    return word_detection_metrics([r["accuracy"] < expert_threshold for r in rows], [r["flagged"] for r in rows])
 
 
 def main() -> None:
@@ -128,21 +118,22 @@ def main() -> None:
     decoder = Decoder(vocab, blank_id, special_ids)
     if args.sweep:
         print(f"{len(utterances)} train utterances. An error is reported only if the word's GOP is below the threshold.")
-        print(f"{'threshold':>9}  {'false alarm':>11}  {'catch':>6}  {'precision':>9}  {'F1':>5}")
         for threshold in SWEEP:
-            stats = summarize(evaluate(decoder, utterances, gop_threshold=threshold))
-            label = "off" if threshold is None else f"{threshold:.1f}"
-            print(f"{label:>9}  {stats['false_alarm']:>11.1%}  {stats['catch']:>6.1%}  "
-                  f"{stats['precision']:>9.1%}  {stats['f1']:>5.3f}")
+            label = "GOP off" if threshold is None else f"GOP {threshold:.1f}"
+            print(format_detection(label, detection(evaluate(decoder, utterances, gop_threshold=threshold))))
         return
 
     rows = evaluate(decoder, utterances)
-    print(f"{len(utterances)} train utterances")
-    print_summary(summarize(rows))
+    print(f"{len(utterances)} train utterances\n")
+    main_metrics = detection(rows)
+    print(format_detection("expert < 10", main_metrics))
+    print(format_detection("expert < 7", detection(rows, 7)) + "   (extra: some phone actually wrong)")
+    print(f"\nConfusion matrix (expert < 10):\n{format_confusion(main_metrics)}")
+    print(f"\nPearson correlation of our word score with the expert score: "
+          f"{pearson([r['our_score'] for r in rows], [r['accuracy'] for r in rows]):.3f}")
 
-    false_alarm_pairs = Counter(p for accuracy, _, pairs in rows if accuracy == 10 for p in pairs)
     print("\nTop false-alarm pairs (expected → heard) in words the experts scored 10:")
-    for pair, count in false_alarm_pairs.most_common(15):
+    for pair, count in top_pairs(r["pairs"] for r in rows if r["accuracy"] == 10):
         print(f"  {count:4}  {pair}")
 
 

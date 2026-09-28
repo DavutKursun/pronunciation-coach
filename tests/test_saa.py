@@ -62,3 +62,9 @@ def test_expert_labels_find_the_turkish_patterns():
 def test_accepted_variants_are_not_expert_errors():
     labels = expert_labels(["to", "better"], [["t", "uː"], ["b", "ɛ", "t", "ɚ"]], [["ɾ", "ə"], ["b", "ɛ", "ɾ", "ɚ"]])
     assert not any(label.wrong for label in labels)
+
+
+def test_expert_labels_keep_every_error():
+    [label] = expert_labels(["things"], [["θ", "ɪ", "ŋ", "z"]], [["t", "i", "ŋ", "s"]])
+    assert [(e.expected, e.heard) for e in label.errors] == [("θ", "t"), ("ɪ", "i"), ("z", "s")]
+    assert label.pairs == ["θ → t", "ɪ → i", "z → s"]

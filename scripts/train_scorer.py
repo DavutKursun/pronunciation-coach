@@ -5,6 +5,9 @@ speaker, so no speaker is in both parts of a fold) and evaluated ONCE on the off
 test split. The main metric is the Pearson correlation with the expert scores (PCC),
 the standard metric for speechocean762.
 
+Word-level error detection on the test split is reported too (no training involved, and no
+threshold or rule is tuned on it): do we flag the words the experts did not find perfect?
+
 Usage:
     python scripts/train_scorer.py                    # target: sentence accuracy (0-10)
     python scripts/train_scorer.py --target total
@@ -21,7 +24,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import sklearn
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import rankdata
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import LinearRegression, RidgeCV
@@ -31,6 +34,7 @@ from sklearn.preprocessing import StandardScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pronunciation.assess import FEATURE_NAMES  # noqa: E402
+from pronunciation.metrics import SPEECHOCEAN_WRONG_BELOW, pearson, word_detection_metrics  # noqa: E402
 
 
 def candidate_models() -> dict:
@@ -43,10 +47,17 @@ def candidate_models() -> dict:
     }
 
 
-def pcc(y_true, y_pred) -> float:
-    if np.std(y_pred) == 0 or np.std(y_true) == 0:
-        return 0.0
-    return float(pearsonr(y_true, y_pred)[0])
+def spearman(y_true, y_pred) -> float:
+    """Spearman correlation: the Pearson correlation of the ranks."""
+    return pearson(rankdata(y_true), rankdata(y_pred))
+
+
+def word_detection(words: pd.DataFrame) -> dict:
+    """Word-level detection on extract_features' *_words.csv (same definition as evaluate_words.py)."""
+    result = word_detection_metrics(words["human_accuracy"] < SPEECHOCEAN_WRONG_BELOW, words["n_issues"] > 0)
+    result["expert_threshold"] = SPEECHOCEAN_WRONG_BELOW
+    result["pcc"] = pearson(words["our_score"], words["human_accuracy"])
+    return result
 
 
 def main() -> int:
@@ -75,9 +86,9 @@ def main() -> int:
         test_pred = np.clip(model.predict(X_test), 0, 10)
         rows.append({
             "model": name,
-            "cv_pcc": pcc(y_train, cv_pred),
-            "test_pcc": pcc(y_test, test_pred),
-            "test_spearman": float(spearmanr(y_test, test_pred)[0]) if np.std(test_pred) > 0 else 0.0,
+            "cv_pcc": pearson(y_train, cv_pred),
+            "test_pcc": pearson(y_test, test_pred),
+            "test_spearman": spearman(y_test, test_pred),
             "test_mse": float(np.mean((y_test - test_pred) ** 2)),
             "fitted": model,
         })
@@ -104,9 +115,17 @@ def main() -> int:
     if words_path.exists():
         words = pd.read_csv(words_path)
         if len(words) > 1:
-            metrics["word_level_pcc"] = pcc(words["human_accuracy"], words["our_score"])
-            print(f"\nWord level: PCC between our word scores and expert word accuracy = "
-                  f"{metrics['word_level_pcc']:.3f} ({len(words)} words, no training involved)")
+            d = word_detection(words)
+            metrics["word_detection"] = d
+            metrics["word_level_pcc"] = d["pcc"]
+            c = d["confusion"]
+            print(f"\nWord-level error detection on the test split ({d['words']} words; really wrong = expert "
+                  f"score below {d['expert_threshold']}; no training or tuning involved)\n")
+            print("| Words | Expert: wrong | False alarm | Recall | Precision | F1 | Word score PCC |")
+            print("| --- | --- | --- | --- | --- | --- | --- |")
+            print(f"| {d['words']} | {d['expert_wrong']} | {d['false_alarm']:.1%} | {d['recall']:.1%} | "
+                  f"{d['precision']:.1%} | {d['f1']:.3f} | {d['pcc']:.3f} |")
+            print(f"\nConfusion matrix: tp {c['tp']}, fp {c['fp']}, fn {c['fn']}, tn {c['tn']}")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump({"model": best["fitted"], "features": FEATURE_NAMES, "target": args.target,

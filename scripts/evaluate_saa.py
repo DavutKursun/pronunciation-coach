@@ -5,9 +5,13 @@ A paragraph word is "really wrong" when the expert transcription differs from th
 with the words our feedback flags:
 
   false alarm   flagged words among the words the expert found correct
-  catch         flagged words among the words the expert found wrong (recall)
+  recall        flagged words among the words the expert found wrong (catch rate)
   precision     share of flagged words that the expert found wrong
-  per pattern   catch rate for the words where the expert heard a Turkish-speaker pattern
+  error level   every expert error on its own: did we report an error on the same sound?
+                ("things" said "tins" has two: θ → t and z → s)
+  per pattern   word- and error-level catch rates for each Turkish-speaker pattern
+
+The calculations are shared with evaluate_words.py (pronunciation/metrics.py).
 
 The model runs once per half; its output is cached in data/cache/. Only the dev half is used while
 we change rules. The test half is for the final evaluation (roadmap step 8b) and needs --final.
@@ -23,7 +27,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -35,6 +38,7 @@ from pronunciation import analyze  # noqa: E402
 from pronunciation.assess import prepare_expected  # noqa: E402
 from pronunciation.audio import SAMPLE_RATE, load_audio  # noqa: E402
 from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
+from pronunciation.metrics import error_level_catch, format_confusion, format_detection, top_pairs, word_detection_metrics  # noqa: E402
 from pronunciation.phonemes import FUNCTION_WORDS, TIPS  # noqa: E402
 from pronunciation.recognizer import Decoder  # noqa: E402
 from pronunciation.saa import PARAGRAPH, align_words, expert_labels, narrow_to_broad, parse_transcription  # noqa: E402
@@ -87,6 +91,7 @@ def evaluate(decoder: Decoder, data, **analyze_options) -> pd.DataFrame:
             rows.append({
                 "speaker": speaker, "group": speaker.rstrip("0123456789"), "word_idx": k, "word": words[k],
                 "expert_wrong": label.wrong, "expert_tips": sorted(label.tips), "expert_pairs": label.pairs,
+                "expert_errors": label.errors, "our_errors": ours.issues,
                 "flagged": bool(ours.issues), "our_tips": sorted({i.tip for i in ours.issues if i.tip}),
                 "our_pairs": [f"{i.expected or '-'} → {i.heard or '-'}" for i in ours.issues],
                 "dismissed": bool(ours.dismissed) and not ours.issues, "gop": ours.gop,
@@ -94,60 +99,57 @@ def evaluate(decoder: Decoder, data, **analyze_options) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def metrics(rows: pd.DataFrame) -> dict[str, float]:
+def detection(rows: pd.DataFrame) -> dict:
+    """Word-level metrics; words the speaker skipped are left out."""
     rows = rows[rows.expert_wrong.notna()]
-    wrong = rows.expert_wrong.astype(bool)
-    ok_flagged, bad_flagged = rows.flagged[~wrong], rows.flagged[wrong]
-    n_flagged = ok_flagged.sum() + bad_flagged.sum()
-    precision = bad_flagged.sum() / n_flagged if n_flagged else 0.0
-    catch = bad_flagged.mean() if len(bad_flagged) else 0.0
-    return {
-        "words": len(rows), "expert_wrong": int(wrong.sum()),
-        "false_alarm": ok_flagged.mean() if len(ok_flagged) else 0.0,
-        "catch": catch, "precision": precision,
-        "f1": 2 * precision * catch / (precision + catch) if precision + catch else 0.0,
-    }
+    return word_detection_metrics(rows.expert_wrong.astype(bool), rows.flagged)
 
 
 def pattern_table(rows: pd.DataFrame) -> pd.DataFrame:
-    """For every Turkish-speaker pattern the expert heard: how often we flagged the word / gave the tip."""
+    """For every Turkish-speaker pattern the expert heard: word level (flagged, right tip) and error level."""
+    by_tip = error_level_catch(zip(rows.expert_errors, rows.our_errors))["by_tip"]
     out = []
     for tip in TIPS:
         hit = rows[rows.expert_tips.map(lambda tips: tip in tips)]
         if len(hit):
-            out.append({"pattern": tip, "words": len(hit), "caught": hit.flagged.mean(),
+            out.append({"pattern": tip, "words": len(hit), "word_caught": hit.flagged.mean(),
                         "right_tip": hit.our_tips.map(lambda tips: tip in tips).mean(),
+                        "errors": by_tip[tip]["errors"], "error_caught": by_tip[tip]["found"] / by_tip[tip]["errors"],
                         "hidden_by_gop": int(hit.dismissed.sum())})
     return pd.DataFrame(out).set_index("pattern")
 
 
-def print_metrics(name: str, m: dict[str, float]) -> None:
-    print(f"{name:10} words {m['words']:4}  expert wrong {m['expert_wrong']:4}   false alarm {m['false_alarm']:6.1%}  "
-          f"catch {m['catch']:6.1%}  precision {m['precision']:6.1%}  F1 {m['f1']:.3f}")
-
-
 def report(rows: pd.DataFrame) -> None:
     for group in ("english", "turkish"):
-        print_metrics(group, metrics(rows[rows.group == group]))
+        print(format_detection(group, detection(rows[rows.group == group])))
     skipped = rows.expert_wrong.isna().sum()
     print(f"(paragraph words the speaker skipped or could not be matched: {skipped}, left out)")
 
     turkish = rows[(rows.group == "turkish") & rows.expert_wrong.notna()]
+    print(f"\nTurkish speakers, confusion matrix:\n{format_confusion(detection(turkish))}")
+
+    errors = error_level_catch(zip(turkish.expert_errors, turkish.our_errors))
+    print(f"\nTurkish speakers, error level: {errors['expert_errors']} expert errors, "
+          f"we found {errors['found']} ({errors['catch']:.1%}), {errors['found_exact']} of them exactly ({errors['exact']:.1%})")
+    print(f"words with 2+ expert errors: {errors['multi_error_words']}  -> we found all {errors['multi_all']}, "
+          f"some {errors['multi_some']}, none {errors['multi_none']}")
+
+    percent = "{:.0%}".format
     print("\nTurkish speakers, per pattern the expert heard:")
-    print(pattern_table(turkish).to_string(formatters={"caught": "{:.0%}".format, "right_tip": "{:.0%}".format}))
+    print(pattern_table(turkish).to_string(formatters={"word_caught": percent, "right_tip": percent, "error_caught": percent}))
 
     english_ok = rows[(rows.group == "english") & (rows.expert_wrong == False)]  # noqa: E712
     print("\nEnglish speakers: top false-alarm pairs (ours, expert found the word correct):")
-    for pair, n in Counter(p for pairs in english_ok.our_pairs for p in pairs).most_common(10):
+    for pair, n in top_pairs(english_ok.our_pairs, 10):
         print(f"  {n:4}  {pair}")
 
     missed = turkish[turkish.expert_wrong.astype(bool) & ~turkish.flagged]
     print(f"\nTurkish speakers: expert heard it, we did not ({len(missed)} words, {int(missed.dismissed.sum())} hidden by GOP):")
-    for pair, n in Counter(p for pairs in missed.expert_pairs for p in pairs).most_common(10):
+    for pair, n in top_pairs(missed.expert_pairs, 10):
         print(f"  {n:4}  {pair}")
     extra = turkish[~turkish.expert_wrong.astype(bool) & turkish.flagged]
     print(f"\nTurkish speakers: we reported it, the expert did not ({len(extra)} words):")
-    for pair, n in Counter(p for pairs in extra.our_pairs for p in pairs).most_common(10):
+    for pair, n in top_pairs(extra.our_pairs, 10):
         print(f"  {n:4}  {pair}")
 
 
@@ -163,11 +165,11 @@ def main() -> None:
     if args.gop_sweep:
         for threshold in [None, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0]:
             rows = evaluate(decoder, data, gop_threshold=threshold)
-            print_metrics(f"GOP {threshold}", metrics(rows[rows.group == "turkish"]))
+            print(format_detection(f"GOP {threshold}", detection(rows[rows.group == "turkish"])))
         return
     rows = evaluate(decoder, data)
     report(rows)
-    rows.to_csv(CACHE_DIR / f"saa_{half}_words.csv", index=False)
+    rows.drop(columns=["expert_errors", "our_errors"]).to_csv(CACHE_DIR / f"saa_{half}_words.csv", index=False)
 
 
 if __name__ == "__main__":

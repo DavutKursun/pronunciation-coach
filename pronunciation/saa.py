@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 
 from .align import align, edit_cost
 from .assess import compare
+from .feedback import Issue
 from .phonemes import VOWEL_CHARS, normalize
 
 PARAGRAPH = (
@@ -118,9 +119,16 @@ def align_words(expected: list[list[str]], heard: list[list[str]], function_flag
 @dataclass
 class Label:
     """What the expert heard in one paragraph word."""
-    wrong: bool | None                               # None: the speaker skipped the word
-    tips: set[str] = field(default_factory=set)      # Turkish-speaker patterns in the expert's version
-    pairs: list[str] = field(default_factory=list)   # "expected → heard" for every difference
+    wrong: bool | None                                  # None: the speaker skipped the word
+    errors: list[Issue] = field(default_factory=list)   # every difference, with its Turkish-speaker tip if any
+
+    @property
+    def tips(self) -> set[str]:
+        return {e.tip for e in self.errors if e.tip}
+
+    @property
+    def pairs(self) -> list[str]:
+        return [f"{e.expected or '-'} → {e.heard or '-'}" for e in self.errors]
 
 
 def expert_labels(words: list[str], expected: list[list[str]], expert: list[list[str] | None]) -> list[Label]:
@@ -131,9 +139,5 @@ def expert_labels(words: list[str], expected: list[list[str]], expert: list[list
             labels.append(Label(wrong=None))
             continue
         [result] = compare([text], [exp], heard)
-        labels.append(Label(
-            wrong=bool(result.issues),
-            tips={i.tip for i in result.issues if i.tip},
-            pairs=[f"{i.expected or '-'} → {i.heard or '-'}" for i in result.issues],
-        ))
+        labels.append(Label(wrong=bool(result.issues), errors=result.issues))
     return labels
