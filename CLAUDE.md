@@ -58,7 +58,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 1. Environment setup
 - [x] 2. Fix tokenizer loading on macOS
 - [x] 3. Git and GitHub
-- [ ] 4. First run with the real model
+- [x] 4. First run with the real model
 - [ ] 5. Sanity check on speechocean762
 - [ ] 6. Test with my own voice
 - [ ] 7. Fix issues from voice tests
