@@ -1,3 +1,4 @@
+import numpy as np
 from conftest import BLANK, TOKEN_TO_ID, fake_recognition, needs_espeak
 
 from pronunciation.assess import FEATURE_NAMES, analyze
@@ -41,3 +42,58 @@ def test_silence_gives_zero_accuracy_and_no_crash():
     result = analyze(TEXT, raw, fake_recognition([], lead_blanks=2), TOKEN_TO_ID, BLANK)
     assert result.phone_accuracy == 0.0
     assert result.features["align_ok"] == 0.0
+
+
+THINK = [["θ", "ɪ", "ŋ", "k"]]
+
+
+def near_tie(heard, said, expected, p_said=0.5, p_expected=0.45):
+    """The model picked `said`, but `expected` was almost as likely: a probable mishearing."""
+    recognition = fake_recognition(heard)
+    frames = recognition.log_probs.argmax(axis=1) == TOKEN_TO_ID[said]
+    recognition.log_probs[frames, TOKEN_TO_ID[said]] = np.log(p_said)
+    recognition.log_probs[frames, TOKEN_TO_ID[expected]] = np.log(p_expected)
+    return recognition
+
+
+def test_gop_dismisses_an_unsure_difference():
+    recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ")
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK, gop_threshold=-1.0).words
+    assert word.issues == []
+    assert [i.heard for i in word.dismissed] == ["t"]
+    assert -1.0 < word.gop < 0.0
+
+
+def test_gop_confirms_a_clear_error():
+    recognition = fake_recognition(["t", "ɪ", "ŋ", "k"], confidence=0.999)
+    result = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK, gop_threshold=-1.0)
+    assert [i.tip for i in result.words[0].issues] == ["th_voiceless"]
+    assert result.tips == ["th_voiceless"]
+    assert result.words[0].gop < -5
+
+
+def test_without_a_threshold_every_difference_is_reported():
+    recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ")
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK, gop_threshold=None).words
+    assert [i.heard for i in word.issues] == ["t"] and word.dismissed == []
+
+
+def test_extra_vowel_is_reported_even_when_gop_is_good():
+    # GOP only scores the expected sounds, so it cannot judge an added one
+    recognition = fake_recognition(["ɪ", "s", "k", "uː", "l"], confidence=0.999)
+    [word] = analyze("school", [["s", "k", "uː", "l"]], recognition, TOKEN_TO_ID, BLANK, gop_threshold=-1.0).words
+    assert word.gop == 0.0
+    assert [i.tip for i in word.issues] == ["epenthesis"]
+
+
+def test_extra_sound_without_a_known_pattern_is_dismissed_when_gop_is_good():
+    recognition = fake_recognition(["θ", "ɪ", "ŋ", "k", "ə"], confidence=0.999)
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK, gop_threshold=-1.0).words
+    assert word.issues == []
+    assert [i.heard for i in word.dismissed] == ["ə"]
+
+
+def test_gop_confirmation_is_on_by_default():
+    recognition = near_tie(["t", "ɪ", "ŋ", "k"], said="t", expected="θ")
+    [word] = analyze("think", THINK, recognition, TOKEN_TO_ID, BLANK).words
+    assert word.issues == [] and len(word.dismissed) == 1

@@ -9,7 +9,7 @@ import numpy as np
 
 from .align import align
 from .ctc import forced_align, gop_scores
-from .feedback import WordResult, build_word_results, top_tips
+from .feedback import WordResult, build_word_results, confirm_with_gop, top_tips
 from .g2p import phonemize_words, tokenize
 from .phonemes import FUNCTION_WORDS, SPLITS, merge_repeats, normalize
 
@@ -22,6 +22,9 @@ FEATURE_NAMES = [
 ]
 GOP_FLOOR = -20.0      # used when forced alignment is impossible (e.g. almost silent audio)
 GOP_BAD = -2.0         # lpr below this counts as a badly pronounced phoneme
+# A word's differences are reported only if its GOP is below this. Chosen on speechocean762
+# train (scripts/evaluate_words.py --sweep): fewer false alarms without losing detected errors.
+GOP_CONFIRM: float | None = -2.5
 
 
 @dataclass
@@ -61,7 +64,7 @@ def phones_to_ids(phones: list[str], token_to_id: dict[str, int]) -> list[int]:
 
 def compute_features(
     word_results: list[WordResult], n_expected: int, heard: list[str],
-    log_probs: np.ndarray, target_ids: list[int], blank_id: int, seconds: float,
+    lpp: np.ndarray, lpr: np.ndarray, align_ok: bool, seconds: float,
 ) -> dict[str, float]:
     ops = [op for w in word_results for op in w.ops]
     matches = sum(op.kind == "match" for op in ops)
@@ -70,12 +73,6 @@ def compute_features(
     ins = sum(op.kind == "ins" for op in ops)
     n = max(n_expected, 1)
     word_scores = [w.score for w in word_results] or [0.0]
-
-    spans = forced_align(log_probs, target_ids, blank_id) if target_ids else None
-    if spans is not None:
-        lpp, lpr = gop_scores(log_probs, target_ids, spans, blank_id)
-    else:
-        lpp = lpr = np.array([GOP_FLOOR])
 
     return {
         "phone_accuracy": matches / (n_expected + ins) if n_expected + ins else 0.0,
@@ -91,14 +88,15 @@ def compute_features(
         "gop_lpr_min": float(lpr.min()),
         "gop_lpr_p10": float(np.percentile(lpr, 10)),
         "gop_bad_frac": float(np.mean(lpr < GOP_BAD)),
-        "align_ok": float(spans is not None),
+        "align_ok": float(align_ok),
         "n_expected": float(n_expected),
         "duration_s": float(seconds),
         "heard_per_second": len(heard) / seconds if seconds > 0 else 0.0,
     }
 
 
-def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_id: dict[str, int], blank_id: int) -> Assessment:
+def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_id: dict[str, int], blank_id: int,
+            gop_threshold: float | None = GOP_CONFIRM) -> Assessment:
     """Everything after recognition. Kept separate from the model so it can be unit-tested."""
     words = tokenize(text)
     word_phones, flat, exp_word, function_flags = prepare_expected(words, raw_word_phones)
@@ -107,10 +105,24 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
     ops = align(flat, heard, function_flags)
     word_results = build_word_results(words, word_phones, ops, exp_word)
 
-    raw_flat = [p for phones in raw_word_phones for p in phones]
-    target_ids = phones_to_ids(raw_flat, token_to_id)
-    features = compute_features(word_results, len(flat), heard, recognition.log_probs,
-                                target_ids, blank_id, recognition.seconds)
+    # GOP: force-align the expected sounds (as model tokens) to the audio, remembering their word
+    target_ids, target_word = [], []
+    for w, phones in enumerate(raw_word_phones):
+        ids = phones_to_ids(phones, token_to_id)
+        target_ids += ids
+        target_word += [w] * len(ids)
+    spans = forced_align(recognition.log_probs, target_ids, blank_id) if target_ids else None
+    if spans is not None:
+        lpp, lpr = gop_scores(recognition.log_probs, target_ids, spans, blank_id)
+        target_word = np.array(target_word)
+        for w, word in enumerate(word_results):
+            word_lpr = lpr[target_word == w]
+            word.gop = float(word_lpr.min()) if word_lpr.size else None
+            confirm_with_gop(word, gop_threshold)
+    else:
+        lpp = lpr = np.array([GOP_FLOOR])
+
+    features = compute_features(word_results, len(flat), heard, lpp, lpr, spans is not None, recognition.seconds)
     return Assessment(
         text=text,
         words=word_results,

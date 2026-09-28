@@ -14,6 +14,7 @@ re-evaluated in seconds. Only the TRAIN split is used: the test split is kept fo
 Usage:
     python scripts/evaluate_words.py                 # first 400 train utterances
     python scripts/evaluate_words.py --limit 50
+    python scripts/evaluate_words.py --sweep         # compare GOP confirmation thresholds
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
 from pronunciation.recognizer import Decoder  # noqa: E402
 
 DATASET = "mispeech/speechocean762"
+SWEEP = [None, 0.0, -0.5, -1.0, -1.5, -2.0, -2.5, -3.0, -4.0, -5.0, -7.0]
 CACHE_DIR = ROOT / "data" / "cache"
 
 
@@ -119,10 +121,21 @@ def print_summary(stats: dict[str, float]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--limit", type=int, default=400, help="first N train utterances")
+    parser.add_argument("--sweep", action="store_true", help="compare GOP confirmation thresholds")
     args = parser.parse_args()
 
     vocab, blank_id, special_ids, utterances = load_cache(args.limit)
     decoder = Decoder(vocab, blank_id, special_ids)
+    if args.sweep:
+        print(f"{len(utterances)} train utterances. An error is reported only if the word's GOP is below the threshold.")
+        print(f"{'threshold':>9}  {'false alarm':>11}  {'catch':>6}  {'precision':>9}  {'F1':>5}")
+        for threshold in SWEEP:
+            stats = summarize(evaluate(decoder, utterances, gop_threshold=threshold))
+            label = "off" if threshold is None else f"{threshold:.1f}"
+            print(f"{label:>9}  {stats['false_alarm']:>11.1%}  {stats['catch']:>6.1%}  "
+                  f"{stats['precision']:>9.1%}  {stats['f1']:>5.3f}")
+        return
+
     rows = evaluate(decoder, utterances)
     print(f"{len(utterances)} train utterances")
     print_summary(summarize(rows))

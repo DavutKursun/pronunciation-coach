@@ -24,7 +24,9 @@ class WordResult:
     text: str
     expected: list[str]                                  # normalized expected phones
     ops: list[Op] = field(default_factory=list)
-    issues: list[Issue] = field(default_factory=list)
+    issues: list[Issue] = field(default_factory=list)      # differences we report
+    dismissed: list[Issue] = field(default_factory=list)   # differences GOP did not confirm
+    gop: float | None = None                               # lowest GOP (lpr) of the word's sounds
 
     @property
     def heard(self) -> list[str]:
@@ -129,6 +131,22 @@ def build_word_results(
         results.append(result)
         first_pos += len(phones)
     return results
+
+
+def confirm_with_gop(word: WordResult, threshold: float | None) -> None:
+    """Report a word's differences only when GOP agrees that it was not said well.
+
+    Greedy decoding picks the single most likely sound per frame, so a near tie can turn a
+    good "think" into a heard "t". If every expected sound of the word still has a GOP of at
+    least `threshold`, its differences are most likely mishearings and are moved to `dismissed`.
+    Added sounds that match a known pattern (the extra vowel in "is-chool", "sing-ging") stay:
+    GOP only scores the expected sounds, so it cannot judge an added one.
+    """
+    if threshold is None or word.gop is None or word.gop < threshold:
+        return
+    keep = [i for i in word.issues if i.kind == "ins" and i.tip]
+    word.dismissed = [i for i in word.issues if not (i.kind == "ins" and i.tip)]
+    word.issues = keep
 
 
 def top_tips(results: list[WordResult], limit: int | None = None) -> list[str]:
