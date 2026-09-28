@@ -96,3 +96,8 @@ def test_really_said_with_one_vowel():
 def test_short_vowel_errors_are_still_caught(word, raw, heard, tip):
     [r] = run([word], [raw], heard)
     assert tips([r]) == [tip]
+
+
+def test_during_has_one_r():
+    [r] = run(["during"], [["d", "ʊɹ", "ɹ", "ɪ", "ŋ"]], ["d", "ʊ", "ɹ", "ɪ", "ŋ"])
+    assert r.issues == []

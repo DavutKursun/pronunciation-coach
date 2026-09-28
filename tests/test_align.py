@@ -1,5 +1,5 @@
 from pronunciation.align import align, edit_cost
-from pronunciation.phonemes import normalize
+from pronunciation.phonemes import merge_repeats, normalize
 
 
 def kinds(ops):
@@ -52,3 +52,10 @@ def test_normalize_splits_rhotic_vowels():
     assert normalize(["k", "ɑːɹ"]) == ["k", "ɑː", "ɹ"]
     assert normalize(["l", "ɪ", "ɾ", "əl"]) == ["l", "ɪ", "ɾ", "ə", "l"]
     assert normalize(["g"]) == ["ɡ"]
+
+
+def test_merge_repeats_inside_a_word():
+    # eSpeak writes "during" as d ʊɹ ɹ ɪ ŋ: after splitting there would be two /ɹ/ in a row
+    assert merge_repeats(normalize(["d", "ʊɹ", "ɹ", "ɪ", "ŋ"])) == ["d", "ʊə", "ɹ", "ɪ", "ŋ"]
+    assert merge_repeats(["j", "ʊə", "ɹ", "ɹ", "ə", "p"]) == ["j", "ʊə", "ɹ", "ə", "p"]
+    assert merge_repeats([]) == []

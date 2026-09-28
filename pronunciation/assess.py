@@ -11,7 +11,7 @@ from .align import align
 from .ctc import forced_align, gop_scores
 from .feedback import WordResult, build_word_results, top_tips
 from .g2p import phonemize_words, tokenize
-from .phonemes import FUNCTION_WORDS, SPLITS, normalize
+from .phonemes import FUNCTION_WORDS, SPLITS, merge_repeats, normalize
 
 # Order matters: the trained scorer expects exactly these columns.
 FEATURE_NAMES = [
@@ -37,7 +37,7 @@ class Assessment:
 
 def prepare_expected(words: list[str], raw_word_phones: list[list[str]]):
     """Flatten per-word phonemes, remembering which word each phoneme came from."""
-    word_phones = [normalize(p) for p in raw_word_phones]
+    word_phones = [merge_repeats(normalize(p)) for p in raw_word_phones]
     flat, exp_word, function_flags = [], [], []
     for w, (text, phones) in enumerate(zip(words, word_phones)):
         is_function = text.lower() in FUNCTION_WORDS

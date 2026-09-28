@@ -225,6 +225,15 @@ def normalize(phones: list[str]) -> list[str]:
     return out
 
 
+def merge_repeats(phones: list[str]) -> list[str]:
+    """Merge a phoneme repeated inside one word: eSpeak writes "during" as d ʊɹ ɹ ɪ ŋ.
+
+    Only for the expected phonemes of a single word. The heard phonemes of a sentence are
+    left alone: "went to" really has two /t/ sounds, one per word.
+    """
+    return [p for k, p in enumerate(phones) if k == 0 or phones[k - 1] != p]
+
+
 def is_acceptable(expected: str, heard: str, function_word: bool = False) -> bool:
     if expected == heard or heard in ACCEPT.get(expected, ()):
         return True
