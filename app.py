@@ -57,11 +57,20 @@ def word_color(word) -> str:
     return AMBER if word.score >= 0.6 else RED
 
 
+def reported_accuracy(result) -> float:
+    """Share of sounds said correctly, counting only reported errors (not the ones GOP dismissed)."""
+    issues = [i for w in result.words for i in w.issues]
+    n_expected = sum(len(w.expected) for w in result.words)
+    added = sum(i.kind == "ins" for i in issues)
+    total = n_expected + added
+    return (n_expected - (len(issues) - added)) / total if total else 0.0
+
+
 def render_result(result) -> str:
     if result.score is not None:
         headline = f"Score: <b>{result.score:.1f} / 10</b>"
     else:
-        headline = f"Sounds said correctly: <b>{result.phone_accuracy:.0%}</b>"
+        headline = f"Sounds said correctly: <b>{reported_accuracy(result):.0%}</b>"
 
     words = []
     for w in result.words:

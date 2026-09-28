@@ -62,3 +62,15 @@ def test_details_show_differences_that_gop_did_not_confirm():
     result = Assessment("think", [think(reported=False)], ["t", "ɪ", "ŋ", "k"], 0.75, {})
     details = app.render_details(result)
     assert "not confirmed" in details and "-0.1" in details
+
+
+def test_headline_counts_only_reported_errors():
+    import app
+    from pronunciation.assess import Assessment
+
+    # alignment says 3 of 4 sounds matched in both cases (phone_accuracy 0.75)
+    unsure = Assessment("think", [think(reported=False)], ["t", "ɪ", "ŋ", "k"], 0.75, {})
+    wrong = Assessment("think", [think(reported=True)], ["t", "ɪ", "ŋ", "k"], 0.75, {})
+    assert app.reported_accuracy(unsure) == 1.0
+    assert app.reported_accuracy(wrong) == 0.75
+    assert "Sounds said correctly: <b>100%</b>" in app.render_result(unsure)
