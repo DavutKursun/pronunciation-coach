@@ -47,12 +47,14 @@ def speak(text: str):
     return str(path)
 
 
-def word_color(score: float) -> str:
-    if score >= 0.999:
-        return "22, 163, 74"    # green
-    if score >= 0.6:
-        return "217, 119, 6"    # amber
-    return "220, 38, 38"        # red
+GREEN, AMBER, RED = "22, 163, 74", "217, 119, 6", "220, 38, 38"
+
+
+def word_color(word) -> str:
+    """Green unless an error was reported (differences GOP did not confirm don't count)."""
+    if not word.issues:
+        return GREEN
+    return AMBER if word.score >= 0.6 else RED
 
 
 def render_result(result) -> str:
@@ -63,7 +65,7 @@ def render_result(result) -> str:
 
     words = []
     for w in result.words:
-        rgb = word_color(w.score)
+        rgb = word_color(w)
         tooltip = html.escape("; ".join(i.message for i in w.issues) or "correct")
         words.append(
             f'<span title="{tooltip}" style="padding:2px 6px;margin:2px;border-radius:6px;display:inline-block;'
@@ -83,15 +85,24 @@ def render_result(result) -> str:
              for w in result.words for i in w.issues if not i.tip]
     other_html = f"<details><summary>Other differences ({len(other)})</summary><ul>{''.join(other)}</ul></details>" if other else ""
 
-    legend = "<div style='opacity:0.75;font-size:0.9em'>green = correct · amber = small problem · red = needs work (hover a word for details)</div>"
+    legend = ("<div style='opacity:0.75;font-size:0.9em'>green = correct · amber = small problem · red = needs work "
+              "(hover a word for details). Differences the recognizer was unsure about are not counted.</div>")
     focus = "<h4>What to practise</h4>" + "".join(tips) if tips else "<p>No typical Turkish-speaker errors found. Well done!</p>"
     return f"<div style='font-size:1.1em'>{headline}</div><div style='margin:12px 0'>{''.join(words)}</div>{legend}{focus}{other_html}"
 
 
 def render_details(result) -> str:
-    lines = ["| Word | Expected sounds | Heard | Score |", "| --- | --- | --- | --- |"]
+    lines = ["| Word | Expected sounds | Heard | Sounds matched | GOP | Feedback |",
+             "| --- | --- | --- | --- | --- | --- |"]
     for w in result.words:
-        lines.append(f"| {w.text} | /{' '.join(w.expected)}/ | /{' '.join(w.heard)}/ | {w.score:.0%} |")
+        gop = f"{w.gop:.1f}" if w.gop is not None else "–"
+        if w.issues:
+            feedback = f"{len(w.issues)} issue(s)"
+        elif w.dismissed:
+            feedback = "ok (difference not confirmed by GOP)"
+        else:
+            feedback = "ok"
+        lines.append(f"| {w.text} | /{' '.join(w.expected)}/ | /{' '.join(w.heard)}/ | {w.score:.0%} | {gop} | {feedback} |")
     return "\n".join(lines)
 
 

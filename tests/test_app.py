@@ -35,3 +35,30 @@ def test_pick_sentence_strips_the_focus_label():
     import app
 
     assert app.pick_sentence(app.CHOICES[0]) == app.SENTENCES[0]["text"]
+
+
+def think(reported: bool):
+    from pronunciation.align import Op
+    from pronunciation.feedback import Issue, WordResult
+
+    ops = [Op("sub", "θ", "t", 0, 0)] + [Op("match", p, p, k, k) for k, p in enumerate(["ɪ", "ŋ", "k"], 1)]
+    issue = Issue(0, "sub", "θ", "t", "th_voiceless", "/θ/ sounded like /t/")
+    if reported:
+        return WordResult("think", ["θ", "ɪ", "ŋ", "k"], ops, issues=[issue], gop=-6.0)
+    return WordResult("think", ["θ", "ɪ", "ŋ", "k"], ops, dismissed=[issue], gop=-0.1)
+
+
+def test_word_color_follows_the_reported_issues():
+    import app
+
+    assert app.word_color(think(reported=False)) == app.GREEN   # GOP did not confirm the difference
+    assert app.word_color(think(reported=True)) == app.AMBER    # 3 of 4 sounds right
+
+
+def test_details_show_differences_that_gop_did_not_confirm():
+    import app
+    from pronunciation.assess import Assessment
+
+    result = Assessment("think", [think(reported=False)], ["t", "ɪ", "ŋ", "k"], 0.75, {})
+    details = app.render_details(result)
+    assert "not confirmed" in details and "-0.1" in details
