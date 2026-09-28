@@ -1,3 +1,5 @@
+import pytest
+
 from pronunciation.align import align
 from pronunciation.assess import prepare_expected
 from pronunciation.feedback import build_word_results, top_tips
@@ -67,3 +69,30 @@ def test_top_tips_are_sorted_by_frequency():
                   [["θ", "ɪ", "ŋ", "k"], ["θ", "ɪ", "ŋ"], ["w", "ɛ", "s", "t"]],
                   ["t", "ɪ", "ŋ", "k", "t", "ɪ", "ŋ", "v", "ɛ", "s", "t"])
     assert top_tips(results) == ["th_voiceless", "w"]
+
+
+# Before /r/ English has no short/long contrast for these vowels (ship/sheep, pull/pool),
+# so the phonemes below are the ones eSpeak gives and none of these readings is an error.
+@pytest.mark.parametrize("word, raw, heard", [
+    ("zero", ["z", "iə", "ɹ", "oʊ"], ["z", "iː", "ɹ", "oʊ"]),
+    ("here", ["h", "ɪɹ"], ["h", "iː", "ɹ"]),
+    ("sure", ["ʃ", "ʊɹ"], ["ʃ", "uː", "ɹ"]),
+])
+def test_vowel_before_r_is_not_an_error(word, raw, heard):
+    [r] = run([word], [raw], heard)
+    assert r.issues == []
+
+
+def test_really_said_with_one_vowel():
+    # eSpeak's "iə" is one vowel for most speakers; speechocean762 speakers say "ɹ ɪ l i"
+    [r] = run(["really"], [["ɹ", "iə", "l", "i"]], ["ɹ", "ɪ", "l", "i"])
+    assert r.issues == []
+
+
+@pytest.mark.parametrize("word, raw, heard, tip", [
+    ("ship", ["ʃ", "ɪ", "p"], ["ʃ", "iː", "p"], "short_i"),
+    ("pull", ["p", "ʊ", "l"], ["p", "uː", "l"], "short_u"),
+])
+def test_short_vowel_errors_are_still_caught(word, raw, heard, tip):
+    [r] = run([word], [raw], heard)
+    assert tips([r]) == [tip]

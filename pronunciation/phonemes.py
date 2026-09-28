@@ -10,16 +10,18 @@ VOWEL_CHARS = set("aeiouyæɑɒɐɔəɚɛɜɪʊʌøœɤɯɨʉᵻ")
 
 # Multi-symbol phonemes are split so that "car" (k ɑːɹ) and a recognizer output of
 # "k ɑː ɹ" compare equal. The split forms are only used for comparison.
+# The vowel before /r/ in "here", "sure", "there" becomes a centring diphthong (iə, ʊə, eə):
+# English has no ship/sheep or pull/pool contrast before /r/, so ACCEPT is lenient on them.
+# "iə" (zero, really) stays one vowel: speakers say it as one sound, not "i" + "ə".
 SPLITS = {
     "ɑːɹ": ["ɑː", "ɹ"],
     "ɔːɹ": ["ɔː", "ɹ"],
     "oːɹ": ["oː", "ɹ"],
-    "ɛɹ": ["ɛ", "ɹ"],
-    "ɪɹ": ["ɪ", "ɹ"],
-    "ʊɹ": ["ʊ", "ɹ"],
+    "ɛɹ": ["eə", "ɹ"],
+    "ɪɹ": ["iə", "ɹ"],
+    "ʊɹ": ["ʊə", "ɹ"],
     "aɪɚ": ["aɪ", "ɚ"],
     "aɪə": ["aɪ", "ə"],
-    "iə": ["i", "ə"],
     "əl": ["ə", "l"],
     "n̩": ["ə", "n"],
     "l̩": ["ə", "l"],
@@ -53,6 +55,9 @@ ACCEPT: dict[str, set[str]] = {
     "ɛ": {"e"},
     "uː": {"u"},
     "u": {"uː"},
+    "iə": {"iː", "ɪ", "i", "ɪə"},                 # here, zero
+    "ʊə": {"ʊ", "uː", "u", "ɔː", "oː", "o"},      # sure, tour
+    "eə": {"ɛ", "e", "eɪ", "ɛː", "æ"},            # there, care
 }
 
 REDUCED_VOWELS = {"ə", "ɪ", "ᵻ", "ɐ", "ɚ"}
@@ -182,7 +187,8 @@ EXAMPLES = {
     "z": "zoo", "m": "man", "n": "no", "l": "leg", "æ": "cat", "ɛ": "bed", "ɪ": "sit",
     "iː": "see", "i": "happy", "ʊ": "book", "uː": "food", "ʌ": "cup", "ə": "about",
     "ɜː": "bird", "ɚ": "butter", "ɑː": "father", "ɔː": "law", "eɪ": "day", "aɪ": "my",
-    "ɔɪ": "boy", "aʊ": "now", "oʊ": "go", "oː": "more",
+    "ɔɪ": "boy", "aʊ": "now", "oʊ": "go", "oː": "more", "iə": "here", "ʊə": "tour",
+    "eə": "there",
 }
 
 
