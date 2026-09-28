@@ -78,9 +78,13 @@ pronunciation/
   recognizer.py   wav2vec2 phoneme recognizer
   assess.py       the full pipeline and the scoring features
   audio.py        audio loading and resampling to 16 kHz
+  saa.py          Speech Accent Archive: narrow IPA -> our phonemes, expert labels
 scripts/
   extract_features.py   run the pipeline on speechocean762
   evaluate_words.py     word-level false alarm / catch rates on speechocean762 train
+  download_saa.py       download Turkish and US English speakers from the Speech Accent Archive
+  split_saa.py          speaker-level dev/test split (data/saa_split.json)
+  evaluate_saa.py       word-level evaluation against expert IPA transcriptions
   smoke_test_real_model.py  quick check of the real model on synthesized sentences
   synthetic_errors.py   synthetic test set of Turkish-speaker errors (eSpeak NG, Kokoro)
   kokoro_tts.py         Kokoro-82M synthesis, run in its own environment (.venv-tts)
@@ -129,6 +133,8 @@ The free CPU hardware of Hugging Face Spaces is enough.
 
 - Recognizer: [facebook/wav2vec2-lv-60-espeak-cv-ft](https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft) (Apache-2.0)
 - Data: [speechocean762](https://huggingface.co/datasets/mispeech/speechocean762) ([OpenSLR 101](https://www.openslr.org/101/), CC BY 4.0)
+- Evaluation data: [Speech Accent Archive](https://accent.gmu.edu/) (Weinberger, S. H. & Kelley, M. C., George Mason University), recordings and IPA transcriptions [on OSF](https://accent.gmu.edu/download), CC BY-NC-SA 4.0. Used for non-commercial evaluation only; the recordings are downloaded by `scripts/download_saa.py` and are not part of this repository.
+- Synthetic test voices: [eSpeak NG](https://github.com/espeak-ng/espeak-ng) and [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0)
 - G2P and speech synthesis: [phonemizer](https://github.com/bootphon/phonemizer) and [eSpeak NG](https://github.com/espeak-ng/espeak-ng) (GPL-3.0)
 - Synthetic test voices (not part of the app): [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0)
 - Code: MIT (see LICENSE)

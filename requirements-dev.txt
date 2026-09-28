@@ -1,2 +1,3 @@
 -r requirements.txt
 pytest
+openpyxl              # only needed by scripts/download_saa.py
