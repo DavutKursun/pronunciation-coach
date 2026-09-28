@@ -6,3 +6,6 @@ data/features/
 .pytest_cache/
 notes/
 data/cache/
+.venv-tts/
+data/synthetic/
+data/saa/

@@ -62,9 +62,10 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 5. Sanity check on speechocean762
 - [x] 5b. Fix false alarms on vowels before r
 - [x] 5c. Reduce false alarms with data
-- [x] 6. Test with my own voice
-- [ ] 7. Fix issues from voice tests
+- [x] 6. Synthetic error test set
+- [ ] 7. Speech Accent Archive: dev set analysis and fixes
 - [ ] 8. Word-level detection metrics
+- [ ] 8b. Speech Accent Archive: final evaluation on held-out speakers
 - [ ] 9. GitHub Actions CI
 - [ ] 10. Train on Colab
 - [ ] 11. Add results to the project

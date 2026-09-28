@@ -82,6 +82,8 @@ scripts/
   extract_features.py   run the pipeline on speechocean762
   evaluate_words.py     word-level false alarm / catch rates on speechocean762 train
   smoke_test_real_model.py  quick check of the real model on synthesized sentences
+  synthetic_errors.py   synthetic test set of Turkish-speaker errors (eSpeak NG, Kokoro)
+  kokoro_tts.py         Kokoro-82M synthesis, run in its own environment (.venv-tts)
   train_scorer.py       train and evaluate the scoring model
   deploy_space.py       publish the demo to Hugging Face Spaces
 tests/            unit tests (pytest), no model download needed
@@ -128,4 +130,5 @@ The free CPU hardware of Hugging Face Spaces is enough.
 - Recognizer: [facebook/wav2vec2-lv-60-espeak-cv-ft](https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft) (Apache-2.0)
 - Data: [speechocean762](https://huggingface.co/datasets/mispeech/speechocean762) ([OpenSLR 101](https://www.openslr.org/101/), CC BY 4.0)
 - G2P and speech synthesis: [phonemizer](https://github.com/bootphon/phonemizer) and [eSpeak NG](https://github.com/espeak-ng/espeak-ng) (GPL-3.0)
+- Synthetic test voices (not part of the app): [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0)
 - Code: MIT (see LICENSE)
