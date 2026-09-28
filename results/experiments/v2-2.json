@@ -8,8 +8,8 @@
       "detector": "models/detector_v2-2.joblib"
     }
   },
-  "code": "3fd3a00-dirty",
-  "date": "2026-09-28T18:09:42",
+  "code": "a66474b",
+  "date": "2026-09-28T18:10:56",
   "saa_dev": {
     "definitions": {
       "main": "a word is wrong when the expert transcription differs from the expected phonemes outside our accepted variants (flap, reduced vowels, weak forms of function words...)",
