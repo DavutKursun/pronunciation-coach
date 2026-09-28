@@ -142,3 +142,9 @@ def test_back_vowel_variants_are_not_errors(word, raw, heard):
 def test_o_for_the_vowel_of_call_is_still_an_error():
     [r] = run(["call"], [["k", "ɔː", "l"]], ["k", "o", "l"])
     assert r.issues
+
+
+def test_w_heard_as_r_gets_the_w_tip():
+    # Turkish /v/ is often [ʋ], which the recognizer tends to hear as ɹ ("Wednesday" -> "ɹɛnzdeɪ")
+    [r] = run(["west"], [["w", "ɛ", "s", "t"]], ["ɹ", "ɛ", "s", "t"])
+    assert tips([r]) == ["w"]

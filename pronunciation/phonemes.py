@@ -173,7 +173,7 @@ for heard in ("t", "s", "f", "d", "t̪"):
     SUBSTITUTION_TIPS[("θ", heard)] = "th_voiceless"
 for heard in ("d", "z", "v", "θ", "d̪"):
     SUBSTITUTION_TIPS[("ð", heard)] = "th_voiced"
-for heard in ("v", "β", "ʋ"):
+for heard in ("v", "β", "ʋ", "ɹ"):  # Turkish /v/ is often [ʋ], which the recognizer tends to hear as ɹ
     SUBSTITUTION_TIPS[("w", heard)] = "w"
 for heard in ("w", "β", "ʋ"):
     SUBSTITUTION_TIPS[("v", heard)] = "v"
