@@ -17,6 +17,7 @@ A learner reads an English sentence aloud. A wav2vec2 CTC model recognizes the p
 - `pronunciation/`: the library (see README "Project structure"). `assess.py` ties it together; `analyze()` is model-free so it can be unit-tested.
 - `tests/`: pytest; `conftest.py` has `fake_recognition()` to simulate what the model "heard" without downloading it.
 - `scripts/extract_features.py` → `data/features/*.csv`; `scripts/train_scorer.py` → `models/scorer.joblib` + `results/metrics.json`.
+- Word-level checks (model output cached, rule changes re-run in seconds): `scripts/evaluate_words.py` (speechocean762 train), `scripts/evaluate_saa.py` (Speech Accent Archive dev half; `download_saa.py` + `split_saa.py` first), `scripts/synthetic_errors.py --kokoro` (synthetic error set; Kokoro runs in `.venv-tts`). Run all three after every rule change.
 - `app.py`: Gradio demo. `space/README.md`: Space config. `scripts/deploy_space.py`: publishing.
 - `notebooks/colab.ipynb`: feature extraction + training on Colab.
 
@@ -34,7 +35,7 @@ System tools: `espeak-ng` (brew install espeak-ng). Feature extraction on all 5,
 ## Rules
 
 1. **Tests first.** Every change to `align.py`, `feedback.py`, `ctc.py` or `phonemes.py` comes with a test. Run `pytest` before every commit.
-2. **Honest evaluation.** Choose models only with cross-validation on the training split (GroupKFold by speaker). Use the test split once, for the final numbers. Never tune on it.
+2. **Honest evaluation.** Choose models only with cross-validation on the training split (GroupKFold by speaker). Use the test split once, for the final numbers. Never tune on it. The same holds for the Speech Accent Archive: tune rules on the dev half only; the test half (`evaluate_saa.py --final`) is used once, in roadmap step 8b.
 3. **Honest results.** Report metrics exactly as the scripts print them; never edit numbers by hand.
 4. **Feature order.** `FEATURE_NAMES` in `assess.py` must match the trained scorer. Changing features means re-running extraction and training.
 5. **scikit-learn version.** The version pinned in `requirements.txt` must equal the one that trained `models/scorer.joblib`.
@@ -63,7 +64,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] 5b. Fix false alarms on vowels before r
 - [x] 5c. Reduce false alarms with data
 - [x] 6. Synthetic error test set
-- [ ] 7. Speech Accent Archive: dev set analysis and fixes
+- [x] 7. Speech Accent Archive: dev set analysis and fixes
 - [ ] 8. Word-level detection metrics
 - [ ] 8b. Speech Accent Archive: final evaluation on held-out speakers
 - [ ] 9. GitHub Actions CI
