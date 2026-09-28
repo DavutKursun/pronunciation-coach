@@ -1,0 +1,19 @@
+[
+  {"text": "I think this is the third thing.", "focus": "th (/θ/ and /ð/)"},
+  {"text": "They thought about their brother's birthday.", "focus": "th (/θ/ and /ð/)"},
+  {"text": "We will walk to the west window.", "focus": "w vs v"},
+  {"text": "Very well, we will visit the village.", "focus": "w vs v"},
+  {"text": "The ship left the sheep on the beach.", "focus": "short i vs long ee"},
+  {"text": "Please sit in this seat.", "focus": "short i vs long ee"},
+  {"text": "The bad man had a black cat.", "focus": "/æ/ as in cat"},
+  {"text": "My bed is red, not bad.", "focus": "final voiced sounds, /æ/"},
+  {"text": "The dog and the cab were in the garage.", "focus": "final voiced sounds"},
+  {"text": "Spring is a great season for sports.", "focus": "s + consonant groups"},
+  {"text": "Students study at school on this street.", "focus": "s + consonant groups"},
+  {"text": "I am singing a long song.", "focus": "/ŋ/ as in sing"},
+  {"text": "The red car is very far from here.", "focus": "English r"},
+  {"text": "Could you pull the wool, please?", "focus": "short oo vs long oo"},
+  {"text": "I heard the bird's first words.", "focus": "/ɜː/ as in bird"},
+  {"text": "Thank you very much for your help.", "focus": "everyday English"},
+  {"text": "What would you like to drink?", "focus": "everyday English"}
+]

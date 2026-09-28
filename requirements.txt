@@ -1,0 +1,12 @@
+numpy
+scipy
+soundfile
+phonemizer>=3.2
+torch
+transformers>=4.40
+gradio>=5.0
+scikit-learn==1.8.0    # keep equal to the version that trained models/scorer.joblib
+joblib
+pandas
+datasets>=3.0          # only needed by scripts/extract_features.py
+huggingface_hub
