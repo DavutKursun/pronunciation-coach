@@ -191,6 +191,26 @@ EXAMPLES = {
     "eə": "there",
 }
 
+# Everything eSpeak NG en-us says (found by phonemizing 30,000 dictionary words).
+ENGLISH_PHONES = set(
+    "ɪ n s ə t ɹ l k m d p æ ɛ ɑː ɚ b oʊ f i aɪ eɪ ʌ ɾ ɡ iː əl uː z ᵻ v ʃ ɐ ŋ dʒ h w j ɜː θ ɔː "
+    "iə ɔːɹ tʃ ɑːɹ ʊ aʊ ɔ ɔɪ ʊɹ ð ʒ ɪɹ ɛɹ aɪɚ aɪə ʔ n̩ r x ɬ ɔ̃ ɑ̃".split()
+)
+
+# Sounds Turkish speakers often use instead of English ones: Turkish vowels (e, a, o, ö, ı, ü),
+# long vowels, tapped or rolled r, dental t/d, "w" made with the teeth, palatal k/g, soft g.
+LEARNER_PHONES = set("e a o ø œ ɯ y ɨ eː aː ɛː øː r ɾ t̪ d̪ β ʋ c ɟ ɣ ç ɫ".split())
+
+# The recognizer is multilingual: it can output Mandarin tones ("ə1"), aspirated or palatalized
+# consonants ("tʰ", "tʲ") and more. Decoding is limited to these phonemes, so it only "hears"
+# sounds that English or a Turkish speaker of English would actually use.
+ALLOWED_PHONES = (
+    ENGLISH_PHONES | LEARNER_PHONES | set(ALIASES)
+    | set(SPLITS) | {p for parts in SPLITS.values() for p in parts}
+    | set(ACCEPT) | {p for variants in ACCEPT.values() for p in variants}
+    | {p for pair in SUBSTITUTION_TIPS for p in pair} | set(DEVOICED.values())
+)
+
 
 def is_vowel(phone: str) -> bool:
     return bool(phone) and phone[0] in VOWEL_CHARS

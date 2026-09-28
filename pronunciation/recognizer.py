@@ -8,7 +8,8 @@ from dataclasses import dataclass
 import numpy as np
 
 from .audio import SAMPLE_RATE
-from .ctc import greedy_decode
+from .ctc import NEG_INF, greedy_decode
+from .phonemes import ALLOWED_PHONES
 
 DEFAULT_MODEL = "facebook/wav2vec2-lv-60-espeak-cv-ft"
 
@@ -39,13 +40,26 @@ class Decoder:
     and tests go through exactly the same decoding as the app.
     """
 
-    def __init__(self, vocab: dict[str, int], blank_id: int, special_ids: set[int]):
+    def __init__(self, vocab: dict[str, int], blank_id: int, special_ids: set[int],
+                 allowed: set[str] | None = ALLOWED_PHONES):
         self.token_to_id: dict[str, int] = dict(vocab)
         self.id_to_token: dict[int, str] = {i: t for t, i in vocab.items()}
         self.blank_id = blank_id
         self.special_ids = set(special_ids)
+        # tokens that may never be output: everything except the blank and the allowed phonemes
+        self.blocked = np.array(sorted(i for t, i in vocab.items()
+                                       if allowed is not None and i != blank_id and t not in allowed), dtype=int)
+
+    def restrict(self, log_probs: np.ndarray) -> np.ndarray:
+        """Give blocked tokens zero probability and renormalize, so GOP uses the same choices."""
+        if self.blocked.size == 0:
+            return log_probs
+        out = log_probs.copy()
+        out[:, self.blocked] = NEG_INF
+        return out - np.logaddexp.reduce(out, axis=1, keepdims=True)
 
     def __call__(self, log_probs: np.ndarray, seconds: float) -> Recognition:
+        log_probs = self.restrict(log_probs)
         decoded = greedy_decode(log_probs, self.blank_id, self.special_ids)
         phones = [self.id_to_token[token] for token, _ in decoded]
         return Recognition(log_probs=log_probs, phones=phones, seconds=seconds)
