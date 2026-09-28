@@ -61,7 +61,8 @@ def load(part: str = "val", model_id: str = DEFAULT_MODEL):
     decoder, log_probs, seconds = cached_log_probs(model_id, f"speechocean_train_{part}", audio)
     info = data.select(indices).select_columns(["text", "speaker", "words"])
     utterances = [({"text": row["text"], "speaker": row["speaker"],
-                    "words": [{"text": w["text"], "accuracy": w["accuracy"]} for w in row["words"]]},
+                    "words": [{"text": w["text"], "accuracy": w["accuracy"], "phones": w["phones"],
+                               "phones-accuracy": w["phones-accuracy"]} for w in row["words"]]},
                    log_probs[f"u{i}"], seconds[f"u{i}"]) for i, row in zip(indices, info)]
     return decoder, utterances
 
