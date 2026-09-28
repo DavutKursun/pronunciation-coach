@@ -1,0 +1,655 @@
+{
+  "speech_accent_archive": {
+    "dev": {
+      "definitions": {
+        "main": "a word is wrong when the expert transcription differs from the expected phonemes outside our accepted variants (flap, reduced vowels, weak forms of function words...)",
+        "raw": "a word is wrong when the expert transcription differs from the expected phonemes at all (only narrow-IPA detail and vowel length are ignored)"
+      },
+      "main": {
+        "english": {
+          "words": 686,
+          "expert_wrong": 72,
+          "confusion": {
+            "tp": 5,
+            "fp": 13,
+            "fn": 67,
+            "tn": 601
+          },
+          "false_alarm": 0.021172638436482084,
+          "recall": 0.06944444444444445,
+          "precision": 0.2777777777777778,
+          "f1": 0.11111111111111113,
+          "speakers": 10,
+          "ci95": {
+            "false_alarm": [
+              0.00792393026941363,
+              0.038217217119405844
+            ],
+            "recall": [
+              0.0,
+              0.12037315930388218
+            ],
+            "precision": [
+              0.0,
+              0.5
+            ],
+            "f1": [
+              0.0,
+              0.18706160071942438
+            ]
+          }
+        },
+        "turkish": {
+          "words": 823,
+          "expert_wrong": 361,
+          "confusion": {
+            "tp": 153,
+            "fp": 33,
+            "fn": 208,
+            "tn": 429
+          },
+          "false_alarm": 0.07142857142857142,
+          "recall": 0.42382271468144045,
+          "precision": 0.8225806451612904,
+          "f1": 0.5594149908592321,
+          "speakers": 12,
+          "ci95": {
+            "false_alarm": [
+              0.03660827576483857,
+              0.1196006553535797
+            ],
+            "recall": [
+              0.3268592550288724,
+              0.5012297580072517
+            ],
+            "precision": [
+              0.7783776818055169,
+              0.8648702273702273
+            ],
+            "f1": [
+              0.46864279983520174,
+              0.6240755999819892
+            ]
+          }
+        },
+        "turkish_error_level": {
+          "expert_errors": 499,
+          "found": 198,
+          "found_exact": 142,
+          "catch": 0.3967935871743487,
+          "exact": 0.2845691382765531,
+          "multi_error_words": 100,
+          "multi_all": 28,
+          "multi_some": 39,
+          "multi_none": 33,
+          "by_tip": {
+            "r": {
+              "errors": 29,
+              "found": 7
+            },
+            "short_i": {
+              "errors": 40,
+              "found": 7
+            },
+            "ng": {
+              "errors": 3,
+              "found": 0
+            },
+            "th_voiced": {
+              "errors": 49,
+              "found": 14
+            },
+            "long_ee": {
+              "errors": 6,
+              "found": 3
+            },
+            "final_voicing": {
+              "errors": 146,
+              "found": 56
+            },
+            "th_voiceless": {
+              "errors": 35,
+              "found": 31
+            },
+            "ae": {
+              "errors": 27,
+              "found": 13
+            },
+            "w": {
+              "errors": 33,
+              "found": 21
+            },
+            "epenthesis": {
+              "errors": 11,
+              "found": 5
+            },
+            "short_u": {
+              "errors": 7,
+              "found": 0
+            },
+            "long_oo": {
+              "errors": 3,
+              "found": 0
+            },
+            "er": {
+              "errors": 1,
+              "found": 0
+            }
+          },
+          "ci95": {
+            "catch": [
+              0.3038246500088605,
+              0.4712588761635867
+            ]
+          }
+        },
+        "turkish_patterns": [
+          {
+            "pattern": "th_voiceless",
+            "words": 35,
+            "word_caught": 0.8857142857142857,
+            "right_tip": 0.8857142857142857,
+            "errors": 35,
+            "error_caught": 0.8857142857142857,
+            "hidden_by_gop": 2
+          },
+          {
+            "pattern": "th_voiced",
+            "words": 49,
+            "word_caught": 0.3673469387755102,
+            "right_tip": 0.22448979591836735,
+            "errors": 49,
+            "error_caught": 0.2857142857142857,
+            "hidden_by_gop": 4
+          },
+          {
+            "pattern": "w",
+            "words": 33,
+            "word_caught": 0.6363636363636364,
+            "right_tip": 0.6363636363636364,
+            "errors": 33,
+            "error_caught": 0.6363636363636364,
+            "hidden_by_gop": 2
+          },
+          {
+            "pattern": "long_ee",
+            "words": 6,
+            "word_caught": 0.8333333333333334,
+            "right_tip": 0.3333333333333333,
+            "errors": 6,
+            "error_caught": 0.5,
+            "hidden_by_gop": 1
+          },
+          {
+            "pattern": "short_i",
+            "words": 40,
+            "word_caught": 0.55,
+            "right_tip": 0.175,
+            "errors": 40,
+            "error_caught": 0.175,
+            "hidden_by_gop": 5
+          },
+          {
+            "pattern": "ae",
+            "words": 27,
+            "word_caught": 0.5555555555555556,
+            "right_tip": 0.37037037037037035,
+            "errors": 27,
+            "error_caught": 0.48148148148148145,
+            "hidden_by_gop": 5
+          },
+          {
+            "pattern": "short_u",
+            "words": 7,
+            "word_caught": 0.0,
+            "right_tip": 0.0,
+            "errors": 7,
+            "error_caught": 0.0,
+            "hidden_by_gop": 1
+          },
+          {
+            "pattern": "long_oo",
+            "words": 3,
+            "word_caught": 0.0,
+            "right_tip": 0.0,
+            "errors": 3,
+            "error_caught": 0.0,
+            "hidden_by_gop": 0
+          },
+          {
+            "pattern": "er",
+            "words": 1,
+            "word_caught": 0.0,
+            "right_tip": 0.0,
+            "errors": 1,
+            "error_caught": 0.0,
+            "hidden_by_gop": 0
+          },
+          {
+            "pattern": "ng",
+            "words": 3,
+            "word_caught": 0.6666666666666666,
+            "right_tip": 0.0,
+            "errors": 3,
+            "error_caught": 0.0,
+            "hidden_by_gop": 0
+          },
+          {
+            "pattern": "r",
+            "words": 29,
+            "word_caught": 0.5172413793103449,
+            "right_tip": 0.20689655172413793,
+            "errors": 29,
+            "error_caught": 0.2413793103448276,
+            "hidden_by_gop": 7
+          },
+          {
+            "pattern": "final_voicing",
+            "words": 131,
+            "word_caught": 0.4351145038167939,
+            "right_tip": 0.32061068702290074,
+            "errors": 146,
+            "error_caught": 0.3835616438356164,
+            "hidden_by_gop": 16
+          },
+          {
+            "pattern": "epenthesis",
+            "words": 11,
+            "word_caught": 0.7272727272727273,
+            "right_tip": 0.45454545454545453,
+            "errors": 11,
+            "error_caught": 0.45454545454545453,
+            "hidden_by_gop": 3
+          }
+        ]
+      },
+      "raw": {
+        "english": {
+          "words": 686,
+          "expert_wrong": 280,
+          "confusion": {
+            "tp": 10,
+            "fp": 8,
+            "fn": 270,
+            "tn": 398
+          },
+          "false_alarm": 0.019704433497536946,
+          "recall": 0.03571428571428571,
+          "precision": 0.5555555555555556,
+          "f1": 0.06711409395973154,
+          "speakers": 10,
+          "ci95": {
+            "false_alarm": [
+              0.0024752475247524753,
+              0.041978557504873275
+            ],
+            "recall": [
+              0.014232360449178225,
+              0.05860837438423645
+            ],
+            "precision": [
+              0.3333333333333333,
+              0.8666666666666667
+            ],
+            "f1": [
+              0.027394922623778573,
+              0.10625155730897011
+            ]
+          }
+        },
+        "turkish": {
+          "words": 823,
+          "expert_wrong": 536,
+          "confusion": {
+            "tp": 162,
+            "fp": 24,
+            "fn": 374,
+            "tn": 263
+          },
+          "false_alarm": 0.08362369337979095,
+          "recall": 0.30223880597014924,
+          "precision": 0.8709677419354839,
+          "f1": 0.4487534626038781,
+          "speakers": 12,
+          "ci95": {
+            "false_alarm": [
+              0.031139183868273475,
+              0.1514426631506308
+            ],
+            "recall": [
+              0.21470476112397777,
+              0.38704269458787527
+            ],
+            "precision": [
+              0.8185940803382664,
+              0.9323333672017882
+            ],
+            "f1": [
+              0.34514113729008605,
+              0.5333610451306412
+            ]
+          }
+        }
+      }
+    },
+    "test": {
+      "definitions": {
+        "main": "a word is wrong when the expert transcription differs from the expected phonemes outside our accepted variants (flap, reduced vowels, weak forms of function words...)",
+        "raw": "a word is wrong when the expert transcription differs from the expected phonemes at all (only narrow-IPA detail and vowel length are ignored)"
+      },
+      "main": {
+        "english": {
+          "words": 684,
+          "expert_wrong": 88,
+          "confusion": {
+            "tp": 5,
+            "fp": 10,
+            "fn": 83,
+            "tn": 586
+          },
+          "false_alarm": 0.016778523489932886,
+          "recall": 0.056818181818181816,
+          "precision": 0.3333333333333333,
+          "f1": 0.09708737864077668,
+          "speakers": 10,
+          "ci95": {
+            "false_alarm": [
+              0.0033056487466928512,
+              0.032491708491092126
+            ],
+            "recall": [
+              0.018518518518518517,
+              0.08235597331716189
+            ],
+            "precision": [
+              0.1111111111111111,
+              0.6363636363636364
+            ],
+            "f1": [
+              0.03125,
+              0.136986301369863
+            ]
+          }
+        },
+        "turkish": {
+          "words": 822,
+          "expert_wrong": 364,
+          "confusion": {
+            "tp": 122,
+            "fp": 52,
+            "fn": 242,
+            "tn": 406
+          },
+          "false_alarm": 0.11353711790393013,
+          "recall": 0.33516483516483514,
+          "precision": 0.7011494252873564,
+          "f1": 0.4535315985130111,
+          "speakers": 12,
+          "ci95": {
+            "false_alarm": [
+              0.06477386431859115,
+              0.17738359201773837
+            ],
+            "recall": [
+              0.24702291308089502,
+              0.42945334442125743
+            ],
+            "precision": [
+              0.6103841074180058,
+              0.7942915851272015
+            ],
+            "f1": [
+              0.3617009688035971,
+              0.5292322688726798
+            ]
+          }
+        },
+        "turkish_error_level": {
+          "expert_errors": 512,
+          "found": 149,
+          "found_exact": 94,
+          "catch": 0.291015625,
+          "exact": 0.18359375,
+          "multi_error_words": 115,
+          "multi_all": 25,
+          "multi_some": 27,
+          "multi_none": 63,
+          "by_tip": {
+            "final_voicing": {
+              "errors": 126,
+              "found": 45
+            },
+            "th_voiced": {
+              "errors": 47,
+              "found": 8
+            },
+            "th_voiceless": {
+              "errors": 28,
+              "found": 22
+            },
+            "w": {
+              "errors": 33,
+              "found": 19
+            },
+            "ae": {
+              "errors": 22,
+              "found": 5
+            },
+            "short_i": {
+              "errors": 26,
+              "found": 1
+            },
+            "epenthesis": {
+              "errors": 4,
+              "found": 3
+            },
+            "r": {
+              "errors": 24,
+              "found": 0
+            },
+            "short_u": {
+              "errors": 8,
+              "found": 0
+            },
+            "long_ee": {
+              "errors": 6,
+              "found": 5
+            },
+            "ng": {
+              "errors": 3,
+              "found": 1
+            },
+            "er": {
+              "errors": 1,
+              "found": 0
+            }
+          },
+          "ci95": {
+            "catch": [
+              0.2098999543517955,
+              0.3717191142191142
+            ]
+          }
+        },
+        "turkish_patterns": [
+          {
+            "pattern": "th_voiceless",
+            "words": 28,
+            "word_caught": 0.7857142857142857,
+            "right_tip": 0.7142857142857143,
+            "errors": 28,
+            "error_caught": 0.7857142857142857,
+            "hidden_by_gop": 4
+          },
+          {
+            "pattern": "th_voiced",
+            "words": 47,
+            "word_caught": 0.23404255319148937,
+            "right_tip": 0.0851063829787234,
+            "errors": 47,
+            "error_caught": 0.1702127659574468,
+            "hidden_by_gop": 5
+          },
+          {
+            "pattern": "w",
+            "words": 33,
+            "word_caught": 0.6363636363636364,
+            "right_tip": 0.48484848484848486,
+            "errors": 33,
+            "error_caught": 0.5757575757575758,
+            "hidden_by_gop": 3
+          },
+          {
+            "pattern": "long_ee",
+            "words": 6,
+            "word_caught": 1.0,
+            "right_tip": 0.3333333333333333,
+            "errors": 6,
+            "error_caught": 0.8333333333333334,
+            "hidden_by_gop": 0
+          },
+          {
+            "pattern": "short_i",
+            "words": 26,
+            "word_caught": 0.3076923076923077,
+            "right_tip": 0.038461538461538464,
+            "errors": 26,
+            "error_caught": 0.038461538461538464,
+            "hidden_by_gop": 8
+          },
+          {
+            "pattern": "ae",
+            "words": 22,
+            "word_caught": 0.3181818181818182,
+            "right_tip": 0.13636363636363635,
+            "errors": 22,
+            "error_caught": 0.22727272727272727,
+            "hidden_by_gop": 3
+          },
+          {
+            "pattern": "short_u",
+            "words": 8,
+            "word_caught": 0.0,
+            "right_tip": 0.0,
+            "errors": 8,
+            "error_caught": 0.0,
+            "hidden_by_gop": 3
+          },
+          {
+            "pattern": "er",
+            "words": 1,
+            "word_caught": 0.0,
+            "right_tip": 0.0,
+            "errors": 1,
+            "error_caught": 0.0,
+            "hidden_by_gop": 0
+          },
+          {
+            "pattern": "ng",
+            "words": 3,
+            "word_caught": 0.6666666666666666,
+            "right_tip": 0.0,
+            "errors": 3,
+            "error_caught": 0.3333333333333333,
+            "hidden_by_gop": 1
+          },
+          {
+            "pattern": "r",
+            "words": 24,
+            "word_caught": 0.16666666666666666,
+            "right_tip": 0.0,
+            "errors": 24,
+            "error_caught": 0.0,
+            "hidden_by_gop": 4
+          },
+          {
+            "pattern": "final_voicing",
+            "words": 109,
+            "word_caught": 0.3577981651376147,
+            "right_tip": 0.27522935779816515,
+            "errors": 126,
+            "error_caught": 0.35714285714285715,
+            "hidden_by_gop": 19
+          },
+          {
+            "pattern": "epenthesis",
+            "words": 4,
+            "word_caught": 0.75,
+            "right_tip": 0.75,
+            "errors": 4,
+            "error_caught": 0.75,
+            "hidden_by_gop": 1
+          }
+        ]
+      },
+      "raw": {
+        "english": {
+          "words": 684,
+          "expert_wrong": 289,
+          "confusion": {
+            "tp": 8,
+            "fp": 7,
+            "fn": 281,
+            "tn": 388
+          },
+          "false_alarm": 0.017721518987341773,
+          "recall": 0.02768166089965398,
+          "precision": 0.5333333333333333,
+          "f1": 0.052631578947368425,
+          "speakers": 10,
+          "ci95": {
+            "false_alarm": [
+              0.004750032288314999,
+              0.033020368236593205
+            ],
+            "recall": [
+              0.010526315789473684,
+              0.045618050407709394
+            ],
+            "precision": [
+              0.5,
+              0.6666666666666666
+            ],
+            "f1": [
+              0.020687877710629222,
+              0.08414239482200647
+            ]
+          }
+        },
+        "turkish": {
+          "words": 822,
+          "expert_wrong": 520,
+          "confusion": {
+            "tp": 142,
+            "fp": 32,
+            "fn": 378,
+            "tn": 270
+          },
+          "false_alarm": 0.10596026490066225,
+          "recall": 0.27307692307692305,
+          "precision": 0.8160919540229885,
+          "f1": 0.4092219020172911,
+          "speakers": 12,
+          "ci95": {
+            "false_alarm": [
+              0.06080569205569206,
+              0.16608002406738862
+            ],
+            "recall": [
+              0.19413297344484112,
+              0.35094984828933135
+            ],
+            "precision": [
+              0.7647058823529411,
+              0.8695652173913043
+            ],
+            "f1": [
+              0.3126000231639363,
+              0.49028322219489967
+            ]
+          }
+        }
+      }
+    }
+  }
+}

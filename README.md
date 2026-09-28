@@ -72,6 +72,53 @@ Evaluated on the speechocean762 test set (2,500 utterances, speakers not seen in
 
 False alarm = correct words we flagged; recall = wrong words we flagged; precision = flagged words that were really wrong. `scripts/evaluate_words.py` (speechocean762 train) and `scripts/evaluate_saa.py` (Turkish speakers of the Speech Accent Archive, with an error-level catch rate) report the same metrics during development.
 
+### Real Turkish speakers: Speech Accent Archive
+
+In the [Speech Accent Archive](https://accent.gmu.edu/) every speaker reads the same paragraph ("Please call Stella…") and trained phoneticians transcribe it in IPA. 24 native Turkish speakers and 20 US English speakers with a text transcription were split by speaker into a dev half, used to choose rules and thresholds, and a test half, evaluated once at the end. A word is wrong when the expert's transcription differs from the expected pronunciation; brackets are 95% confidence intervals from resampling speakers (bootstrap).
+
+**Main labels** (a word is wrong when the expert transcription differs from the expected phonemes outside our accepted variants (flap, reduced vowels, weak forms of function words...))
+
+| | Dev (10 English / 12 Turkish speakers) | Test (10 English / 12 Turkish speakers) |
+| --- | --- | --- |
+| English speakers: false alarm | 2.1% [0.8%–3.8%] | 1.7% [0.3%–3.2%] |
+| Turkish speakers: false alarm | 7.1% [3.7%–12.0%] | 11.4% [6.5%–17.7%] |
+| Turkish speakers: recall | 42.4% [32.7%–50.1%] | 33.5% [24.7%–42.9%] |
+| Turkish speakers: precision | 82.3% [77.8%–86.5%] | 70.1% [61.0%–79.4%] |
+| Turkish speakers: F1 | 0.559 [0.469–0.624] | 0.454 [0.362–0.529] |
+| Turkish speakers: error-level catch | 39.7% [30.4%–47.1%] | 29.1% [21.0%–37.2%] |
+
+**Raw labels** (a word is wrong when the expert transcription differs from the expected phonemes at all (only narrow-IPA detail and vowel length are ignored))
+
+| | Dev (10 English / 12 Turkish speakers) | Test (10 English / 12 Turkish speakers) |
+| --- | --- | --- |
+| English speakers: false alarm | 2.0% [0.2%–4.2%] | 1.8% [0.5%–3.3%] |
+| Turkish speakers: false alarm | 8.4% [3.1%–15.1%] | 10.6% [6.1%–16.6%] |
+| Turkish speakers: recall | 30.2% [21.5%–38.7%] | 27.3% [19.4%–35.1%] |
+| Turkish speakers: precision | 87.1% [81.9%–93.2%] | 81.6% [76.5%–87.0%] |
+| Turkish speakers: F1 | 0.449 [0.345–0.533] | 0.409 [0.313–0.490] |
+
+**Per pattern, Turkish speakers** (errors the expert heard → share we found on the same sound)
+
+| Pattern | Dev | Test |
+| --- | --- | --- |
+| 'th' as in think /θ/ | 89% of 35 | 79% of 28 |
+| 'th' as in this /ð/ | 29% of 49 | 17% of 47 |
+| 'w' as in west /w/ | 64% of 33 | 58% of 33 |
+| long 'ee' as in sheep /iː/ | 50% of 6 | 83% of 6 |
+| short 'i' as in ship /ɪ/ | 18% of 40 | 4% of 26 |
+| 'a' as in cat /æ/ | 48% of 27 | 23% of 22 |
+| short 'oo' as in pull /ʊ/ | 0% of 7 | 0% of 8 |
+| long 'oo' as in pool /uː/ | 0% of 3 | – |
+| 'er' as in bird /ɜː/ | 0% of 1 | 0% of 1 |
+| 'ng' as in sing /ŋ/ | 0% of 3 | 33% of 3 |
+| English 'r' /ɹ/ | 24% of 29 | 0% of 24 |
+| voiced sound at the end of a word | 38% of 146 | 36% of 126 |
+| extra vowel in a consonant group | 45% of 11 | 75% of 4 |
+
+The main labels leave out differences we accept as correct English (the American flap in *better*, *æn* for *and*…), while the raw labels count every deviation the expert wrote. Both give the same picture (about 2% false alarms for native speakers; for Turkish speakers 70–87% of the flagged words are really wrong, but most wrong words are missed), so the result does not hinge on our list of accepted variants.
+
+The test half is clearly worse than the dev half for Turkish speakers (recall 42% → 34%, precision 82% → 70%, F1 0.56 → 0.45), and the gap is smaller with the raw labels (F1 0.45 → 0.41), which do not depend on the variants we accepted while looking at dev. So part of the dev result is overfitting to the 12 dev speakers; the rest is speaker-to-speaker variation, which is large (per-speaker recall ranges from 0% to 65%). The test numbers are the ones to quote.
+
 ## Project structure
 
 ```
@@ -132,6 +179,8 @@ The free CPU hardware of Hugging Face Spaces is enough.
 - The reference accent is US English (eSpeak `en-us`). Some British pronunciations are accepted as variants, but not all.
 - eSpeak gives one pronunciation per word. Words with several correct pronunciations can cause false alarms.
 - The recognizer can mishear, especially with background noise. Treat the feedback as a guide, not a verdict.
+- The recognizer often does not hear some typical Turkish errors. A final *z* said as *s* and *ð* said as *d* are the most common errors that the experts heard and we missed (45 and 36 words in the Speech Accent Archive test half): the model outputs the expected sound, so no rule on its output can catch them. This would need a recognizer fine-tuned on accented speech.
+- On real Turkish speakers the feedback is precise but misses many errors: on the Speech Accent Archive test half it finds about a third of the words the experts marked (see Results), from only 12 test speakers.
 - The scoring model is trained on speechocean762, whose speakers are Mandarin native speakers (half of them children). The tips target Turkish speakers, but no Turkish-speaker data was used for training.
 - Word stress and intonation are not assessed.
 
