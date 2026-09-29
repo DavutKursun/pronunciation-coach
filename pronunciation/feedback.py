@@ -135,28 +135,33 @@ def build_word_results(
     return results
 
 
+def is_confirmed(issue: Issue, gop: float | None, threshold: float | None,
+                 pattern_threshold: float | None = None) -> bool:
+    """The GOP check for one difference of a word whose GOP (its worst expected sound) is `gop`.
+
+    Confirmed when the GOP is below `threshold`, or below `pattern_threshold` for a typical
+    Turkish-speaker error (it has a tip; None = the same threshold). Added sounds of a known
+    pattern are always confirmed, since GOP only scores the expected sounds. Without a threshold
+    or without a GOP for the word, every difference stands.
+    """
+    if threshold is None or gop is None or (issue.kind == "ins" and issue.tip):
+        return True
+    limit = pattern_threshold if issue.tip and pattern_threshold is not None else threshold
+    return gop < limit
+
+
 def confirm_with_gop(word: WordResult, threshold: float | None, pattern_threshold: float | None = None) -> None:
     """Report a word's differences only when GOP agrees that it was not said well.
 
     Greedy decoding picks the single most likely sound per frame, so a near tie can turn a
-    good "think" into a heard "t". A difference is reported only if the word's GOP (its worst
-    expected sound) is below `threshold`; otherwise it is most likely a mishearing and is moved
-    to `dismissed`. A difference that matches a typical Turkish-speaker pattern (it has a tip)
-    needs less evidence: `pattern_threshold`, since these speakers are likely to make it.
-    Added sounds of a known pattern (the extra vowel in "is-chool", "sing-ging") always stay:
-    GOP only scores the expected sounds, so it cannot judge an added one.
+    good "think" into a heard "t". A difference is reported only if is_confirmed(); otherwise it
+    is most likely a mishearing and is moved to `dismissed`. Typical Turkish-speaker errors need
+    less evidence (`pattern_threshold`), since these speakers are likely to make them.
     """
     if threshold is None or word.gop is None:
         return
-    pattern_threshold = threshold if pattern_threshold is None else pattern_threshold
-
-    def confirmed(issue: Issue) -> bool:
-        if issue.kind == "ins" and issue.tip:
-            return True
-        return word.gop < (pattern_threshold if issue.tip else threshold)
-
-    word.dismissed = [i for i in word.issues if not confirmed(i)]
-    word.issues = [i for i in word.issues if confirmed(i)]
+    word.dismissed = [i for i in word.issues if not is_confirmed(i, word.gop, threshold, pattern_threshold)]
+    word.issues = [i for i in word.issues if is_confirmed(i, word.gop, threshold, pattern_threshold)]
 
 
 def top_tips(results: list[WordResult], limit: int | None = None) -> list[str]:

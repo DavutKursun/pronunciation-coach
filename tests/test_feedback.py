@@ -148,3 +148,43 @@ def test_w_heard_as_r_gets_the_w_tip():
     # Turkish /v/ is often [ʋ], which the recognizer tends to hear as ɹ ("Wednesday" -> "ɹɛnzdeɪ")
     [r] = run(["west"], [["w", "ɛ", "s", "t"]], ["ɹ", "ɛ", "s", "t"])
     assert tips([r]) == ["w"]
+
+
+# The fine-tuned recognizer (v2-3) outputs ɾ for a tapped r. It must stay two different things:
+@pytest.mark.parametrize("word, raw, heard", [
+    ("water", ["w", "ɔː", "t", "ɚ"], ["w", "ɔː", "ɾ", "ɚ"]),     # American flap for t: fine
+    ("ladder", ["l", "æ", "d", "ɚ"], ["l", "æ", "ɾ", "ɚ"]),       # and for d
+])
+def test_tap_for_t_or_d_is_the_american_flap(word, raw, heard):
+    [r] = run([word], [raw], heard)
+    assert r.issues == []
+
+
+@pytest.mark.parametrize("word, raw, heard", [
+    ("red", ["ɹ", "ɛ", "d"], ["ɾ", "ɛ", "d"]),
+    ("car", ["k", "ɑːɹ"], ["k", "ɑː", "ɾ"]),                      # r inside eSpeak's r-coloured vowel
+])
+def test_tap_for_r_is_the_turkish_r_pattern(word, raw, heard):
+    [r] = run([word], [raw], heard)
+    assert tips([r]) == ["r"]
+
+
+def test_the_recognizer_may_output_a_tap():
+    from pronunciation.phonemes import ALLOWED_PHONES
+
+    assert {"ɾ", "r"} <= ALLOWED_PHONES
+
+
+def test_is_confirmed_is_the_gop_check_of_one_difference():
+    from pronunciation.feedback import Issue, is_confirmed
+
+    th = Issue(0, "sub", "θ", "t", "th_voiceless", "")        # a typical Turkish error
+    other = Issue(0, "sub", "m", "n", None, "")               # any other difference
+    extra_vowel = Issue(0, "ins", None, "ɪ", "epenthesis", "")
+    assert is_confirmed(th, -1.5, -2.5, -1.0) and not is_confirmed(other, -1.5, -2.5, -1.0)
+    assert is_confirmed(other, -3.0, -2.5, -1.0)
+    assert not is_confirmed(th, -0.5, -2.5, -1.0)
+    assert is_confirmed(extra_vowel, 0.0, -2.5, -1.0)          # GOP cannot judge an added sound
+    assert is_confirmed(other, None, -2.5, -1.0)               # no GOP for the word: keep it
+    assert is_confirmed(other, 0.0, None)                      # no GOP check at all
+    assert not is_confirmed(th, -1.5, -2.5)                    # without a pattern threshold: -2.5 for all
