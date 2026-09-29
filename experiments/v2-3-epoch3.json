@@ -1,0 +1,6 @@
+{
+  "name": "v2-3-epoch3",
+  "recognizer": "models/recognizer-l2arctic/epoch3",
+  "decision": "rules",
+  "settings": {"gop_threshold": -2.5, "pattern_threshold": -1.0}
+}

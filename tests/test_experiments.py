@@ -40,6 +40,20 @@ def test_cache_runs_the_model_only_for_new_items(tmp_path):
     assert FakeRecognizer.runs == 4                       # another model has its own cache
 
 
+def test_cache_of_a_local_model_is_rebuilt_when_the_model_changes(tmp_path):
+    FakeRecognizer.runs = 0
+    model = tmp_path / "recognizer"
+    model.mkdir()
+    (model / "model.safetensors").write_bytes(b"first training")
+    audio = {"a": lambda: np.zeros(16000)}
+    cached_log_probs(str(model), "demo", audio, tmp_path / "cache", FakeRecognizer)
+    cached_log_probs(str(model), "demo", audio, tmp_path / "cache", FakeRecognizer)
+    assert FakeRecognizer.runs == 1                       # same model: cached
+    (model / "model.safetensors").write_bytes(b"retrained in the same folder")
+    cached_log_probs(str(model), "demo", audio, tmp_path / "cache", FakeRecognizer)
+    assert FakeRecognizer.runs == 2                       # a new model behind the same path: run again
+
+
 def test_system_from_json(tmp_path):
     path = tmp_path / "v1.json"
     path.write_text(json.dumps({"name": "v1", "decision": "rules", "settings": {"gop_threshold": -2.5}}))
@@ -106,3 +120,27 @@ def test_compare_experiments_pairs_speakers(tmp_path):
     assert recall["a"] == pytest.approx(9 / 30) and recall["b"] == pytest.approx(15 / 30)
     assert recall["real"] and recall["ci95"][0] > 0
     assert all(r["metric"].startswith("SAA dev, Turkish") for r in rows)   # metrics without units are skipped
+
+
+def test_v2_3_experiments_change_only_the_recognizer():
+    from pathlib import Path
+
+    folder = Path(__file__).resolve().parents[1] / "experiments"
+    v1 = load_system(folder / "v1.json")
+    for name in ("v2-3-best", "v2-3-epoch3"):
+        system = load_system(folder / f"{name}.json")
+        assert system.name == name and system.decision == v1.decision == "rules"
+        assert system.settings == v1.settings == {"gop_threshold": -2.5, "pattern_threshold": -1.0}
+        assert system.recognizer == f"models/recognizer-l2arctic/{name.removeprefix('v2-3-')}"
+
+
+def test_tuned_experiment_uses_the_thresholds_chosen_on_saa_dev():
+    import math
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    system = load_system(root / "experiments" / "v2-3-best-tuned.json")
+    # Infinity: typical Turkish-speaker errors are always reported (a GOP is never above 0)
+    assert system.settings == {"gop_threshold": -1.0, "pattern_threshold": math.inf}
+    chosen = json.loads((root / "results" / "thresholds" / "v2-3-best.json").read_text())["selected"]["thresholds"]
+    assert (system.settings["gop_threshold"], system.settings["pattern_threshold"]) == tuple(chosen)

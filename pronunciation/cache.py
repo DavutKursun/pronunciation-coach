@@ -7,6 +7,9 @@ never mixes with the original one:
 
     data/cache/<model>/<dataset>.npz    log-probabilities, one array per item
     data/cache/<model>/<dataset>.json   vocabulary, blank id, audio duration per item
+
+A model in a local folder (a fine-tuned recognizer) is also fingerprinted by the size and time of
+its weight files: if a new model is saved to the same folder, its cached output is thrown away.
 """
 
 from __future__ import annotations
@@ -29,6 +32,15 @@ def model_slug(model_id: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", model_id).strip("_")
 
 
+def model_fingerprint(model_id: str) -> list | None:
+    """(name, size, modification time) of a local model's weight files; None for a Hugging Face id."""
+    folder = Path(model_id)
+    if not folder.is_dir():
+        return None
+    weights = sorted(p for p in folder.iterdir() if p.suffix in (".safetensors", ".bin"))
+    return [[p.name, p.stat().st_size, p.stat().st_mtime_ns] for p in weights]
+
+
 def cached_log_probs(model_id: str, dataset: str, audio: dict[str, Callable[[], np.ndarray]],
                      cache_dir: Path = CACHE_DIR, recognizer_factory=None):
     """Decoder, log-probabilities and durations for every item of `audio` (key -> audio loader).
@@ -39,6 +51,10 @@ def cached_log_probs(model_id: str, dataset: str, audio: dict[str, Callable[[], 
     npz_path, meta_path = folder / f"{dataset}.npz", folder / f"{dataset}.json"
     arrays = dict(np.load(npz_path)) if npz_path.exists() else {}
     meta = json.loads(meta_path.read_text()) if meta_path.exists() else {"seconds": {}}
+    fingerprint = model_fingerprint(model_id)
+    if arrays and meta.get("model_fingerprint") != fingerprint:
+        print(f"{model_id} changed since its {dataset} output was cached: running it again.")
+        arrays, meta = {}, {"seconds": {}}
 
     missing = [key for key in audio if key not in arrays]
     if missing:
@@ -46,12 +62,14 @@ def cached_log_probs(model_id: str, dataset: str, audio: dict[str, Callable[[], 
             from .recognizer import PhonemeRecognizer as recognizer_factory
         print(f"Running {model_id} on {len(missing)} {dataset} items (cached afterwards)...")
         recognizer = recognizer_factory(model_id)
-        for key in missing:
+        for k, key in enumerate(missing, 1):
             samples = audio[key]()
             arrays[key] = recognizer.log_probs(samples)
             meta["seconds"][key] = len(samples) / SAMPLE_RATE
+            if k % 200 == 0:
+                print(f"  {dataset}: {k}/{len(missing)}", flush=True)
         meta.update(vocab=recognizer.token_to_id, blank_id=recognizer.blank_id,
-                    special_ids=sorted(recognizer.decoder.special_ids))
+                    special_ids=sorted(recognizer.decoder.special_ids), model_fingerprint=fingerprint)
         folder.mkdir(parents=True, exist_ok=True)
         np.savez_compressed(npz_path, **arrays)
         meta_path.write_text(json.dumps(meta))
