@@ -202,3 +202,51 @@ def test_other_vowels_in_into_and_long_u_elsewhere_are_still_errors():
     assert r.issues
     [r] = run(["book"], [["b", "ʊ", "k"]], ["b", "uː", "k"])              # no general ʊ -> uː acceptance
     assert tips([r]) == ["short_u"]
+
+
+# Hidden errors (v2-3d): the recognizer wrote the expected sound, but a typical substitution came close.
+def test_pattern_rivals_follow_the_substitution_table():
+    from pronunciation.feedback import pattern_rivals
+
+    assert pattern_rivals("w", final_cluster=False) == {"w": ["v", "β", "ʋ", "ɹ"]}
+    assert pattern_rivals("θ", final_cluster=True) == {"th_voiceless": ["t", "s", "f", "d", "t̪"]}
+    assert pattern_rivals("m", final_cluster=True) == {}            # no Turkish-speaker pattern, no rival
+
+
+def test_final_devoicing_rivals_only_in_the_final_consonant_group():
+    from pronunciation.feedback import pattern_rivals
+
+    assert pattern_rivals("z", final_cluster=True) == {"final_voicing": ["s"]}
+    assert pattern_rivals("z", final_cluster=False) == {}
+    # ð -> θ is final devoicing at the end of a word and a th error elsewhere, as in find_issues
+    assert pattern_rivals("ð", final_cluster=True) == {"th_voiced": ["d", "z", "v", "d̪"], "final_voicing": ["θ"]}
+    assert pattern_rivals("ð", final_cluster=False) == {"th_voiced": ["d", "z", "v", "θ", "d̪"]}
+
+
+def test_accepted_realizations_are_not_rivals():
+    from pronunciation.feedback import pattern_rivals
+
+    # "with" may end in θ and "into" in uː (WORD_VARIANTS): saying so is not an error
+    assert pattern_rivals("ð", final_cluster=True, extra={"θ"}) == {"th_voiced": ["d", "z", "v", "d̪"]}
+    assert pattern_rivals("ʊ", final_cluster=True, function_word=True, extra={"uː", "u"}) == {}
+
+
+def test_choose_hidden_reports_a_pattern_only_above_its_threshold():
+    from pronunciation.feedback import Rival, choose_hidden
+
+    z = Rival(2, "z", "final_voicing", "s", -1.5)
+    assert choose_hidden([z], {"final_voicing": -2.0}) == [z]
+    assert choose_hidden([z], {"final_voicing": -1.0}) == []
+    assert choose_hidden([z], {"final_voicing": None}) == []        # "off"
+    assert choose_hidden([z], {"th_voiced": -5.0}) == []            # a pattern without a threshold is off too
+    assert choose_hidden([z], None) == []
+
+
+def test_choose_hidden_keeps_the_closest_pattern_of_a_sound():
+    from pronunciation.feedback import Rival, choose_hidden
+
+    th = Rival(3, "ð", "th_voiced", "d", -2.0)
+    devoiced = Rival(3, "ð", "final_voicing", "θ", -0.5)
+    w = Rival(0, "w", "w", "v", -1.0)
+    assert choose_hidden([th, devoiced, w], {"th_voiced": -3.0, "final_voicing": -3.0, "w": -3.0}) == [w, devoiced]
+    assert choose_hidden([th, devoiced], {"th_voiced": -3.0, "final_voicing": 0.0}) == [th]

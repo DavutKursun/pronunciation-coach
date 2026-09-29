@@ -9,7 +9,8 @@ import numpy as np
 
 from .align import align
 from .ctc import forced_align, gop_scores
-from .feedback import WordResult, build_word_results, confirm_with_gop, report_hidden_w, top_tips
+from .feedback import (Rival, WordResult, build_word_results, confirm_with_gop, final_cluster_start, pattern_rivals,
+                       report_hidden, report_hidden_w, top_tips)
 from .g2p import phonemize_words, tokenize
 from .phonemes import FUNCTION_WORDS, SPLITS, WORD_VARIANTS, merge_repeats, normalize
 
@@ -148,6 +149,15 @@ def compute_features(
     }
 
 
+def rival_margin(log_probs: np.ndarray, span: tuple[int, int], target_id: int, rival_ids: list[int]) -> tuple[float, int]:
+    """The largest log p(rival) - log p(target) over the span's frames and the rivals, and which rival it was."""
+    start, end = span
+    frames = log_probs[start:end + 1]
+    margins = frames[:, rival_ids] - frames[:, [target_id]]
+    frame, rival = np.unravel_index(margins.argmax(), margins.shape)
+    return float(margins[frame, rival]), int(rival)
+
+
 def measure_hidden_w(word_results: list[WordResult], alignment: "GopAlignment", log_probs: np.ndarray,
                      token_to_id: dict[str, int]) -> None:
     """For every expected w the recognizer heard as w: the largest log p(v/β/ʋ) - log p(w) in its frames."""
@@ -160,19 +170,49 @@ def measure_hidden_w(word_results: list[WordResult], alignment: "GopAlignment", 
             target = alignment.phone_target[op.exp_pos] if op.exp_pos is not None else None
             if op.expected != "w" or op.kind != "match" or target is None:
                 continue
-            start, end = alignment.spans[target]
-            frames = log_probs[start:end + 1]
-            margins = frames[:, rival_ids] - frames[:, [w_id]]
-            frame, rival = np.unravel_index(margins.argmax(), margins.shape)
-            if word.w_margin is None or margins[frame, rival] > word.w_margin:
-                word.w_margin, word.w_rival, word.w_pos = float(margins[frame, rival]), rivals[rival], op.exp_pos
+            margin, rival = rival_margin(log_probs, alignment.spans[target], w_id, rival_ids)
+            if word.w_margin is None or margin > word.w_margin:
+                word.w_margin, word.w_rival, word.w_pos = margin, rivals[rival], op.exp_pos
+
+
+def measure_hidden(word_results: list[WordResult], alignment: "GopAlignment", log_probs: np.ndarray,
+                   token_to_id: dict[str, int]) -> None:
+    """Fill word.rivals: for every sound the recognizer wrote exactly as expected and every Turkish-speaker
+    pattern of that sound (feedback.pattern_rivals), how close the pattern's sounds came to it."""
+    if alignment.spans is None:
+        return
+    first = 0
+    for word in word_results:
+        final_start = final_cluster_start(word.expected)
+        function_word = word.text.lower() in FUNCTION_WORDS
+        variants = WORD_VARIANTS.get(word.text.lower(), {})
+        for op in word.ops:
+            target = alignment.phone_target[op.exp_pos] if op.exp_pos is not None else None
+            if op.kind != "match" or op.heard != op.expected or target is None:
+                continue
+            patterns = pattern_rivals(op.expected, op.exp_pos - first >= final_start, function_word,
+                                      variants.get(op.expected, set()))
+            for tip, sounds in patterns.items():
+                sounds = [s for s in sounds if s in token_to_id]
+                if sounds:
+                    margin, k = rival_margin(log_probs, alignment.spans[target], alignment.target_ids[target],
+                                             [token_to_id[s] for s in sounds])
+                    word.rivals.append(Rival(op.exp_pos, op.expected, tip, sounds[k], margin))
+        first += len(word.expected)
 
 
 def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_id: dict[str, int], blank_id: int,
             gop_threshold: float | None = GOP_CONFIRM,
             pattern_threshold: float | None = GOP_CONFIRM_PATTERN,
-            w_margin_threshold: float | None = None) -> Assessment:
-    """Everything after recognition. Kept separate from the model so it can be unit-tested."""
+            w_margin_threshold: float | None = None,
+            hidden_thresholds: dict[str, float | None] | None = None) -> Assessment:
+    """Everything after recognition. Kept separate from the model so it can be unit-tested.
+
+    Hidden errors: `w_margin_threshold` is the hidden-w rule of v2-3c, `hidden_thresholds` its
+    generalization to every pattern (v2-3d, {tip: margin threshold or None = off}); one at a time.
+    """
+    if w_margin_threshold is not None and hidden_thresholds:
+        raise ValueError("use one hidden-error rule: w_margin_threshold (v2-3c) or hidden_thresholds (v2-3d)")
     words = tokenize(text)
     heard = normalize(recognition.phones)
     word_results = compare(words, raw_word_phones, heard)
@@ -195,8 +235,10 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
     features = compute_features(word_results, n_expected, heard, lpp, lpr, spans is not None, recognition.seconds)
     # after the scoring features, like the GOP check: feedback rules do not change what the scorer sees
     measure_hidden_w(word_results, alignment, recognition.log_probs, token_to_id)
+    measure_hidden(word_results, alignment, recognition.log_probs, token_to_id)
     for w, word in enumerate(word_results):
         report_hidden_w(word, w, w_margin_threshold)
+        report_hidden(word, w, hidden_thresholds)
     return Assessment(
         text=text,
         words=word_results,

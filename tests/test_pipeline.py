@@ -166,3 +166,44 @@ def test_w_heard_as_v_is_reported_once():
     recognition = fake_recognition(["v", "iː"], confidence=0.999)
     [word] = analyze("we", WE, recognition, TOKEN_TO_ID, BLANK, w_margin_threshold=-3.0).words
     assert [(i.expected, i.heard) for i in word.issues] == [("w", "v")] and word.w_margin is None
+
+
+ZOOS = [["z", "uː", "z"]]
+
+
+def test_hidden_final_devoicing_only_at_the_end_of_the_word():
+    # s came close in the frames of both z's; only the final one can be final devoicing
+    recognition = near_tie(["z", "uː", "z"], said="z", expected="s", p_said=0.5, p_expected=0.3)
+    [word] = analyze("zoos", ZOOS, recognition, TOKEN_TO_ID, BLANK, hidden_thresholds={"final_voicing": -3.0}).words
+    assert [(i.expected, i.heard, i.tip, i.hidden) for i in word.issues] == [("z", "s", "final_voicing", True)]
+    assert [op.kind for op in word.ops] == ["match", "match", "sub"] and word.heard == ["z", "uː", "s"]
+    assert [(r.pos, r.tip) for r in word.rivals if r.expected == "z"] == [(2, "final_voicing")]
+
+
+def test_hidden_patterns_are_off_unless_they_have_a_threshold():
+    recognition = near_tie(["z", "uː", "z"], said="z", expected="s", p_said=0.5, p_expected=0.3)
+    for thresholds in (None, {}, {"final_voicing": None}, {"w": -3.0}):
+        [word] = analyze("zoos", ZOOS, recognition, TOKEN_TO_ID, BLANK, hidden_thresholds=thresholds).words
+        assert word.issues == [] and word.rivals                 # measured, not reported
+
+
+def test_hidden_w_is_one_of_the_patterns():
+    recognition = near_tie(["w", "iː"], said="w", expected="v", p_said=0.5, p_expected=0.3)
+    [word] = analyze("we", WE, recognition, TOKEN_TO_ID, BLANK, hidden_thresholds={"w": -3.0}).words
+    assert [(i.expected, i.heard, i.tip, i.hidden) for i in word.issues] == [("w", "v", "w", True)]
+    assert word.heard == ["v", "iː"]
+    [rival] = [r for r in word.rivals if r.tip == "w"]
+    assert rival.margin == pytest.approx(np.log(0.3 / 0.5)) == pytest.approx(word.w_margin)   # the v2-3c measure
+
+
+def test_only_sounds_written_as_expected_get_rivals():
+    recognition = fake_recognition(["v", "iː"], confidence=0.999)       # greedy already heard the error
+    [word] = analyze("we", WE, recognition, TOKEN_TO_ID, BLANK, hidden_thresholds={"w": 0.0}).words
+    assert [(i.expected, i.heard, i.hidden) for i in word.issues] == [("w", "v", False)]
+    assert not [r for r in word.rivals if r.expected == "w"]
+
+
+def test_one_hidden_error_rule_at_a_time():
+    with pytest.raises(ValueError):
+        analyze("we", WE, fake_recognition(["w", "iː"]), TOKEN_TO_ID, BLANK, w_margin_threshold=-3.0,
+                hidden_thresholds={"w": -3.0})

@@ -6,7 +6,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from .align import Op
-from .phonemes import DEVOICED, SUBSTITUTION_TIPS, describe, is_vowel
+from .phonemes import DEVOICED, SUBSTITUTION_TIPS, describe, is_acceptable, is_vowel
 
 
 @dataclass
@@ -17,6 +17,17 @@ class Issue:
     heard: str | None
     tip: str | None        # key into phonemes.TIPS, when the error matches a known pattern
     message: str
+    hidden: bool = False   # reported from the probabilities although the recognizer wrote the expected sound
+
+
+@dataclass
+class Rival:
+    """A sound the recognizer wrote as expected, and how close one typical substitution came to it."""
+    pos: int               # position among the sentence's expected sounds
+    expected: str
+    tip: str               # the Turkish-speaker pattern (key into phonemes.TIPS)
+    sound: str             # the pattern's sound that came closest
+    margin: float          # largest log p(sound) - log p(expected) in the frames aligned to the expected sound
 
 
 @dataclass
@@ -32,6 +43,7 @@ class WordResult:
     w_margin: float | None = None     # an expected w heard as w: how close v/β/ʋ came to it (log-probability)
     w_rival: str | None = None        # which of v/β/ʋ came closest
     w_pos: int | None = None          # position of that w among the expected sounds
+    rivals: list[Rival] = field(default_factory=list)   # every pattern's closest sound, see report_hidden
 
     @property
     def heard(self) -> list[str]:
@@ -89,20 +101,48 @@ def group_by_word(ops: list[Op], exp_word: list[int], word_phones: list[list[str
     return groups
 
 
+def final_cluster_start(phones: list[str]) -> int:
+    """Position of the first sound after the word's last vowel: where its final consonant group starts."""
+    vowel_positions = [i for i, p in enumerate(phones) if is_vowel(p)]
+    return vowel_positions[-1] + 1 if vowel_positions else 0
+
+
+def substitution_tip(expected: str, heard: str, final_cluster: bool) -> str | None:
+    """The Turkish-speaker pattern of a substitution, if any. A voiced sound said voiceless is final
+    devoicing only in the word's final consonant group (Turkish kitap/kitabı)."""
+    if final_cluster and DEVOICED.get(expected) == heard:
+        return "final_voicing"
+    return SUBSTITUTION_TIPS.get((expected, heard))
+
+
+def pattern_rivals(expected: str, final_cluster: bool, function_word: bool = False,
+                   extra: set = frozenset()) -> dict[str, list[str]]:
+    """The typical substitutions of an expected sound, by pattern: {tip: [sounds]}.
+
+    The same table as for the substitutions greedy decoding hears (substitution_tip), so no new
+    pattern appears. Sounds that are fine in this word (an accent variant, a weak form: θ at the end
+    of "with") are left out.
+    """
+    sounds = [heard for exp, heard in SUBSTITUTION_TIPS if exp == expected]
+    if expected in DEVOICED and DEVOICED[expected] not in sounds:
+        sounds.append(DEVOICED[expected])
+    rivals: dict[str, list[str]] = {}
+    for sound in sounds:
+        tip = substitution_tip(expected, sound, final_cluster)
+        if tip and not is_acceptable(expected, sound, function_word, extra):
+            rivals.setdefault(tip, []).append(sound)
+    return rivals
+
+
 def find_issues(word_index: int, word: WordResult, first_exp_pos: int) -> list[Issue]:
     phones = word.expected
-    vowel_positions = [i for i, p in enumerate(phones) if is_vowel(p)]
-    final_cluster_start = vowel_positions[-1] + 1 if vowel_positions else 0
+    final_start = final_cluster_start(phones)
 
     issues: list[Issue] = []
     ops = word.ops
     for k, op in enumerate(ops):
         if op.kind == "sub":
-            local = op.exp_pos - first_exp_pos
-            if local >= final_cluster_start and DEVOICED.get(op.expected) == op.heard:
-                tip = "final_voicing"
-            else:
-                tip = SUBSTITUTION_TIPS.get((op.expected, op.heard))
+            tip = substitution_tip(op.expected, op.heard, op.exp_pos - first_exp_pos >= final_start)
             message = f"{describe(op.expected)} sounded like {describe(op.heard)}"
             issues.append(Issue(word_index, "sub", op.expected, op.heard, tip, message))
         elif op.kind == "del":
@@ -169,7 +209,7 @@ def confirm_with_gop(word: WordResult, threshold: float | None, pattern_threshol
 
 def hidden_w_issue(word_index: int, rival: str) -> Issue:
     return Issue(word_index, "sub", "w", rival, SUBSTITUTION_TIPS.get(("w", rival)),
-                 f"{describe('w')} sounded like {describe(rival)}")
+                 f"{describe('w')} sounded like {describe(rival)}", hidden=True)
 
 
 def report_hidden_w(word: WordResult, word_index: int, threshold: float | None) -> None:
@@ -184,6 +224,41 @@ def report_hidden_w(word: WordResult, word_index: int, threshold: float | None) 
     word.ops = [Op("sub", op.expected, word.w_rival, op.exp_pos, op.heard_pos) if op.exp_pos == word.w_pos else op
                 for op in word.ops]
     word.issues.append(hidden_w_issue(word_index, word.w_rival))
+
+
+def choose_hidden(rivals: list[Rival], thresholds: dict[str, float | None] | None) -> list[Rival]:
+    """The hidden errors to report: a rival whose margin is above its pattern's threshold.
+
+    A pattern without a threshold (None or missing) is off. At most one report per sound: the
+    closest rival if several patterns pass (a final ð can be heard as d or as θ).
+    """
+    best: dict[int, Rival] = {}
+    for rival in rivals:
+        limit = (thresholds or {}).get(rival.tip)
+        if limit is not None and rival.margin > limit and (rival.pos not in best or rival.margin > best[rival.pos].margin):
+            best[rival.pos] = rival
+    return [best[pos] for pos in sorted(best)]
+
+
+def hidden_issue(word_index: int, rival: Rival) -> Issue:
+    return Issue(word_index, "sub", rival.expected, rival.sound, rival.tip,
+                 f"{describe(rival.expected)} sounded like {describe(rival.sound)}", hidden=True)
+
+
+def report_hidden(word: WordResult, word_index: int, thresholds: dict[str, float | None] | None) -> None:
+    """Report typical Turkish-speaker errors that greedy decoding did not write (v2-3d).
+
+    Greedy decoding keeps the expected sound when it is only a little more likely than, say, s for
+    a final z. For every sound written as expected, `word.rivals` holds how close each pattern's
+    sounds came; a pattern is reported when that margin is above its own threshold. The hidden-w
+    rule of v2-3c (report_hidden_w) is the same idea for one pattern.
+    """
+    chosen = {rival.pos: rival for rival in choose_hidden(word.rivals, thresholds)}
+    if not chosen:
+        return
+    word.ops = [Op("sub", op.expected, chosen[op.exp_pos].sound, op.exp_pos, op.heard_pos) if op.exp_pos in chosen
+                else op for op in word.ops]
+    word.issues += [hidden_issue(word_index, rival) for rival in chosen.values()]
 
 
 def top_tips(results: list[WordResult], limit: int | None = None) -> list[str]:
