@@ -72,16 +72,18 @@ FUNCTION_WORDS = {
     "then", "there", "some", "just", "into", "onto", "with", "by", "in", "on", "it",
 }
 
-# Weak forms: how English speakers say these function words in connected speech (checked on the
-# US English speakers of the Speech Accent Archive dev half). For each expected sound, the extra
-# realizations that are fine in this word; None means the sound may be left out.
+# Word variants: other ways of saying a single word that are not errors. Mostly weak forms, how
+# English speakers say function words in connected speech (checked on the US English speakers of
+# the Speech Accent Archive dev half), and dictionary pronunciations eSpeak does not give. For each
+# expected sound, the extra realizations that are fine in this word; None means it may be left out.
 _R_DROP = {"ɹ": {None}}      # "for" -> fɚ / fə: the r is part of the r-coloured vowel or dropped
 _H_DROP = {"h": {None}}      # "ask her" -> "ask 'er"
 _BACK_VOWEL = {"ʌ": {"ɔ", "ɑː", "ɒ"}}
-WEAK_FORMS: dict[str, dict[str, set[str | None]]] = {
+WORD_VARIANTS: dict[str, dict[str, set[str | None]]] = {
     "and": {"æ": {"ɛ"}, "d": {None}},          # æn, ɛn, ən, n̩
     "with": {"ð": {"θ"}},                      # wɪθ is as common as wɪð
     "of": _BACK_VOWEL, "from": _BACK_VOWEL,    # ɔv, fɹɑm
+    "into": {"ʊ": {"uː", "u"}},                # the dictionary form ˈɪntuː (eSpeak: ɪntʊ; ɪntə is a weak form)
     **{w: _R_DROP for w in ("for", "or", "nor", "are", "were", "your", "our", "their", "there")},
     **{w: _H_DROP for w in ("her", "him", "his", "he", "have", "has", "had")},
 }

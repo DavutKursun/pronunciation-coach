@@ -188,3 +188,17 @@ def test_is_confirmed_is_the_gop_check_of_one_difference():
     assert is_confirmed(other, None, -2.5, -1.0)               # no GOP for the word: keep it
     assert is_confirmed(other, 0.0, None)                      # no GOP check at all
     assert not is_confirmed(th, -1.5, -2.5)                    # without a pattern threshold: -2.5 for all
+
+
+# "into": the dictionary form is ˈɪntuː, eSpeak gives ɪntʊ, and in connected speech it is often ɪntə
+@pytest.mark.parametrize("heard", [["ɪ", "n", "t", "uː"], ["ɪ", "n", "t", "u"], ["ɪ", "n", "t", "ə"], ["ɪ", "n", "t", "ʊ"]])
+def test_into_has_its_dictionary_pronunciations(heard):
+    [r] = run(["into"], [["ɪ", "n", "t", "ʊ"]], heard)
+    assert r.issues == []
+
+
+def test_other_vowels_in_into_and_long_u_elsewhere_are_still_errors():
+    [r] = run(["into"], [["ɪ", "n", "t", "ʊ"]], ["ɪ", "n", "t", "o"])     # a Turkish o
+    assert r.issues
+    [r] = run(["book"], [["b", "ʊ", "k"]], ["b", "uː", "k"])              # no general ʊ -> uː acceptance
+    assert tips([r]) == ["short_u"]

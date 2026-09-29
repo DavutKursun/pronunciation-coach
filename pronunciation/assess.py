@@ -11,7 +11,7 @@ from .align import align
 from .ctc import forced_align, gop_scores
 from .feedback import WordResult, build_word_results, confirm_with_gop, top_tips
 from .g2p import phonemize_words, tokenize
-from .phonemes import FUNCTION_WORDS, SPLITS, WEAK_FORMS, merge_repeats, normalize
+from .phonemes import FUNCTION_WORDS, SPLITS, WORD_VARIANTS, merge_repeats, normalize
 
 # Order matters: the trained scorer expects exactly these columns.
 FEATURE_NAMES = [
@@ -69,7 +69,7 @@ def prepare_expected(words: list[str], raw_word_phones: list[list[str]]):
 def compare(words: list[str], raw_word_phones: list[list[str]], heard: list[str]) -> list[WordResult]:
     """Align what was heard with the expected phonemes and turn the differences into per-word results."""
     word_phones, flat, exp_word, function_flags = prepare_expected(words, raw_word_phones)
-    variants = [WEAK_FORMS.get(w.lower(), {}).get(p, set()) for w, phones in zip(words, word_phones) for p in phones]
+    variants = [WORD_VARIANTS.get(w.lower(), {}).get(p, set()) for w, phones in zip(words, word_phones) for p in phones]
     ops = align(flat, heard, function_flags, variants)
     return build_word_results(words, word_phones, ops, exp_word)
 
