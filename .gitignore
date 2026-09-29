@@ -10,3 +10,6 @@ data/cache/
 data/synthetic/
 data/saa/
 models/detector*.joblib
+data/l2arctic/
+data/cmu_arctic/
+data/finetune/

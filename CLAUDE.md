@@ -53,7 +53,8 @@ and compared with v1 on the same speakers (`scripts/compare_experiments.py`).
 **Targets** (final evaluation: SAA test half, Turkish speakers; aim a bit higher on dev, v1 lost
 about 9 points from dev to test):
 - precision at least 70% (kept), recall from 34% to at least 50% (stretch: precision 75%, recall 55%)
-- false alarms for native English speakers at most 2%
+- false alarms for native English speakers at most 2.5% on dev (10 speakers × 69 words ≈ 690 words: 0.5 points
+  is 3–4 words, within the noise; v1 had 1.7% on the SAA test half)
 - error-level catch: final devoicing (z → s) at least 60%, ð at least 40%, θ at least 75% (kept)
 
 **Data rules:**
@@ -62,6 +63,19 @@ about 9 points from dev to test):
   training, "val" (20%) for model selection and evaluation during development.
 - The SAA dev half may be used to choose thresholds and for early stopping, never as training data.
 - Synthetic recordings may be used as a regression check, not as training data for the detector.
+
+**Fine-tuning the recognizer (v2-3):**
+- L2-ARCTIC (CC BY-NC 4.0; 24 speakers, 6 L1s, ~150 hand-annotated sentences each) is split by speaker
+  (`data/l2arctic_split.json`): test = NJS, TLV, TNI, TXHC, YKWK, ZHAA (the usual MDD test set, e.g.
+  Peng et al., Interspeech 2021), dev = 6 (one per L1, 3 female / 3 male), train = 12. The test speakers
+  are locked like the SAA test half until v2-4 and only open with `--final`.
+- CMU ARCTIC US speakers bdl, slt, clb, rms (permissive license, attribution) keep the model from
+  hearing native speech as wrong. They read the same sentences, so the sentences annotated for the
+  L2-ARCTIC dev and test speakers are removed from their training data.
+- The Speech Accent Archive is never used for training (everyone reads the same paragraph), and
+  speechocean762 is not used to train the recognizer (its labels miss the Turkish errors, see v2-2).
+- No audio goes into git. A recognizer fine-tuned on L2-ARCTIC is CC BY-NC 4.0; the original model
+  stays Apache-2.0 and remains the default (`MODEL_ID` selects the recognizer in the app).
 
 ## Step workflow
 
@@ -89,7 +103,8 @@ The author gives the work one step at a time. At the end of every step:
 - [ ] 9. GitHub Actions CI
 - [x] v2-1. Experiment setup
 - [x] v2-2. Learned error detector
-- [ ] v2-3. Fine-tune the recognizer
+- [ ] v2-3a. Fine-tuning data and training setup
+- [ ] v2-3b. Evaluate the fine-tuned recognizer
 - [ ] v2-4. Final v1 vs v2 comparison
 - [ ] 10. Train on Colab
 - [ ] 11. Add results to the project

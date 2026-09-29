@@ -1,0 +1,33 @@
+{
+  "seed": 762,
+  "train": [
+    "ABA",
+    "ASI",
+    "ERMS",
+    "HKK",
+    "HQTV",
+    "LXC",
+    "MBMPS",
+    "NCC",
+    "RRBI",
+    "SKA",
+    "THV",
+    "YDCK"
+  ],
+  "dev": [
+    "BWC",
+    "EBVS",
+    "HJK",
+    "PNV",
+    "SVBI",
+    "YBAA"
+  ],
+  "test": [
+    "NJS",
+    "TLV",
+    "TNI",
+    "TXHC",
+    "YKWK",
+    "ZHAA"
+  ]
+}
