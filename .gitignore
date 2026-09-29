@@ -14,3 +14,4 @@ data/l2arctic/
 data/cmu_arctic/
 data/finetune/
 models/recognizer*/
+.DS_Store

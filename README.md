@@ -142,7 +142,159 @@ The test half is clearly worse than the dev half for Turkish speakers (recall 42
 | speechocean val: false alarm | 26.8% | 18.8% | -8.1% | [-10.3%, -6.2%] | yes |
 | speechocean val: F1 | 46.1% | 53.4% | +7.3% | [+5.3%, +9.2%] | yes |
 
-The detector is better on speechocean762 (the kind of speakers it was trained on) but much worse on Turkish speakers: speechocean's Mandarin-speaking experts rarely mark the typical Turkish errors (θ, ð, final devoicing) as wrong, so the model learns to ignore the very signals that matter here, even though they are in the recognizer's output (for example, the probability of *s* in the frames of a final *z* separates the experts' z → s errors with AUC 0.70 on dev). It is therefore not shipped with the demo, which keeps using v1; `python scripts/train_detector.py` rebuilds it, and it will be retrained on the output of a fine-tuned recognizer in v2-3.
+The detector is better on speechocean762 (the kind of speakers it was trained on) but much worse on Turkish speakers: speechocean's Mandarin-speaking experts rarely mark the typical Turkish errors (θ, ð, final devoicing) as wrong, so the model learns to ignore the very signals that matter here, even though they are in the recognizer's output (for example, the probability of *s* in the frames of a final *z* separates the experts' z → s errors with AUC 0.70 on dev). It is therefore not shipped with the demo, which keeps using v1; `python scripts/train_detector.py` rebuilds it. It is not retrained for the fine-tuned recognizer below: the label problem stays the same with any recognizer.
+
+**v2-3: a recognizer fine-tuned to hear the errors.** v2-2 showed that a model trained on labels that ignore Turkish errors learns to ignore them. So the recognizer itself was fine-tuned on what trained annotators *heard*: [L2-ARCTIC](https://psi.engr.tamu.edu/l2-arctic-corpus/) sentences of 12 non-native speakers (1,626 hand-annotated sentences; the target is our expected eSpeak phonemes with each annotated error applied, e.g. *these* → /d iː s/), plus 4,424 recordings of four native US speakers of CMU ARCTIC, weighted equally so native speech stays "correct" (`scripts/build_finetune_data.py`, `scripts/finetune_recognizer.py`). Training ran for 15 epochs (58 minutes) on a free Kaggle T4 GPU (`notebooks/finetune_kaggle.ipynb`). The fine-tuned model is CC BY-NC 4.0 because of L2-ARCTIC, so the app keeps the original recognizer as its default (`MODEL_ID` switches, see the license section).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="results/finetune/training_curves_dark.png">
+  <img alt="Fine-tuning curves: training loss falls from 1.2 to 0.4; L2-ARCTIC dev F1 rises from 28.8% (original model) to 48.7% at epoch 14; phone error rate falls from 21.5% to 13.3% on L2-ARCTIC dev and from 8.8% to 1.9% on native dev" src="results/finetune/training_curves.png">
+</picture>
+
+<details><summary>The same numbers per epoch</summary>
+
+| Epoch | L2 dev F1 | precision | recall | L2 dev PER (vs heard) | native dev PER | training loss |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 (original) | 28.8% | 33.6% | 25.2% | 21.5% | 8.8% | – |
+| 1 | 31.2% | 38.0% | 26.5% | 19.2% | 7.1% | 1.06 |
+| 2 | 31.8% | 40.7% | 26.1% | 17.0% | 4.7% | 0.81 |
+| 3 | 38.8% | 47.6% | 32.8% | 15.5% | 3.3% | 0.67 |
+| 4 | 39.0% | 48.9% | 32.4% | 15.1% | 3.0% | 0.60 |
+| 5 | 40.0% | 51.4% | 32.7% | 14.6% | 2.6% | 0.56 |
+| 6 | 44.9% | 54.2% | 38.3% | 14.0% | 2.3% | 0.53 |
+| 7 | 43.9% | 53.5% | 37.2% | 14.0% | 2.2% | 0.49 |
+| 8 | 42.9% | 53.8% | 35.6% | 13.9% | 2.2% | 0.45 |
+| 9 | 46.6% | 55.7% | 40.1% | 13.6% | 2.0% | 0.44 |
+| 10 | 46.9% | 55.4% | 40.7% | 13.5% | 1.9% | 0.43 |
+| 11 | 47.5% | 55.3% | 41.7% | 13.5% | 2.0% | 0.42 |
+| 12 | 47.9% | 55.5% | 42.2% | 13.4% | 2.0% | 0.41 |
+| 13 | 48.5% | 56.0% | 42.8% | 13.4% | 2.0% | 0.40 |
+| 14 | 48.7% | 55.5% | 43.4% | 13.4% | 1.9% | 0.41 |
+| 15 | 48.6% | 56.0% | 42.9% | 13.3% | 1.9% | 0.40 |
+
+</details>
+
+**L2-ARCTIC dev** (6 speakers the model never heard, `scripts/evaluate_l2arctic.py`). These numbers are **optimistic**: all 300 annotated L2-ARCTIC sentences are also read by the training speakers, and the native dev set uses the same four CMU speakers as training (other sentences). They show what the model learned, not how it does on new text.
+
+| Recognizer | PER vs heard | PER vs expected | MDD precision | recall | F1 | diagnosis accuracy | native dev PER | native sounds flagged |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| original | 21.5% | 13.7% | 33.6% | 25.2% | 28.8% | 62.4% | 8.7% | 4.5% |
+| fine-tuned, epoch 3 | 15.5% | 10.3% | 47.6% | 32.8% | 38.8% | 78.2% | 3.3% | 2.4% |
+| fine-tuned, epoch 14 (best) | 13.4% | 11.0% | 55.5% | 43.3% | 48.7% | 82.3% | 1.9% | 1.5% |
+
+Share of the annotators' errors where the recognizer did not output the expected sound:
+
+| Error the annotator heard | errors | original | epoch 3 | epoch 14 (best) |
+| --- | --- | --- | --- | --- |
+| z → s | 441 | 7% | 52% | 65% |
+| θ → t | 27 | 37% | 37% | 59% |
+| ð → d | 328 | 3% | 31% | 67% |
+| ɪ → iː | 134 | 10% | 29% | 53% |
+| w → v | 6 | 17% | 0% | 0% |
+| æ → ɛ | 36 | 6% | 3% | 3% |
+| ɹ → ɾ | 108 | 16% | 33% | 46% |
+
+**Speech Accent Archive dev: the real question.** Different text, Turkish speakers, the same v1 rules. v1's GOP thresholds were chosen for the original recognizer's probabilities, so they were chosen again for every recognizer on SAA dev (`scripts/tune_gop_thresholds.py`, `pronunciation/thresholds.py`): the pair with the most Turkish recall while precision stays at least 70% and native false alarms at most 2.5%. As the thresholds are then chosen and measured on the same speakers, the honest estimate comes from speaker cross-validation (the thresholds for each speaker are chosen without them). The original recognizer gets the same treatment, so the comparison is fair.
+
+| System | Thresholds | Turkish precision | recall | F1 | error-level catch | native false alarm |
+| --- | --- | --- | --- | --- | --- | --- |
+| v1 | as is: -2.5 / -1 | 82.3% | 42.4% | 0.559 | 39.7% | 2.1% |
+| v1 | re-selected (dev, optimistic): -2 / 0 | 79.2% | 48.5% | 0.601 | 43.3% | 2.3% |
+| v1 | re-selected, honest (CV): per fold | 79.2% | 48.5% | 0.601 | 42.5% | 2.4% |
+| v1 | no GOP check (recognizer alone): none / none | 65.3% | 57.9% | 0.614 | 47.7% | 12.1% |
+| v2-3-best | as is: -2.5 / -1 | 85.6% | 52.6% | 0.652 | 47.9% | 1.0% |
+| v2-3-best | re-selected (dev, optimistic): -1 / none | 82.0% | 65.7% | 0.729 | 56.5% | 2.4% |
+| v2-3-best | re-selected, honest (CV): per fold | 81.3% | 64.0% | 0.716 | 55.5% | 2.6% |
+| v2-3-best | no GOP check (recognizer alone): none / none | 73.7% | 71.5% | 0.726 | 59.3% | 6.8% |
+| v2-3-epoch3 | as is: -2.5 / -1 | 84.6% | 47.1% | 0.605 | 45.7% | 2.4% |
+| v2-3-epoch3 | re-selected (dev, optimistic): -1.5 / -1 | 83.6% | 49.3% | 0.620 | 47.5% | 2.4% |
+| v2-3-epoch3 | re-selected, honest (CV): per fold | 83.6% | 51.0% | 0.633 | 47.5% | 2.9% |
+| v2-3-epoch3 | no GOP check (recognizer alone): none / none | 74.5% | 68.1% | 0.712 | 59.1% | 8.8% |
+
+Error-level catch per pattern (Turkish speakers):
+
+| System | final devoicing | z → s | ð | θ | w → v | ɪ → i | r |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| v1 (as is) | 38% | 39% | 29% | 89% | 64% | 18% | 24% |
+| v1 (re-selected, honest (CV)) | 40% | 40% | 33% | 94% | 70% | 20% | 31% |
+| v2-3-best (as is) | 52% | 67% | 84% | 77% | 33% | 30% | 31% |
+| v2-3-best (re-selected, honest (CV)) | 60% | 77% | 90% | 91% | 36% | 40% | 38% |
+| v2-3-epoch3 (as is) | 60% | 69% | 45% | 74% | 24% | 30% | 17% |
+| v2-3-epoch3 (re-selected, honest (CV)) | 62% | 73% | 55% | 83% | 27% | 35% | 21% |
+
+Honest (cross-validated) comparison, v1 → fine-tuned (epoch 14), paired bootstrap over speakers; "real" = the 95% interval excludes zero:
+
+| Metric | v1 (CV) | v2-3-best (CV) | Difference | 95% CI | Real? |
+| --- | --- | --- | --- | --- | --- |
+| SAA dev, Turkish: recall | 48.5% | 64.0% | +15.5% | [+10.2%, +21.8%] | yes |
+| SAA dev, Turkish: precision | 79.2% | 81.3% | +2.2% | [-4.0%, +7.4%] | no |
+| SAA dev, Turkish: F1 | 60.1% | 71.6% | +11.5% | [+8.1%, +15.5%] | yes |
+| SAA dev, Turkish: false alarm | 10.0% | 11.5% | +1.5% | [-3.9%, +5.6%] | no |
+| SAA dev, Turkish: error-level catch | 42.5% | 55.5% | +13.0% | [+7.3%, +19.4%] | yes |
+| SAA dev, Turkish: final devoicing catch | 39.7% | 60.3% | +20.5% | [+8.5%, +32.4%] | yes |
+| SAA dev, Turkish: z → s catch | 40.0% | 76.7% | +36.7% | [+23.0%, +51.1%] | yes |
+| SAA dev, Turkish: ð catch | 32.7% | 89.8% | +57.1% | [+38.5%, +73.1%] | yes |
+| SAA dev, Turkish: θ catch | 94.3% | 91.4% | -2.9% | [-20.0%, +15.0%] | no |
+| SAA dev, Turkish: w catch | 69.7% | 36.4% | -33.3% | [-46.0%, -18.2%] | yes |
+| SAA dev, Turkish: ɪ → i catch | 20.0% | 40.0% | +20.0% | [+6.7%, +34.1%] | yes |
+| SAA dev, Turkish: r catch | 31.0% | 37.9% | +6.9% | [-8.0%, +21.1%] | no |
+| SAA dev, English: false alarm | 2.4% | 2.6% | +0.2% | [-1.5%, +1.7%] | no |
+
+The early checkpoint (epoch 3) was kept in case the best one had won L2-ARCTIC dev by memorizing its sentences; on SAA dev it is clearly worse than epoch 14 (honest recall 51.0% vs 64.0%, difference -13.0% [-19.4%, -7.2%]; ð catch 55.1% vs 89.8%), so the late checkpoint did not just memorize.
+
+**Canonical bias.** At the sounds the Speech Accent Archive expert marked wrong (Turkish speakers, before any GOP check), the original recognizer wrote the expected sound in 52.3% of cases and the fine-tuned one in 40.7%; it wrote the expert's own sound in 31.9% vs 39.3%. On whole paragraphs the phone error rate against the expert barely moves, because most of it is transcription convention (even native speakers are 23–25% away from their expert transcription):
+
+| Recognizer | Turkish: PER vs expert | vs expected | native: PER vs expert | vs expected |
+| --- | --- | --- | --- | --- |
+| original | 34.9% | 24.2% | 23.4% | 13.8% |
+| fine-tuned (best) | 34.7% | 21.8% | 25.3% | 3.8% |
+
+**Regression checks** (v1 → fine-tuned with the new thresholds): speechocean762's Mandarin-speaking experts are lenient, so the stricter system flags more words they accept; on the synthetic Kokoro set it catches fewer errors: an extra vowel before a consonant cluster is caught 10% of the time instead of 98% (the added vowel right after "say" in the carrier sentence goes unheard; on SAA dev 7 of 11 such errors are caught vs 5 for v1), ð → z 35% vs 65%, æ → ɛ 58% vs 81%.
+
+| Metric | v1 | v2-3-best-tuned | Difference | 95% CI | Real? |
+| --- | --- | --- | --- | --- | --- |
+| speechocean val: recall | 83.5% | 92.8% | +9.3% | [+5.7%, +13.8%] | yes |
+| speechocean val: precision | 31.8% | 27.3% | -4.5% | [-7.1%, -2.2%] | yes |
+| speechocean val: false alarm | 26.8% | 37.0% | +10.2% | [+7.5%, +12.9%] | yes |
+| speechocean val: F1 | 46.1% | 42.2% | -3.9% | [-6.8%, -1.1%] | yes |
+| synthetic Kokoro: catch | 88.7% | 77.6% | -11.1% | [-14.9%, -7.1%] | yes |
+| synthetic Kokoro: false alarm | 3.6% | 6.5% | +3.0% | [+0.6%, +5.6%] | yes |
+
+**v2 targets on SAA dev** (the final check is on the SAA test half in v2-4):
+
+| Target (SAA dev, Turkish speakers) | Goal | v1 | v2-3 chosen, on all dev speakers | v2-3 chosen, honest (CV) | Met (honest)? |
+| --- | --- | --- | --- | --- | --- |
+| Turkish precision | >= 70% | 82.3% | 82.0% | 81.3% | yes |
+| Turkish recall | >= 50% (stretch 55%) | 42.4% | 65.7% | 64.0% | yes |
+| Native false alarm | <= 2.5% | 2.1% | 2.4% | 2.6% | no |
+| Final devoicing catch | >= 60% | 38.4% | 62.3% | 60.3% | yes |
+| ð catch | >= 40% | 28.6% | 89.8% | 89.8% | yes |
+| θ catch | >= 75% | 88.6% | 91.4% | 91.4% | yes |
+| (z → s alone) | – | 38.9% | 78.9% | 76.7% | – |
+
+**Decision:** continue with the epoch-14 checkpoint and thresholds -1.0 / "always" (a typical Turkish-speaker error is reported whatever its GOP; other differences need a GOP below -1.0). Honest dev estimate: precision 81.3%, recall 64.0%, F1 0.716. Known weak spots to watch on the test sets: **w → v** (caught 36% instead of 70%: the model now tends to hear a Turkish [v] or [β] as w; L2-ARCTIC has few such errors to learn from), native false alarms just above the limit (2.6%), final devoicing just at 60%, "into" heard with /uː/ for native speakers, and the regressions above.
+
+Examples from SAA dev (`scripts/saa_examples.py`):
+
+**Turkish speakers: real errors v2-3-best-tuned catches and v1 missed**
+
+| Speaker | Word | Expected | Expert wrote | v1 heard | v2-3-best-tuned heard | v2-3-best-tuned reports |
+| --- | --- | --- | --- | --- | --- | --- |
+| turkish1 | kids | /k ɪ d z/ | [kɪd̥s] | /k ɪ d z/ | /k ɪ d s/ | z → s |
+| turkish1 | the | /ð ə/ | [d̪ə] | /ð ə/ | /d ə/ | ð → d |
+| turkish12 | three | /θ ɹ iː/ | [t̪riː] | /t ɹ iː/ | /t ɹ iː/ | θ → t |
+| turkish2 | five | /f aɪ v/ | [faɪf] | /f aɪ v/ | /f aɪ f/ | v → f |
+| turkish1 | and | /æ n d/ | [æ̆ntʰ] | /æ n d/ | /æ n t/ | d → t |
+
+**US English speakers: new false alarms of v2-3-best-tuned**
+
+| Speaker | Word | Expected | Expert wrote | v1 heard | v2-3-best-tuned heard | v2-3-best-tuned reports |
+| --- | --- | --- | --- | --- | --- | --- |
+| english1 | into | /ɪ n t ʊ/ | [ɪ̃ntə] | /ɪ n t ʊ/ | /ɪ n t uː/ | ʊ → uː |
+| english142 | into | /ɪ n t ʊ/ | [ɪ̃nɾə] | /ɪ n t ə/ | /ɪ n t uː/ | ʊ → uː |
+| english158 | into | /ɪ n t ʊ/ | [ɪ̃ntə] | /ɪ n t ə/ | /ɪ n t uː/ | ʊ → uː |
+| english161 | Please | /p l iː z/ | [pʰliːz̥] | /p l iː z/ | /p l iː s/ | z → s |
+| english161 | thick | /θ ɪ k/ | [θɪk] | /θ ɪ k/ | /t ɪ k/ | θ → t |
 
 ## Project structure
 
@@ -163,6 +315,7 @@ pronunciation/
   speechocean.py  speechocean762 phone labels (ARPAbet) moved onto our expected phonemes
   detector.py     v2 learned error detector: features per expected sound, red/yellow decision
   l2arctic.py     L2-ARCTIC annotations -> what the annotator heard, in our phoneme style
+  thresholds.py   choose the GOP confirmation thresholds per recognizer, with speaker cross-validation
 scripts/
   extract_features.py   run the pipeline on speechocean762
   evaluate_words.py     word-level false alarm / catch rates on speechocean762 (val speakers)
@@ -181,6 +334,9 @@ scripts/
   evaluate_l2arctic.py  PER and mispronunciation detection (MDD) of a recognizer on L2-ARCTIC
   finetune_recognizer.py  fine-tune the recognizer (run on Kaggle: notebooks/finetune_kaggle.ipynb)
   package_kaggle.py     pack the fine-tuning data and code into one zip for Kaggle
+  tune_gop_thresholds.py  re-choose the GOP thresholds for each recognizer on SAA dev (honest CV estimate)
+  saa_examples.py       SAA dev words where two systems disagree (new catches, new false alarms)
+  plot_training.py      fine-tuning curves for the README (results/finetune/)
 experiments/      system definitions (v1.json, ...)
   train_scorer.py       train and evaluate the scoring model
   deploy_space.py       publish the demo to Hugging Face Spaces
