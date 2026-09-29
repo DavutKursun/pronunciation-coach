@@ -1,0 +1,1871 @@
+{
+  "name": "v1-gen",
+  "recognizer": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+  "settings": {
+    "gop_threshold": -2.0,
+    "pattern_threshold": 0.0,
+    "hidden_thresholds": {
+      "th_voiceless": null,
+      "th_voiced": null,
+      "w": null,
+      "v": null,
+      "long_ee": null,
+      "short_i": null,
+      "ae": null,
+      "uh": null,
+      "short_u": null,
+      "long_oo": null,
+      "er": null,
+      "ng": null,
+      "r": -4.0,
+      "final_voicing": null
+    }
+  },
+  "fallback": false,
+  "selected": {
+    "precision": 0.7876106194690266,
+    "recall": 0.5028248587570622,
+    "f1": 0.6137931034482759,
+    "turkish_false_alarm": 0.1023454157782516,
+    "english_false_alarm": 0.022764227642276424,
+    "ci95": {
+      "turkish": {
+        "false_alarm": [
+          0.055026958611310586,
+          0.16968874928612218
+        ],
+        "recall": [
+          0.399984520123839,
+          0.5851405994642225
+        ],
+        "precision": [
+          0.7373715973292244,
+          0.843435441370224
+        ],
+        "f1": [
+          0.5258615846571097,
+          0.6713301570950295
+        ]
+      },
+      "english": {
+        "false_alarm": [
+          0.008089962417788912,
+          0.040612584351003574
+        ],
+        "recall": [
+          0.056318466353677626,
+          0.18461538461538463
+        ],
+        "precision": [
+          0.19226190476190477,
+          0.625
+        ],
+        "f1": [
+          0.08823529411764705,
+          0.2772414741474147
+        ]
+      }
+    },
+    "patterns": {
+      "th_voiceless": {
+        "errors": 35,
+        "found": 33,
+        "reports": 37,
+        "right": 33,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "th_voiced": {
+        "errors": 49,
+        "found": 16,
+        "reports": 16,
+        "right": 12,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "w": {
+        "errors": 33,
+        "found": 23,
+        "reports": 25,
+        "right": 23,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "v": {
+        "errors": 0,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "long_ee": {
+        "errors": 6,
+        "found": 4,
+        "reports": 10,
+        "right": 3,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "short_i": {
+        "errors": 40,
+        "found": 8,
+        "reports": 9,
+        "right": 8,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "ae": {
+        "errors": 27,
+        "found": 16,
+        "reports": 16,
+        "right": 10,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "uh": {
+        "errors": 0,
+        "found": 0,
+        "reports": 2,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "short_u": {
+        "errors": 0,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "long_oo": {
+        "errors": 3,
+        "found": 0,
+        "reports": 7,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "er": {
+        "errors": 1,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "ng": {
+        "errors": 3,
+        "found": 0,
+        "reports": 1,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "r": {
+        "errors": 29,
+        "found": 20,
+        "reports": 21,
+        "right": 19,
+        "hidden_reports": 13,
+        "hidden_right": 11
+      },
+      "final_voicing": {
+        "errors": 146,
+        "found": 59,
+        "reports": 83,
+        "right": 52,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "epenthesis": {
+        "errors": 11,
+        "found": 5,
+        "reports": 19,
+        "right": 5,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      }
+    },
+    "report_types": {
+      "Turkish pattern greedy decoding heard": {
+        "words": 179,
+        "wrong_words": 149,
+        "reports": 233,
+        "on_expert_sound": 160,
+        "right_pattern": 154,
+        "native_words": 4,
+        "native_correct_words": 615
+      },
+      "other difference": {
+        "words": 90,
+        "wrong_words": 67,
+        "reports": 127,
+        "on_expert_sound": 58,
+        "right_pattern": null,
+        "native_words": 11,
+        "native_correct_words": 615
+      },
+      "hidden pattern": {
+        "words": 13,
+        "wrong_words": 11,
+        "reports": 13,
+        "on_expert_sound": 11,
+        "right_pattern": 11,
+        "native_words": 0,
+        "native_correct_words": 615
+      }
+    }
+  },
+  "cv": {
+    "precision": 0.7955555555555556,
+    "recall": 0.5056497175141242,
+    "f1": 0.6183074265975821,
+    "turkish_false_alarm": 0.09808102345415778,
+    "english_false_alarm": 0.026016260162601626,
+    "ci95": {
+      "turkish": {
+        "false_alarm": [
+          0.05052797833935018,
+          0.16471667566109005
+        ],
+        "recall": [
+          0.40066198200918957,
+          0.5929942435625394
+        ],
+        "precision": [
+          0.7462667626335329,
+          0.8532949865926066
+        ],
+        "f1": [
+          0.5296515956468988,
+          0.678720445062587
+        ]
+      },
+      "english": {
+        "false_alarm": [
+          0.011058015757920075,
+          0.046436422538470426
+        ],
+        "recall": [
+          0.056318466353677626,
+          0.18461538461538463
+        ],
+        "precision": [
+          0.17647058823529413,
+          0.5833333333333334
+        ],
+        "f1": [
+          0.08693314633006077,
+          0.2718667255075021
+        ]
+      }
+    },
+    "patterns": {
+      "th_voiceless": {
+        "errors": 35,
+        "found": 33,
+        "reports": 37,
+        "right": 33,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "th_voiced": {
+        "errors": 49,
+        "found": 16,
+        "reports": 16,
+        "right": 12,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "w": {
+        "errors": 33,
+        "found": 23,
+        "reports": 25,
+        "right": 23,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "v": {
+        "errors": 0,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "long_ee": {
+        "errors": 6,
+        "found": 4,
+        "reports": 10,
+        "right": 3,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "short_i": {
+        "errors": 40,
+        "found": 8,
+        "reports": 9,
+        "right": 8,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "ae": {
+        "errors": 27,
+        "found": 15,
+        "reports": 16,
+        "right": 10,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "uh": {
+        "errors": 0,
+        "found": 0,
+        "reports": 2,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "short_u": {
+        "errors": 0,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "long_oo": {
+        "errors": 3,
+        "found": 0,
+        "reports": 7,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "er": {
+        "errors": 1,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "ng": {
+        "errors": 3,
+        "found": 0,
+        "reports": 1,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "r": {
+        "errors": 29,
+        "found": 14,
+        "reports": 13,
+        "right": 13,
+        "hidden_reports": 5,
+        "hidden_right": 5
+      },
+      "final_voicing": {
+        "errors": 146,
+        "found": 61,
+        "reports": 86,
+        "right": 55,
+        "hidden_reports": 3,
+        "hidden_right": 3
+      },
+      "epenthesis": {
+        "errors": 11,
+        "found": 5,
+        "reports": 19,
+        "right": 5,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      }
+    },
+    "report_types": {
+      "Turkish pattern greedy decoding heard": {
+        "words": 179,
+        "wrong_words": 149,
+        "reports": 233,
+        "on_expert_sound": 160,
+        "right_pattern": 154,
+        "native_words": 4,
+        "native_correct_words": 615
+      },
+      "other difference": {
+        "words": 86,
+        "wrong_words": 63,
+        "reports": 124,
+        "on_expert_sound": 54,
+        "right_pattern": null,
+        "native_words": 12,
+        "native_correct_words": 615
+      },
+      "hidden pattern": {
+        "words": 8,
+        "wrong_words": 8,
+        "reports": 8,
+        "on_expert_sound": 8,
+        "right_pattern": 8,
+        "native_words": 1,
+        "native_correct_words": 615
+      }
+    }
+  },
+  "v2_3c_cv": {
+    "precision": 0.7901785714285714,
+    "recall": 0.5,
+    "f1": 0.6124567474048442,
+    "turkish_false_alarm": 0.10021321961620469,
+    "english_false_alarm": 0.024390243902439025,
+    "ci95": {
+      "turkish": {
+        "false_alarm": [
+          0.05312400961202868,
+          0.16552677578261554
+        ],
+        "recall": [
+          0.4045946611956721,
+          0.5766238506019528
+        ],
+        "precision": [
+          0.7395720108695653,
+          0.8471716302289549
+        ],
+        "f1": [
+          0.5321448789923103,
+          0.6666666666666666
+        ]
+      },
+      "english": {
+        "false_alarm": [
+          0.008089962417788912,
+          0.0454565355835058
+        ],
+        "recall": [
+          0.036347402597402594,
+          0.1667056074766353
+        ],
+        "precision": [
+          0.13333333333333333,
+          0.6
+        ],
+        "f1": [
+          0.058823529411764705,
+          0.25319907940161085
+        ]
+      }
+    },
+    "patterns": {
+      "th_voiceless": {
+        "errors": 35,
+        "found": 33,
+        "reports": 37,
+        "right": 33,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "th_voiced": {
+        "errors": 49,
+        "found": 16,
+        "reports": 16,
+        "right": 12,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "w": {
+        "errors": 33,
+        "found": 25,
+        "reports": 28,
+        "right": 25,
+        "hidden_reports": 3,
+        "hidden_right": 2
+      },
+      "v": {
+        "errors": 0,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "long_ee": {
+        "errors": 6,
+        "found": 4,
+        "reports": 10,
+        "right": 3,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "short_i": {
+        "errors": 40,
+        "found": 8,
+        "reports": 9,
+        "right": 8,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "ae": {
+        "errors": 27,
+        "found": 15,
+        "reports": 16,
+        "right": 10,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "uh": {
+        "errors": 0,
+        "found": 0,
+        "reports": 2,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "short_u": {
+        "errors": 0,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "long_oo": {
+        "errors": 3,
+        "found": 0,
+        "reports": 7,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "er": {
+        "errors": 1,
+        "found": 0,
+        "reports": 0,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "ng": {
+        "errors": 3,
+        "found": 0,
+        "reports": 1,
+        "right": 0,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "r": {
+        "errors": 29,
+        "found": 9,
+        "reports": 8,
+        "right": 8,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "final_voicing": {
+        "errors": 146,
+        "found": 58,
+        "reports": 83,
+        "right": 52,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      },
+      "epenthesis": {
+        "errors": 11,
+        "found": 5,
+        "reports": 19,
+        "right": 5,
+        "hidden_reports": 0,
+        "hidden_right": 0
+      }
+    },
+    "report_types": {
+      "Turkish pattern greedy decoding heard": {
+        "words": 179,
+        "wrong_words": 149,
+        "reports": 233,
+        "on_expert_sound": 160,
+        "right_pattern": 154,
+        "native_words": 4,
+        "native_correct_words": 615
+      },
+      "other difference": {
+        "words": 86,
+        "wrong_words": 63,
+        "reports": 124,
+        "on_expert_sound": 54,
+        "right_pattern": null,
+        "native_words": 12,
+        "native_correct_words": 615
+      },
+      "hidden pattern": {
+        "words": 3,
+        "wrong_words": 2,
+        "reports": 3,
+        "on_expert_sound": 2,
+        "right_pattern": 2,
+        "native_words": 0,
+        "native_correct_words": 615
+      }
+    }
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "settings": {
+        "gop_threshold": -1.5,
+        "pattern_threshold": 0.0,
+        "hidden_thresholds": {
+          "th_voiceless": null,
+          "th_voiced": null,
+          "w": null,
+          "v": null,
+          "long_ee": null,
+          "short_i": null,
+          "ae": null,
+          "uh": null,
+          "short_u": null,
+          "long_oo": null,
+          "er": null,
+          "ng": null,
+          "r": null,
+          "final_voicing": -1.0
+        }
+      },
+      "fallback": false,
+      "speakers": [
+        "english1",
+        "english17",
+        "turkish1",
+        "turkish2"
+      ]
+    },
+    {
+      "fold": 1,
+      "settings": {
+        "gop_threshold": -2.0,
+        "pattern_threshold": 0.0,
+        "hidden_thresholds": {
+          "th_voiceless": null,
+          "th_voiced": null,
+          "w": null,
+          "v": null,
+          "long_ee": null,
+          "short_i": null,
+          "ae": null,
+          "uh": null,
+          "short_u": null,
+          "long_oo": null,
+          "er": null,
+          "ng": null,
+          "r": -4.0,
+          "final_voicing": null
+        }
+      },
+      "fallback": false,
+      "speakers": [
+        "english124",
+        "english18",
+        "turkish10",
+        "turkish21"
+      ]
+    },
+    {
+      "fold": 2,
+      "settings": {
+        "gop_threshold": -2.0,
+        "pattern_threshold": 0.0,
+        "hidden_thresholds": {
+          "th_voiceless": null,
+          "th_voiced": null,
+          "w": null,
+          "v": null,
+          "long_ee": null,
+          "short_i": null,
+          "ae": null,
+          "uh": null,
+          "short_u": null,
+          "long_oo": null,
+          "er": null,
+          "ng": null,
+          "r": -4.0,
+          "final_voicing": null
+        }
+      },
+      "fallback": false,
+      "speakers": [
+        "english133",
+        "english21",
+        "turkish12",
+        "turkish23"
+      ]
+    },
+    {
+      "fold": 3,
+      "settings": {
+        "gop_threshold": -2.0,
+        "pattern_threshold": 0.0,
+        "hidden_thresholds": {
+          "th_voiceless": null,
+          "th_voiced": null,
+          "w": null,
+          "v": null,
+          "long_ee": null,
+          "short_i": null,
+          "ae": null,
+          "uh": null,
+          "short_u": null,
+          "long_oo": null,
+          "er": null,
+          "ng": null,
+          "r": -4.0,
+          "final_voicing": null
+        }
+      },
+      "fallback": false,
+      "speakers": [
+        "english142",
+        "english81",
+        "turkish14",
+        "turkish24"
+      ]
+    },
+    {
+      "fold": 4,
+      "settings": {
+        "gop_threshold": -3.0,
+        "pattern_threshold": 0.0,
+        "hidden_thresholds": {
+          "th_voiceless": null,
+          "th_voiced": null,
+          "w": null,
+          "v": null,
+          "long_ee": null,
+          "short_i": null,
+          "ae": null,
+          "uh": null,
+          "short_u": null,
+          "long_oo": null,
+          "er": null,
+          "ng": null,
+          "r": -4.0,
+          "final_voicing": null
+        }
+      },
+      "fallback": false,
+      "speakers": [
+        "english158",
+        "turkish17",
+        "turkish6"
+      ]
+    },
+    {
+      "fold": 5,
+      "settings": {
+        "gop_threshold": -2.0,
+        "pattern_threshold": 0.0,
+        "hidden_thresholds": {
+          "th_voiceless": null,
+          "th_voiced": null,
+          "w": null,
+          "v": null,
+          "long_ee": null,
+          "short_i": null,
+          "ae": null,
+          "uh": null,
+          "short_u": null,
+          "long_oo": null,
+          "er": null,
+          "ng": null,
+          "r": -4.0,
+          "final_voicing": null
+        }
+      },
+      "fallback": false,
+      "speakers": [
+        "english161",
+        "turkish19",
+        "turkish7"
+      ]
+    }
+  ],
+  "units": {
+    "cv": {
+      "saa_dev_turkish": {
+        "turkish1": [
+          23,
+          9,
+          14,
+          23
+        ],
+        "turkish10": [
+          6,
+          1,
+          16,
+          44
+        ],
+        "turkish12": [
+          20,
+          5,
+          15,
+          29
+        ],
+        "turkish14": [
+          11,
+          7,
+          14,
+          37
+        ],
+        "turkish17": [
+          18,
+          1,
+          16,
+          34
+        ],
+        "turkish19": [
+          33,
+          10,
+          14,
+          12
+        ],
+        "turkish2": [
+          26,
+          6,
+          9,
+          26
+        ],
+        "turkish21": [
+          1,
+          1,
+          13,
+          54
+        ],
+        "turkish23": [
+          16,
+          1,
+          15,
+          36
+        ],
+        "turkish24": [
+          6,
+          2,
+          15,
+          46
+        ],
+        "turkish6": [
+          6,
+          1,
+          18,
+          44
+        ],
+        "turkish7": [
+          13,
+          2,
+          16,
+          38
+        ]
+      },
+      "saa_dev_english": {
+        "english1": [
+          0,
+          1,
+          0,
+          68
+        ],
+        "english124": [
+          0,
+          2,
+          7,
+          60
+        ],
+        "english133": [
+          0,
+          1,
+          3,
+          65
+        ],
+        "english142": [
+          0,
+          3,
+          7,
+          59
+        ],
+        "english158": [
+          1,
+          0,
+          2,
+          66
+        ],
+        "english161": [
+          2,
+          2,
+          8,
+          57
+        ],
+        "english17": [
+          2,
+          6,
+          12,
+          47
+        ],
+        "english18": [
+          2,
+          0,
+          7,
+          60
+        ],
+        "english21": [
+          2,
+          1,
+          8,
+          56
+        ],
+        "english81": [
+          0,
+          0,
+          8,
+          61
+        ]
+      },
+      "saa_dev_turkish_errors": {
+        "turkish1": [
+          28,
+          54
+        ],
+        "turkish10": [
+          6,
+          26
+        ],
+        "turkish12": [
+          28,
+          52
+        ],
+        "turkish14": [
+          12,
+          33
+        ],
+        "turkish17": [
+          24,
+          53
+        ],
+        "turkish19": [
+          42,
+          62
+        ],
+        "turkish2": [
+          35,
+          57
+        ],
+        "turkish21": [
+          0,
+          15
+        ],
+        "turkish23": [
+          19,
+          44
+        ],
+        "turkish24": [
+          5,
+          22
+        ],
+        "turkish6": [
+          6,
+          30
+        ],
+        "turkish7": [
+          15,
+          44
+        ]
+      },
+      "saa_dev_final_voicing": {
+        "turkish1": [
+          7,
+          12
+        ],
+        "turkish10": [
+          1,
+          10
+        ],
+        "turkish12": [
+          12,
+          20
+        ],
+        "turkish14": [
+          5,
+          11
+        ],
+        "turkish17": [
+          8,
+          14
+        ],
+        "turkish19": [
+          10,
+          12
+        ],
+        "turkish2": [
+          7,
+          11
+        ],
+        "turkish21": [
+          0,
+          8
+        ],
+        "turkish23": [
+          2,
+          12
+        ],
+        "turkish24": [
+          0,
+          4
+        ],
+        "turkish6": [
+          1,
+          15
+        ],
+        "turkish7": [
+          8,
+          17
+        ]
+      },
+      "saa_dev_z_to_s": {
+        "turkish1": [
+          7,
+          7
+        ],
+        "turkish10": [
+          1,
+          7
+        ],
+        "turkish12": [
+          6,
+          11
+        ],
+        "turkish14": [
+          2,
+          5
+        ],
+        "turkish17": [
+          6,
+          7
+        ],
+        "turkish19": [
+          6,
+          6
+        ],
+        "turkish2": [
+          2,
+          6
+        ],
+        "turkish21": [
+          0,
+          9
+        ],
+        "turkish23": [
+          1,
+          8
+        ],
+        "turkish24": [
+          0,
+          4
+        ],
+        "turkish6": [
+          1,
+          10
+        ],
+        "turkish7": [
+          5,
+          10
+        ]
+      },
+      "saa_dev_th_voiced": {
+        "turkish1": [
+          3,
+          4
+        ],
+        "turkish10": [
+          0,
+          2
+        ],
+        "turkish12": [
+          0,
+          5
+        ],
+        "turkish14": [
+          1,
+          6
+        ],
+        "turkish17": [
+          1,
+          6
+        ],
+        "turkish19": [
+          3,
+          5
+        ],
+        "turkish2": [
+          3,
+          4
+        ],
+        "turkish21": [
+          0,
+          2
+        ],
+        "turkish23": [
+          1,
+          4
+        ],
+        "turkish24": [
+          2,
+          6
+        ],
+        "turkish6": [
+          0,
+          1
+        ],
+        "turkish7": [
+          2,
+          4
+        ]
+      },
+      "saa_dev_th_voiceless": {
+        "turkish1": [
+          4,
+          4
+        ],
+        "turkish10": [
+          3,
+          3
+        ],
+        "turkish12": [
+          4,
+          4
+        ],
+        "turkish14": [
+          4,
+          4
+        ],
+        "turkish17": [
+          4,
+          4
+        ],
+        "turkish19": [
+          4,
+          4
+        ],
+        "turkish2": [
+          4,
+          4
+        ],
+        "turkish21": [
+          0,
+          0
+        ],
+        "turkish23": [
+          4,
+          4
+        ],
+        "turkish24": [
+          0,
+          2
+        ],
+        "turkish6": [
+          0,
+          0
+        ],
+        "turkish7": [
+          2,
+          2
+        ]
+      },
+      "saa_dev_w": {
+        "turkish1": [
+          2,
+          4
+        ],
+        "turkish10": [
+          0,
+          1
+        ],
+        "turkish12": [
+          5,
+          5
+        ],
+        "turkish14": [
+          0,
+          0
+        ],
+        "turkish17": [
+          2,
+          3
+        ],
+        "turkish19": [
+          5,
+          5
+        ],
+        "turkish2": [
+          0,
+          0
+        ],
+        "turkish21": [
+          0,
+          0
+        ],
+        "turkish23": [
+          5,
+          5
+        ],
+        "turkish24": [
+          2,
+          4
+        ],
+        "turkish6": [
+          1,
+          3
+        ],
+        "turkish7": [
+          1,
+          3
+        ]
+      },
+      "saa_dev_short_i": {
+        "turkish1": [
+          1,
+          6
+        ],
+        "turkish10": [
+          0,
+          2
+        ],
+        "turkish12": [
+          2,
+          7
+        ],
+        "turkish14": [
+          1,
+          2
+        ],
+        "turkish17": [
+          0,
+          6
+        ],
+        "turkish19": [
+          1,
+          3
+        ],
+        "turkish2": [
+          3,
+          6
+        ],
+        "turkish21": [
+          0,
+          1
+        ],
+        "turkish23": [
+          0,
+          3
+        ],
+        "turkish24": [
+          0,
+          0
+        ],
+        "turkish6": [
+          0,
+          3
+        ],
+        "turkish7": [
+          0,
+          1
+        ]
+      },
+      "saa_dev_r": {
+        "turkish1": [
+          0,
+          6
+        ],
+        "turkish10": [
+          0,
+          0
+        ],
+        "turkish12": [
+          0,
+          2
+        ],
+        "turkish14": [
+          0,
+          2
+        ],
+        "turkish17": [
+          3,
+          3
+        ],
+        "turkish19": [
+          10,
+          11
+        ],
+        "turkish2": [
+          1,
+          1
+        ],
+        "turkish21": [
+          0,
+          0
+        ],
+        "turkish23": [
+          0,
+          2
+        ],
+        "turkish24": [
+          0,
+          1
+        ],
+        "turkish6": [
+          0,
+          0
+        ],
+        "turkish7": [
+          0,
+          1
+        ]
+      }
+    },
+    "v2_3c_cv": {
+      "saa_dev_turkish": {
+        "turkish1": [
+          22,
+          9,
+          15,
+          23
+        ],
+        "turkish10": [
+          6,
+          2,
+          16,
+          43
+        ],
+        "turkish12": [
+          20,
+          5,
+          15,
+          29
+        ],
+        "turkish14": [
+          11,
+          7,
+          14,
+          37
+        ],
+        "turkish17": [
+          18,
+          1,
+          16,
+          34
+        ],
+        "turkish19": [
+          32,
+          10,
+          15,
+          12
+        ],
+        "turkish2": [
+          24,
+          6,
+          11,
+          26
+        ],
+        "turkish21": [
+          1,
+          1,
+          13,
+          54
+        ],
+        "turkish23": [
+          16,
+          1,
+          15,
+          36
+        ],
+        "turkish24": [
+          6,
+          2,
+          15,
+          46
+        ],
+        "turkish6": [
+          7,
+          1,
+          17,
+          44
+        ],
+        "turkish7": [
+          14,
+          2,
+          15,
+          38
+        ]
+      },
+      "saa_dev_english": {
+        "english1": [
+          0,
+          0,
+          0,
+          69
+        ],
+        "english124": [
+          0,
+          2,
+          7,
+          60
+        ],
+        "english133": [
+          0,
+          1,
+          3,
+          65
+        ],
+        "english142": [
+          0,
+          3,
+          7,
+          59
+        ],
+        "english158": [
+          0,
+          0,
+          3,
+          66
+        ],
+        "english161": [
+          2,
+          2,
+          8,
+          57
+        ],
+        "english17": [
+          2,
+          6,
+          12,
+          47
+        ],
+        "english18": [
+          2,
+          0,
+          7,
+          60
+        ],
+        "english21": [
+          2,
+          1,
+          8,
+          56
+        ],
+        "english81": [
+          0,
+          0,
+          8,
+          61
+        ]
+      },
+      "saa_dev_turkish_errors": {
+        "turkish1": [
+          27,
+          54
+        ],
+        "turkish10": [
+          6,
+          26
+        ],
+        "turkish12": [
+          28,
+          52
+        ],
+        "turkish14": [
+          12,
+          33
+        ],
+        "turkish17": [
+          21,
+          53
+        ],
+        "turkish19": [
+          40,
+          62
+        ],
+        "turkish2": [
+          33,
+          57
+        ],
+        "turkish21": [
+          0,
+          15
+        ],
+        "turkish23": [
+          19,
+          44
+        ],
+        "turkish24": [
+          5,
+          22
+        ],
+        "turkish6": [
+          7,
+          30
+        ],
+        "turkish7": [
+          16,
+          44
+        ]
+      },
+      "saa_dev_final_voicing": {
+        "turkish1": [
+          6,
+          12
+        ],
+        "turkish10": [
+          1,
+          10
+        ],
+        "turkish12": [
+          12,
+          20
+        ],
+        "turkish14": [
+          5,
+          11
+        ],
+        "turkish17": [
+          8,
+          14
+        ],
+        "turkish19": [
+          10,
+          12
+        ],
+        "turkish2": [
+          5,
+          11
+        ],
+        "turkish21": [
+          0,
+          8
+        ],
+        "turkish23": [
+          2,
+          12
+        ],
+        "turkish24": [
+          0,
+          4
+        ],
+        "turkish6": [
+          1,
+          15
+        ],
+        "turkish7": [
+          8,
+          17
+        ]
+      },
+      "saa_dev_z_to_s": {
+        "turkish1": [
+          6,
+          7
+        ],
+        "turkish10": [
+          1,
+          7
+        ],
+        "turkish12": [
+          6,
+          11
+        ],
+        "turkish14": [
+          2,
+          5
+        ],
+        "turkish17": [
+          6,
+          7
+        ],
+        "turkish19": [
+          6,
+          6
+        ],
+        "turkish2": [
+          2,
+          6
+        ],
+        "turkish21": [
+          0,
+          9
+        ],
+        "turkish23": [
+          1,
+          8
+        ],
+        "turkish24": [
+          0,
+          4
+        ],
+        "turkish6": [
+          1,
+          10
+        ],
+        "turkish7": [
+          5,
+          10
+        ]
+      },
+      "saa_dev_th_voiced": {
+        "turkish1": [
+          3,
+          4
+        ],
+        "turkish10": [
+          0,
+          2
+        ],
+        "turkish12": [
+          0,
+          5
+        ],
+        "turkish14": [
+          1,
+          6
+        ],
+        "turkish17": [
+          1,
+          6
+        ],
+        "turkish19": [
+          3,
+          5
+        ],
+        "turkish2": [
+          3,
+          4
+        ],
+        "turkish21": [
+          0,
+          2
+        ],
+        "turkish23": [
+          1,
+          4
+        ],
+        "turkish24": [
+          2,
+          6
+        ],
+        "turkish6": [
+          0,
+          1
+        ],
+        "turkish7": [
+          2,
+          4
+        ]
+      },
+      "saa_dev_th_voiceless": {
+        "turkish1": [
+          4,
+          4
+        ],
+        "turkish10": [
+          3,
+          3
+        ],
+        "turkish12": [
+          4,
+          4
+        ],
+        "turkish14": [
+          4,
+          4
+        ],
+        "turkish17": [
+          4,
+          4
+        ],
+        "turkish19": [
+          4,
+          4
+        ],
+        "turkish2": [
+          4,
+          4
+        ],
+        "turkish21": [
+          0,
+          0
+        ],
+        "turkish23": [
+          4,
+          4
+        ],
+        "turkish24": [
+          0,
+          2
+        ],
+        "turkish6": [
+          0,
+          0
+        ],
+        "turkish7": [
+          2,
+          2
+        ]
+      },
+      "saa_dev_w": {
+        "turkish1": [
+          2,
+          4
+        ],
+        "turkish10": [
+          0,
+          1
+        ],
+        "turkish12": [
+          5,
+          5
+        ],
+        "turkish14": [
+          0,
+          0
+        ],
+        "turkish17": [
+          2,
+          3
+        ],
+        "turkish19": [
+          5,
+          5
+        ],
+        "turkish2": [
+          0,
+          0
+        ],
+        "turkish21": [
+          0,
+          0
+        ],
+        "turkish23": [
+          5,
+          5
+        ],
+        "turkish24": [
+          2,
+          4
+        ],
+        "turkish6": [
+          2,
+          3
+        ],
+        "turkish7": [
+          2,
+          3
+        ]
+      },
+      "saa_dev_short_i": {
+        "turkish1": [
+          1,
+          6
+        ],
+        "turkish10": [
+          0,
+          2
+        ],
+        "turkish12": [
+          2,
+          7
+        ],
+        "turkish14": [
+          1,
+          2
+        ],
+        "turkish17": [
+          0,
+          6
+        ],
+        "turkish19": [
+          1,
+          3
+        ],
+        "turkish2": [
+          3,
+          6
+        ],
+        "turkish21": [
+          0,
+          1
+        ],
+        "turkish23": [
+          0,
+          3
+        ],
+        "turkish24": [
+          0,
+          0
+        ],
+        "turkish6": [
+          0,
+          3
+        ],
+        "turkish7": [
+          0,
+          1
+        ]
+      },
+      "saa_dev_r": {
+        "turkish1": [
+          0,
+          6
+        ],
+        "turkish10": [
+          0,
+          0
+        ],
+        "turkish12": [
+          0,
+          2
+        ],
+        "turkish14": [
+          0,
+          2
+        ],
+        "turkish17": [
+          0,
+          3
+        ],
+        "turkish19": [
+          8,
+          11
+        ],
+        "turkish2": [
+          1,
+          1
+        ],
+        "turkish21": [
+          0,
+          0
+        ],
+        "turkish23": [
+          0,
+          2
+        ],
+        "turkish24": [
+          0,
+          1
+        ],
+        "turkish6": [
+          0,
+          0
+        ],
+        "turkish7": [
+          0,
+          1
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "v1-gen",
+  "recognizer": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+  "decision": "rules",
+  "settings": {
+    "gop_threshold": -2.0,
+    "pattern_threshold": 0.0,
+    "hidden_thresholds": {
+      "th_voiceless": null,
+      "th_voiced": null,
+      "w": null,
+      "v": null,
+      "long_ee": null,
+      "short_i": null,
+      "ae": null,
+      "uh": null,
+      "short_u": null,
+      "long_oo": null,
+      "er": null,
+      "ng": null,
+      "r": -4.0,
+      "final_voicing": null
+    }
+  }
+}

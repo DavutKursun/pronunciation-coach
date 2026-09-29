@@ -156,3 +156,26 @@ def test_frozen_v2_is_the_system_chosen_on_saa_dev():
     assert v2.settings == {"gop_threshold": 0.0, "pattern_threshold": math.inf, "w_margin_threshold": -4.0}
     chosen = json.loads((root / "results" / "thresholds" / "v2.json").read_text())["selected"]["thresholds"]
     assert [v2.settings[k] for k in ("gop_threshold", "pattern_threshold", "w_margin_threshold")] == chosen
+
+
+def test_generalized_systems_use_the_thresholds_chosen_on_saa_dev():
+    from pathlib import Path
+
+    from pronunciation.thresholds import HIDDEN_PATTERNS
+
+    root = Path(__file__).resolve().parents[1]
+    for name, recognizer in (("v1-gen", load_system(root / "experiments" / "v1.json").recognizer),
+                             ("v2-gen", load_system(root / "experiments" / "v2.json").recognizer)):
+        system = load_system(root / "experiments" / f"{name}.json")
+        chosen = json.loads((root / "results" / "hidden" / f"{name}.json").read_text())["settings"]
+        assert system.decision == "rules" and system.recognizer == recognizer
+        assert system.settings == chosen and list(chosen["hidden_thresholds"]) == HIDDEN_PATTERNS
+
+
+def test_v2_3d_kept_the_frozen_v2():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    decision = json.loads((root / "results" / "hidden" / "decision.json").read_text())
+    assert (decision["frozen"], decision["generalized"], decision["replace"]) == ("v2", "v2-gen", False)
+    assert "hidden_thresholds" not in load_system(root / "experiments" / "v2.json").settings

@@ -1,0 +1,27 @@
+{
+  "frozen": "v2",
+  "generalized": "v2-gen",
+  "checks": [
+    {
+      "check": "recall gain over frozen v2 is real (95% interval above 0)",
+      "value": "+0.0% [+0.0%, +0.0%]",
+      "met": false
+    },
+    {
+      "check": "Turkish precision >= 70% (CV)",
+      "value": "78.3%",
+      "met": true
+    },
+    {
+      "check": "native false alarm <= 2.5% (CV)",
+      "value": "2.1%",
+      "met": true
+    },
+    {
+      "check": "false alarm on Turkish speakers' correct words rises by <= 2 points",
+      "value": "14.9% -> 14.9% (+0.0 points)",
+      "met": true
+    }
+  ],
+  "replace": false
+}

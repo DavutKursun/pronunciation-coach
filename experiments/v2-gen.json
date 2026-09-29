@@ -1,0 +1,25 @@
+{
+  "name": "v2-gen",
+  "recognizer": "models/recognizer-l2arctic/best",
+  "decision": "rules",
+  "settings": {
+    "gop_threshold": 0.0,
+    "pattern_threshold": Infinity,
+    "hidden_thresholds": {
+      "th_voiceless": null,
+      "th_voiced": null,
+      "w": -4.0,
+      "v": null,
+      "long_ee": null,
+      "short_i": null,
+      "ae": null,
+      "uh": null,
+      "short_u": null,
+      "long_oo": null,
+      "er": null,
+      "ng": null,
+      "r": -2.0,
+      "final_voicing": null
+    }
+  }
+}
