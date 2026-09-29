@@ -1,8 +1,8 @@
 """Compare two experiments (results/experiments/*.json) on the same speakers.
 
 For every metric: the value for A and B, the difference B - A and its 95% interval from a paired
-bootstrap over speakers (pronunciation.metrics.paired_bootstrap_diff). An improvement counts as
-real only when the interval does not contain zero.
+bootstrap over speakers (pronunciation.metrics.paired_bootstrap_diff; for the synthetic set, over
+recording pairs). An improvement counts as real only when the interval does not contain zero.
 
 Usage:
     python scripts/compare_experiments.py results/experiments/v1.json results/experiments/v2.json
@@ -33,11 +33,16 @@ METRICS = [
     ("SAA dev, Turkish: z → s catch", "saa_dev_z_to_s", "catch"),
     ("SAA dev, Turkish: ð catch", "saa_dev_th_voiced", "catch"),
     ("SAA dev, Turkish: θ catch", "saa_dev_th_voiceless", "catch"),
+    ("SAA dev, Turkish: w catch", "saa_dev_w", "catch"),
+    ("SAA dev, Turkish: ɪ → i catch", "saa_dev_short_i", "catch"),
+    ("SAA dev, Turkish: r catch", "saa_dev_r", "catch"),
     ("SAA dev, English: false alarm", "saa_dev_english", "false_alarm"),
     ("speechocean val: recall", "speechocean_val", "recall"),
     ("speechocean val: precision", "speechocean_val", "precision"),
     ("speechocean val: false alarm", "speechocean_val", "false_alarm"),
     ("speechocean val: F1", "speechocean_val", "f1"),
+    ("synthetic Kokoro: catch", "synthetic_kokoro_catch", "catch"),              # units: recording pairs
+    ("synthetic Kokoro: false alarm", "synthetic_kokoro_false_alarm", "catch"),
 ]
 
 

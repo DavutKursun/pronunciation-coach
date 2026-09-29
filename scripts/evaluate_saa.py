@@ -44,9 +44,10 @@ from pronunciation.assess import prepare_expected  # noqa: E402
 from pronunciation.audio import load_audio  # noqa: E402
 from pronunciation.cache import cached_log_probs  # noqa: E402
 from pronunciation.g2p import phonemize_words, tokenize  # noqa: E402
-from pronunciation.metrics import (bootstrap_ci, detection_from_counts, error_level_catch, format_confusion,  # noqa: E402
-                                   format_detection, match_errors, top_pairs, word_detection_metrics)
-from pronunciation.phonemes import FUNCTION_WORDS, TIPS  # noqa: E402
+from pronunciation.metrics import (bootstrap_ci, canonical_bias, detection_from_counts, error_level_catch,  # noqa: E402
+                                   format_confusion, format_detection, match_errors, top_pairs,
+                                   word_detection_metrics)
+from pronunciation.phonemes import FUNCTION_WORDS, TIPS, normalize  # noqa: E402
 from pronunciation.recognizer import DEFAULT_MODEL, Decoder  # noqa: E402
 from pronunciation.saa import (PARAGRAPH, align_words, expert_labels, narrow_to_broad,  # noqa: E402
                                parse_transcription, raw_wrong)
@@ -58,6 +59,16 @@ CACHE_DIR = ROOT / "data" / "cache"
 V1 = System("v1")   # rules with the default GOP thresholds
 METRICS_FILE = ROOT / "results" / "metrics.json"
 LABELS = {"main": "expert_wrong", "raw": "expert_wrong_raw"}
+# expert errors counted per pattern (error level): name -> which expert errors
+PATTERNS = {
+    "final_voicing": lambda e: e.tip == "final_voicing",
+    "z_to_s": lambda e: (e.expected, e.heard) == ("z", "s"),
+    "th_voiced": lambda e: e.tip == "th_voiced",
+    "th_voiceless": lambda e: e.tip == "th_voiceless",
+    "w": lambda e: e.tip == "w",
+    "short_i": lambda e: e.tip == "short_i",      # ɪ said as i
+    "r": lambda e: e.tip == "r",                  # English r said as a tapped or trilled r
+}
 DEFINITIONS = {
     "main": "a word is wrong when the expert transcription differs from the expected phonemes "
             "outside our accepted variants (flap, reduced vowels, weak forms of function words...)",
@@ -84,7 +95,9 @@ def evaluate(decoder: Decoder, data, system: System = V1) -> pd.DataFrame:
 
     rows = []
     for speaker, log_probs, seconds, transcription in data:
-        expert_words = [narrow_to_broad(w) for w in parse_transcription(transcription)]
+        transcribed = parse_transcription(transcription)
+        expert_words = [narrow_to_broad(w) for w in transcribed]
+        ipa = {id(phones): token for phones, token in zip(expert_words, transcribed)}   # for examples
         expert = align_words(word_phones, expert_words, word_is_function)
         labels = expert_labels(words, word_phones, expert)
         result = system.assess(PARAGRAPH, raw, decoder(log_probs, seconds), decoder.token_to_id, decoder.blank_id)
@@ -98,8 +111,23 @@ def evaluate(decoder: Decoder, data, system: System = V1) -> pd.DataFrame:
                 "our_pairs": [f"{i.expected or '-'} → {i.heard or '-'}" for i in ours.issues],
                 "dismissed": bool(ours.dismissed) and not ours.issues, "gop": ours.gop,
                 "level": ours.level, "error_prob": ours.error_prob,
+                "expected_phones": word_phones[k], "expert_phones": expert[k], "expert_ipa": ipa.get(id(expert[k])),
+                "heard_phones": ours.heard,
             })
     return pd.DataFrame(rows)
+
+
+def recognized_bias(decoder: Decoder, data) -> dict[str, dict]:
+    """Canonical bias per group: PER of the recognized phonemes (whole paragraph) against the
+    expert's transcription and against the expected phonemes. Independent of the decision rules."""
+    words = tokenize(PARAGRAPH)
+    expected = prepare_expected(words, phonemize_words(words))[1]
+    items: dict[str, list] = {}
+    for speaker, log_probs, seconds, transcription in data:
+        recognized = normalize(decoder(log_probs, seconds).phones)
+        heard = [p for word in parse_transcription(transcription) for p in narrow_to_broad(word)]
+        items.setdefault(speaker.rstrip("0123456789"), []).append((recognized, heard, expected))
+    return {group: canonical_bias(group_items) for group, group_items in sorted(items.items())}
 
 
 def detection(rows: pd.DataFrame, label: str = "expert_wrong") -> dict:
@@ -143,6 +171,19 @@ def error_units(rows: pd.DataFrame, keep=lambda error: True) -> dict[str, list[i
             found += match_errors(kept, ours)[0]
             total += len(kept)
         units[name] = [found, total]
+    return units
+
+
+def saa_units(rows: pd.DataFrame) -> dict[str, dict[str, list[int]]]:
+    """Per-speaker counts for every metric of an experiment (see scripts/compare_experiments.py)."""
+    turkish = rows[(rows.group == "turkish") & rows.expert_wrong.notna()]
+    units = {
+        "saa_dev_turkish": confusion_units(rows[rows.group == "turkish"]),
+        "saa_dev_english": confusion_units(rows[rows.group == "english"]),
+        "saa_dev_turkish_errors": error_units(turkish),
+    }
+    for name, keep in PATTERNS.items():
+        units[f"saa_dev_{name}"] = error_units(turkish, keep)
     return units
 
 

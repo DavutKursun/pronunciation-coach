@@ -155,3 +155,20 @@ def test_mdd_metrics():
     assert m["f1"] == pytest.approx(2 * 0.75 * 0.6 / 1.35)
     assert m["diagnosis_accuracy"] == pytest.approx(9 / 15)
     assert m["false_rejection_rate"] == pytest.approx(5 / 85)
+
+
+def test_canonical_bias_compares_per_against_both_references():
+    from pronunciation.metrics import canonical_bias
+
+    expected = ["θ", "ɪ", "ŋ", "z"]
+    heard = ["t", "ɪ", "ŋ", "s"]                    # the expert heard "tings"
+    # a recognizer that writes what should have been said: far from what was heard
+    b = canonical_bias([(expected, heard, expected)])
+    assert b["per_vs_heard"] == pytest.approx(2 / 4) and b["per_vs_expected"] == 0.0
+    assert b["gap"] == pytest.approx(0.5)             # positive: pulled towards the expected sounds
+    # a recognizer that writes what was said
+    b = canonical_bias([(heard, heard, expected)])
+    assert b["per_vs_heard"] == 0.0 and b["gap"] == pytest.approx(-0.5)
+    # over several recordings: total edits / total reference length
+    b = canonical_bias([(expected, heard, expected), (["a"], ["a"], ["a"])])
+    assert b["per_vs_heard"] == pytest.approx(2 / 5) and b["recordings"] == 2

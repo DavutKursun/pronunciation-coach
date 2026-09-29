@@ -195,6 +195,19 @@ def phone_error_rate(pairs: Iterable[tuple[Sequence[str], Sequence[str]]]) -> fl
     return edits / length if length else 0.0
 
 
+def canonical_bias(items: Iterable[tuple[Sequence[str], Sequence[str], Sequence[str]]]) -> dict:
+    """PER of recognized phonemes against what the expert heard and against what was expected.
+
+    items: (recognized, heard, expected) per recording. A recognizer that writes the sounds a
+    speaker should have said instead of the ones they said is closer to the expected sequence:
+    gap = PER vs heard - PER vs expected is then positive (the "canonical bias" of v2-2).
+    """
+    items = list(items)
+    vs_heard = phone_error_rate((heard, recognized) for recognized, heard, _ in items)
+    vs_expected = phone_error_rate((expected, recognized) for recognized, _, expected in items)
+    return {"recordings": len(items), "per_vs_heard": vs_heard, "per_vs_expected": vs_expected,
+            "gap": vs_heard - vs_expected}
+
 def phone_states(canonical: Sequence[str], other: Sequence[str], flags: Sequence[bool]):
     """Per expected sound: None (said as expected) or the other sound ("" = left out); per gap: added sounds."""
     state: list[str | None] = [None] * len(canonical)
