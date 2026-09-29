@@ -1,0 +1,130 @@
+{
+  "model": "models/recognizer-l2arctic/epoch3",
+  "part": "dev",
+  "l2arctic": {
+    "sentences": 802,
+    "per": 0.15522295941984263,
+    "per_vs_expected": 0.1034913189847562,
+    "mdd": {
+      "ta": 22189,
+      "fr": 1221,
+      "fa": 2273,
+      "tr": 1107,
+      "precision": 0.47551546391752575,
+      "recall": 0.32751479289940827,
+      "f1": 0.38787666433076384,
+      "diagnosis_accuracy": 0.7822944896115628,
+      "false_rejection_rate": 0.05215719777872704
+    },
+    "mdd_by_l1": {
+      "Arabic": {
+        "ta": 3587,
+        "fr": 183,
+        "fa": 173,
+        "tr": 69,
+        "precision": 0.27380952380952384,
+        "recall": 0.28512396694214875,
+        "f1": 0.2793522267206478,
+        "diagnosis_accuracy": 0.7391304347826086,
+        "false_rejection_rate": 0.048541114058355435
+      },
+      "Hindi": {
+        "ta": 3967,
+        "fr": 177,
+        "fa": 392,
+        "tr": 132,
+        "precision": 0.42718446601941745,
+        "recall": 0.25190839694656486,
+        "f1": 0.31692677070828335,
+        "diagnosis_accuracy": 0.9090909090909091,
+        "false_rejection_rate": 0.04271235521235521
+      },
+      "Korean": {
+        "ta": 4436,
+        "fr": 161,
+        "fa": 288,
+        "tr": 46,
+        "precision": 0.2222222222222222,
+        "recall": 0.1377245508982036,
+        "f1": 0.1700554528650647,
+        "diagnosis_accuracy": 0.8478260869565217,
+        "false_rejection_rate": 0.035022840983249946
+      },
+      "Mandarin": {
+        "ta": 3385,
+        "fr": 220,
+        "fa": 478,
+        "tr": 299,
+        "precision": 0.5761078998073218,
+        "recall": 0.38481338481338484,
+        "f1": 0.46141975308641975,
+        "diagnosis_accuracy": 0.8060200668896321,
+        "false_rejection_rate": 0.06102635228848821
+      },
+      "Spanish": {
+        "ta": 2880,
+        "fr": 324,
+        "fa": 401,
+        "tr": 351,
+        "precision": 0.52,
+        "recall": 0.46675531914893614,
+        "f1": 0.49194113524877364,
+        "diagnosis_accuracy": 0.7122507122507122,
+        "false_rejection_rate": 0.10112359550561797
+      },
+      "Vietnamese": {
+        "ta": 3934,
+        "fr": 156,
+        "fa": 541,
+        "tr": 210,
+        "precision": 0.5737704918032787,
+        "recall": 0.2796271637816245,
+        "f1": 0.3760071620411817,
+        "diagnosis_accuracy": 0.7857142857142857,
+        "false_rejection_rate": 0.038141809290953545
+      }
+    },
+    "focus": {
+      "z → s": {
+        "errors": 441,
+        "detected": 231,
+        "diagnosed": 226
+      },
+      "θ → t": {
+        "errors": 27,
+        "detected": 10,
+        "diagnosed": 7
+      },
+      "ð → d": {
+        "errors": 328,
+        "detected": 101,
+        "diagnosed": 94
+      },
+      "ɪ → iː": {
+        "errors": 134,
+        "detected": 39,
+        "diagnosed": 36
+      },
+      "w → v": {
+        "errors": 6,
+        "detected": 0,
+        "diagnosed": 0
+      },
+      "æ → ɛ": {
+        "errors": 36,
+        "detected": 1,
+        "diagnosed": 1
+      },
+      "ɹ → ɾ": {
+        "errors": 108,
+        "detected": 36,
+        "diagnosed": 30
+      }
+    }
+  },
+  "native": {
+    "sentences": 100,
+    "per": 0.03287914691943128,
+    "false_rejection_rate": 0.02446933962264151
+  }
+}
