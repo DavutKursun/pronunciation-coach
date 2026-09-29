@@ -71,8 +71,12 @@ about 9 points from dev to test):
   Peng et al., Interspeech 2021), dev = 6 (one per L1, 3 female / 3 male), train = 12. The test speakers
   are locked like the SAA test half until v2-4 and only open with `--final`.
 - CMU ARCTIC US speakers bdl, slt, clb, rms (permissive license, attribution) keep the model from
-  hearing native speech as wrong. They read the same sentences, so the sentences annotated for the
-  L2-ARCTIC dev and test speakers are removed from their training data.
+  hearing native speech as wrong. They read the same sentences. All 300 annotated L2-ARCTIC sentences
+  are shared by the train, dev and test speakers, so they stay in the native training data: seeing a
+  sentence said right and wrong forces the model to listen instead of memorizing which sentence has
+  which error. The native dev set (100 recordings) uses 25 sentences outside those 300.
+- An accented R in L2-ARCTIC ("R,R*,s") is a tapped r, ɾ (as the SAA experts write Turkish r); other
+  "*" marks mean the base sound.
 - The Speech Accent Archive is never used for training (everyone reads the same paragraph), and
   speechocean762 is not used to train the recognizer (its labels miss the Turkish errors, see v2-2).
 - No audio goes into git. A recognizer fine-tuned on L2-ARCTIC is CC BY-NC 4.0; the original model

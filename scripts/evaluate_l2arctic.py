@@ -34,7 +34,7 @@ from pronunciation.recognizer import DEFAULT_MODEL  # noqa: E402
 
 DATA = ROOT / "data"
 MANIFESTS = DATA / "finetune"
-FOCUS = [("z", "s"), ("θ", "t"), ("ð", "d"), ("ɪ", "iː"), ("w", "v"), ("æ", "ɛ")]
+FOCUS = [("z", "s"), ("θ", "t"), ("ð", "d"), ("ɪ", "iː"), ("w", "v"), ("æ", "ɛ"), ("ɹ", "ɾ")]
 
 
 def read_manifest(name: str) -> list[dict]:

@@ -2,53 +2,53 @@
   "model": "facebook/wav2vec2-lv-60-espeak-cv-ft",
   "part": "dev",
   "l2arctic": {
-    "sentences": 831,
-    "per": 0.21078066914498142,
-    "per_vs_expected": 0.13781782366030715,
+    "sentences": 802,
+    "per": 0.2153988582008949,
+    "per_vs_expected": 0.13738321292128455,
     "mdd": {
-      "ta": 22824,
-      "fr": 1791,
-      "fa": 2481,
-      "tr": 856,
-      "precision": 0.3233849641103136,
-      "recall": 0.2565178303865748,
-      "f1": 0.28609625668449196,
-      "diagnosis_accuracy": 0.633177570093458,
-      "false_rejection_rate": 0.07276051188299817
+      "ta": 21869,
+      "fr": 1684,
+      "fa": 2527,
+      "tr": 853,
+      "precision": 0.3362238864800946,
+      "recall": 0.2523668639053254,
+      "f1": 0.2883217846881866,
+      "diagnosis_accuracy": 0.6236811254396248,
+      "false_rejection_rate": 0.0714983229312614
     },
     "mdd_by_l1": {
       "Arabic": {
-        "ta": 4360,
-        "fr": 358,
+        "ta": 3521,
+        "fr": 271,
         "fa": 173,
-        "tr": 83,
-        "precision": 0.18820861678004536,
-        "recall": 0.32421875,
-        "f1": 0.2381635581061693,
-        "diagnosis_accuracy": 0.6746987951807228,
-        "false_rejection_rate": 0.07587961000423908
+        "tr": 69,
+        "precision": 0.20294117647058824,
+        "recall": 0.28512396694214875,
+        "f1": 0.23711340206185566,
+        "diagnosis_accuracy": 0.6231884057971014,
+        "false_rejection_rate": 0.0714662447257384
       },
       "Hindi": {
-        "ta": 4036,
-        "fr": 263,
-        "fa": 405,
-        "tr": 62,
-        "precision": 0.19076923076923077,
-        "recall": 0.13276231263383298,
-        "f1": 0.15656565656565655,
-        "diagnosis_accuracy": 0.7096774193548387,
-        "false_rejection_rate": 0.06117701791114213
+        "ta": 3921,
+        "fr": 242,
+        "fa": 450,
+        "tr": 74,
+        "precision": 0.23417721518987342,
+        "recall": 0.14122137404580154,
+        "f1": 0.17619047619047623,
+        "diagnosis_accuracy": 0.6351351351351351,
+        "false_rejection_rate": 0.05813115541676676
       },
       "Korean": {
-        "ta": 4374,
-        "fr": 251,
-        "fa": 300,
-        "tr": 36,
-        "precision": 0.1254355400696864,
-        "recall": 0.10714285714285714,
-        "f1": 0.11556982343499198,
-        "diagnosis_accuracy": 0.6944444444444444,
-        "false_rejection_rate": 0.05427027027027027
+        "ta": 4375,
+        "fr": 252,
+        "fa": 299,
+        "tr": 35,
+        "precision": 0.12195121951219512,
+        "recall": 0.10479041916167664,
+        "f1": 0.11272141706924316,
+        "diagnosis_accuracy": 0.7142857142857143,
+        "false_rejection_rate": 0.05446293494704992
       },
       "Mandarin": {
         "ta": 3349,
@@ -62,41 +62,41 @@
         "false_rejection_rate": 0.07383849557522124
       },
       "Spanish": {
-        "ta": 2810,
+        "ta": 2809,
         "fr": 432,
-        "fa": 473,
+        "fa": 474,
         "tr": 278,
         "precision": 0.39154929577464787,
-        "recall": 0.37017310252996005,
-        "f1": 0.38056125941136204,
+        "recall": 0.3696808510638298,
+        "f1": 0.3803009575923393,
         "diagnosis_accuracy": 0.5467625899280576,
-        "false_rejection_rate": 0.13325107958050586
+        "false_rejection_rate": 0.13329219376735577
       },
       "Vietnamese": {
-        "ta": 3895,
+        "ta": 3894,
         "fr": 220,
-        "fa": 547,
+        "fa": 548,
         "tr": 203,
         "precision": 0.4799054373522459,
-        "recall": 0.27066666666666667,
-        "f1": 0.34612105711849955,
+        "recall": 0.27030625832223704,
+        "f1": 0.3458262350936968,
         "diagnosis_accuracy": 0.6896551724137931,
-        "false_rejection_rate": 0.053462940461725394
+        "false_rejection_rate": 0.053475935828877004
       }
     },
     "focus": {
       "z → s": {
-        "errors": 446,
+        "errors": 441,
         "detected": 31,
         "diagnosed": 23
       },
       "θ → t": {
-        "errors": 28,
+        "errors": 27,
         "detected": 10,
         "diagnosed": 7
       },
       "ð → d": {
-        "errors": 329,
+        "errors": 328,
         "detected": 9,
         "diagnosed": 3
       },
@@ -114,6 +114,11 @@
         "errors": 36,
         "detected": 2,
         "diagnosed": 1
+      },
+      "ɹ → ɾ": {
+        "errors": 108,
+        "detected": 17,
+        "diagnosed": 2
       }
     }
   },

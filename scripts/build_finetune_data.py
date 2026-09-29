@@ -5,8 +5,10 @@ expected tokens with the annotated errors applied (pronunciation/l2arctic.py). S
 "err" label, an unreliable alignment or a token the recognizer does not know are left out.
 
 CMU ARCTIC (bdl, slt, clb, rms, same sentences): the target is simply our expected tokens, so the
-model keeps hearing native speech as correct. Sentences annotated for the L2-ARCTIC dev and test
-speakers are removed. A few sentences annotated for no L2 speaker at all form a native dev set.
+model keeps hearing native speech as correct. The 300 sentences annotated in L2-ARCTIC are kept on
+purpose: every L2-ARCTIC part shares them, so removing them would not stop any leak, while hearing
+the same sentence said right (native) and wrong (L2) forces the model to listen instead of learning
+which sentence has which error. 25 sentences annotated for no L2 speaker form a native dev set.
 
 Writes data/finetune/{l2arctic_train,l2arctic_dev,native_train,native_dev}.jsonl and a report,
 results/l2arctic_data.json. The test speakers' manifest is only built with --final (v2-4).
@@ -152,7 +154,7 @@ def main() -> None:
     prompts = re.findall(r"\( (\S+) ", (CMU_DIR / "cmu_us_bdl_arctic" / "etc" / "txt.done.data").read_text())
     unused = sorted(set(prompts) - ids["train"] - ids["dev"] - ids["test"])
     native_dev = set(random.Random(SEED).sample(unused, NATIVE_DEV_SENTENCES))
-    native_train = set(prompts) - ids["dev"] - ids["test"] - native_dev
+    native_train = set(prompts) - native_dev
     reasons = Counter()
     for part, sentence_ids in (("native_train", native_train), ("native_dev", native_dev)):
         rows = native_rows(sentence_ids, vocab, reasons)

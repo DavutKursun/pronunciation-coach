@@ -1,43 +1,43 @@
 {
   "reasons": {
     "l2arctic_train": {
-      "kept": 1638,
+      "kept": 1626,
       "err label": 89,
       "unknown phone": 3,
-      "unreliable alignment": 65,
+      "unreliable alignment": 77,
       "unknown word": 5
     },
     "l2arctic_dev": {
-      "kept": 831,
+      "kept": 802,
       "unknown word": 4,
-      "unreliable alignment": 24,
+      "unreliable alignment": 53,
       "err label": 38,
       "unknown phone": 2
     },
     "native": {}
   },
   "l2arctic_train": {
-    "sentences": 1638,
-    "hours": 1.71,
-    "errors": 8018,
-    "sentences_with_errors": 1559,
+    "sentences": 1626,
+    "hours": 1.7,
+    "errors": 8165,
+    "sentences_with_errors": 1558,
     "by_kind": {
-      "ins": 536,
-      "sub": 5970,
-      "del": 1512
+      "ins": 525,
+      "sub": 6129,
+      "del": 1511
     },
     "top_pairs": [
       [
         "ð → d",
-        823
+        821
       ],
       [
         "z → s",
-        711
+        707
       ],
       [
         "ɪ → iː",
-        486
+        484
       ],
       [
         "d → -",
@@ -52,12 +52,16 @@
         221
       ],
       [
+        "ɹ → ɾ",
+        206
+      ],
+      [
         "ɚ → ə",
         181
       ],
       [
         "oʊ → ɔː",
-        162
+        161
       ],
       [
         "n → ŋ",
@@ -69,7 +73,7 @@
       ],
       [
         "- → ə",
-        140
+        137
       ],
       [
         "l → w",
@@ -77,11 +81,11 @@
       ],
       [
         "p → b",
-        121
+        116
       ],
       [
         "æ → ɑː",
-        121
+        116
       ],
       [
         "eɪ → ɛ",
@@ -97,73 +101,70 @@
       ],
       [
         "d → t",
-        106
+        105
       ],
       [
         "θ → t",
         99
-      ],
-      [
-        "n → -",
-        80
       ]
     ],
     "turkish_tips": {
-      "th_voiced": 888,
-      "final_voicing": 869,
-      "short_i": 486,
+      "th_voiced": 881,
+      "final_voicing": 863,
+      "short_i": 484,
+      "r": 206,
       "th_voiceless": 159,
       "uh": 109,
-      "epenthesis": 77,
-      "ng": 64,
+      "epenthesis": 72,
+      "ng": 62,
       "ae": 56,
       "long_ee": 37,
       "v": 36,
       "short_u": 35,
       "w": 33,
-      "er": 20,
-      "long_oo": 15
+      "er": 15,
+      "long_oo": 14
     },
     "turkish_pairs": {
-      "z → s": 711,
+      "z → s": 707,
       "θ → t": 99,
       "θ → s": 47,
-      "ð → d": 823,
-      "ð → z": 62,
+      "ð → d": 821,
+      "ð → z": 57,
       "ɪ → i": 0,
-      "ɪ → iː": 486,
+      "ɪ → iː": 484,
       "iː → ɪ": 37,
       "w → v": 33,
       "v → w": 36,
       "æ → ɛ": 56,
       "ʊ → uː": 35,
-      "d → t": 106,
+      "d → t": 105,
       "b → p": 29,
       "ɡ → k": 18
     }
   },
   "l2arctic_dev": {
-    "sentences": 831,
-    "hours": 0.82,
-    "errors": 3512,
-    "sentences_with_errors": 771,
+    "sentences": 802,
+    "hours": 0.78,
+    "errors": 3553,
+    "sentences_with_errors": 757,
     "by_kind": {
-      "del": 661,
-      "sub": 2681,
-      "ins": 170
+      "del": 655,
+      "sub": 2735,
+      "ins": 163
     },
     "top_pairs": [
       [
         "z → s",
-        454
+        449
       ],
       [
         "ð → d",
-        336
+        335
       ],
       [
         "d → -",
-        154
+        153
       ],
       [
         "ɪ → iː",
@@ -174,12 +175,16 @@
         116
       ],
       [
+        "ɹ → ɾ",
+        109
+      ],
+      [
         "ɹ → -",
-        98
+        97
       ],
       [
         "v → f",
-        93
+        90
       ],
       [
         "oʊ → ɔː",
@@ -187,15 +192,15 @@
       ],
       [
         "ɚ → ə",
-        74
+        73
       ],
       [
         "ʌ → ɔː",
-        71
+        68
       ],
       [
         "æ → ɑː",
-        69
+        66
       ],
       [
         "ɛ → æ",
@@ -210,16 +215,16 @@
         61
       ],
       [
-        "d → t",
-        54
-      ],
-      [
         "l → w",
         53
       ],
       [
+        "d → t",
+        53
+      ],
+      [
         "p → b",
-        51
+        46
       ],
       [
         "n → -",
@@ -227,34 +232,31 @@
       ],
       [
         "n → ŋ",
-        37
-      ],
-      [
-        "æ → ɛ",
-        35
+        36
       ]
     ],
     "turkish_tips": {
-      "final_voicing": 600,
-      "th_voiced": 345,
+      "final_voicing": 591,
+      "th_voiced": 344,
       "short_i": 134,
-      "epenthesis": 48,
+      "r": 109,
+      "epenthesis": 47,
       "ae": 35,
       "th_voiceless": 34,
       "v": 23,
-      "ng": 22,
       "long_ee": 17,
+      "ng": 17,
       "uh": 15,
       "short_u": 12,
       "long_oo": 10,
-      "er": 10,
-      "w": 6
+      "w": 6,
+      "er": 4
     },
     "turkish_pairs": {
-      "z → s": 454,
+      "z → s": 449,
       "θ → t": 28,
       "θ → s": 2,
-      "ð → d": 336,
+      "ð → d": 335,
       "ð → z": 3,
       "ɪ → i": 0,
       "ɪ → iː": 134,
@@ -263,8 +265,8 @@
       "v → w": 23,
       "æ → ɛ": 35,
       "ʊ → uː": 12,
-      "d → t": 54,
-      "b → p": 13,
+      "d → t": 53,
+      "b → p": 11,
       "ɡ → k": 12
     }
   },
@@ -276,8 +278,8 @@
     "test_also_in_train": 300
   },
   "native_train": {
-    "sentences": 3224,
-    "hours": 2.76
+    "sentences": 4424,
+    "hours": 3.86
   },
   "native_dev": {
     "sentences": 100,
