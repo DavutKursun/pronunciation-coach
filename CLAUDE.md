@@ -19,7 +19,7 @@ A learner reads an English sentence aloud. A wav2vec2 CTC model recognizes the p
 - `scripts/extract_features.py` → `data/features/*.csv`; `scripts/train_scorer.py` → `models/scorer.joblib` + `results/metrics.json`.
 - Word-level checks (model output cached per model in `data/cache/<model>/`, rule changes re-run in seconds): `scripts/evaluate_words.py` (speechocean762 val speakers), `scripts/evaluate_saa.py` (Speech Accent Archive dev half; `download_saa.py` + `split_saa.py` first), `scripts/synthetic_errors.py --kokoro` (synthetic error set; Kokoro runs in `.venv-tts`). Run all three after every rule change.
 - Recognizer fine-tuning (v2-3): `scripts/prepare_l2arctic.py` (annotated L2-ARCTIC sentences → `data/l2arctic/`), `scripts/build_finetune_data.py` (targets → `data/finetune/*.jsonl`), `scripts/evaluate_l2arctic.py` (PER + MDD per model), `scripts/package_kaggle.py` (zip for a private Kaggle dataset), `scripts/finetune_recognizer.py` (training; `--smoke` for a quick end-to-end check) run by `notebooks/finetune_kaggle.ipynb`.
-- Comparing recognizers (v2-3b): `scripts/tune_gop_thresholds.py` re-chooses the two GOP thresholds per recognizer on SAA dev and gives the honest estimate by speaker cross-validation; `scripts/saa_examples.py` lists words where two systems disagree; `scripts/plot_training.py` draws the fine-tuning curves from `results/finetune/`.
+- Comparing recognizers (v2-3b): `scripts/tune_gop_thresholds.py` re-chooses the two GOP thresholds per recognizer on SAA dev and gives the honest estimate by speaker cross-validation; `scripts/saa_examples.py` lists words where two systems disagree; `scripts/plot_training.py` draws the fine-tuning curves from `results/finetune/`; `scripts/saa_word.py` shows one paragraph word per speaker (expert vs systems); `scripts/w_margin.py` measures the w → v margin behind the hidden-w rule.
 - `app.py`: Gradio demo. `space/README.md`: Space config. `scripts/deploy_space.py`: publishing.
 - `notebooks/colab.ipynb`: feature extraction + training on Colab.
 
@@ -66,6 +66,15 @@ about 9 points from dev to test):
 - The SAA dev half may be used to choose thresholds and for early stopping, never as training data.
 - Synthetic recordings may be used as a regression check, not as training data for the detector.
 
+**v2 is frozen** (step v2-3c, commit `e24d251`): `experiments/v2.json` is the system for the final
+test: the fine-tuned recognizer `models/recognizer-l2arctic/best` (epoch 14; `model.safetensors`
+SHA-256 `09187fde3a07ad6c38511d7efb9098c8a5b351d6c917ba228a5f4e69c9abbae6`), the v1 rules with the
+*into* pronunciations (`WORD_VARIANTS`) and the hidden-w rule, and the thresholds chosen on SAA dev:
+GOP 0.0 for other differences, typical Turkish-speaker errors always reported, hidden w above -4.0.
+No setting, rule or threshold of v2 changes any more. In v2-4 the locked test sets (SAA test half,
+speechocean762 test, L2-ARCTIC test speakers) are run once with this system and reported as they
+come out; nothing is tuned on them.
+
 **Fine-tuning the recognizer (v2-3):**
 - L2-ARCTIC (CC BY-NC 4.0; 24 speakers, 6 L1s, ~150 hand-annotated sentences each) is split by speaker
   (`data/l2arctic_split.json`): test = NJS, TLV, TNI, TXHC, YKWK, ZHAA (the usual MDD test set, e.g.
@@ -111,6 +120,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] v2-2. Learned error detector
 - [x] v2-3a. Fine-tuning data and training setup
 - [x] v2-3b. Evaluate the fine-tuned recognizer
+- [x] v2-3c. Last dev fixes and freeze v2
 - [ ] v2-4. Final v1 vs v2 comparison
 - [ ] 10. Train on Colab
 - [ ] 11. Add results to the project

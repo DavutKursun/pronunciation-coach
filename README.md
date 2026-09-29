@@ -272,7 +272,7 @@ The early checkpoint (epoch 3) was kept in case the best one had won L2-ARCTIC d
 | θ catch | >= 75% | 88.6% | 91.4% | 91.4% | yes |
 | (z → s alone) | – | 38.9% | 78.9% | 76.7% | – |
 
-**Decision:** continue with the epoch-14 checkpoint and thresholds -1.0 / "always" (a typical Turkish-speaker error is reported whatever its GOP; other differences need a GOP below -1.0). Honest dev estimate: precision 81.3%, recall 64.0%, F1 0.716. Known weak spots to watch on the test sets: **w → v** (caught 36% instead of 70%: the model now tends to hear a Turkish [v] or [β] as w; L2-ARCTIC has few such errors to learn from), native false alarms just above the limit (2.6%), final devoicing just at 60%, "into" heard with /uː/ for native speakers, and the regressions above.
+**Decision (v2-3b; refined in v2-3c below):** continue with the epoch-14 checkpoint and thresholds -1.0 / "always" (a typical Turkish-speaker error is reported whatever its GOP; other differences need a GOP below -1.0). Honest dev estimate: precision 81.3%, recall 64.0%, F1 0.716. Known weak spots to watch on the test sets: **w → v** (caught 36% instead of 70%: the model now tends to hear a Turkish [v] or [β] as w; L2-ARCTIC has few such errors to learn from), native false alarms just above the limit (2.6%), final devoicing just at 60%, "into" heard with /uː/ for native speakers, and the regressions above.
 
 Examples from SAA dev (`scripts/saa_examples.py`):
 
@@ -295,6 +295,76 @@ Examples from SAA dev (`scripts/saa_examples.py`):
 | english158 | into | /ɪ n t ʊ/ | [ɪ̃ntə] | /ɪ n t ə/ | /ɪ n t uː/ | ʊ → uː |
 | english161 | Please | /p l iː z/ | [pʰliːz̥] | /p l iː z/ | /p l iː s/ | z → s |
 | english161 | thick | /θ ɪ k/ | [θɪk] | /θ ɪ k/ | /t ɪ k/ | θ → t |
+
+**v2-3c: two last fixes on dev, then v2 is frozen.** Every decision that uses dev data ends here; a fix was kept only if the honest (cross-validated) estimate improved and Turkish precision stayed at least 70% and native false alarms at most 2.5%.
+
+- ***into*.** 7 of the 10 US English speakers of SAA dev got a false alarm on *into*: the fine-tuned recognizer heard ɪntuː, a standard dictionary form, while eSpeak expects ɪntʊ. Their experts wrote the weak form ə 8 times, ʊ once and u once (`scripts/saa_word.py into ...`), so ɪntuː is not what most of them said, but it is a correct pronunciation, and flagging it is our mistake. *into* now also accepts uː and u for its last vowel (`WORD_VARIANTS` in `pronunciation/phonemes.py`); ʊ → uː stays an error in other words (*pull*/*pool*). Honest estimate with the fine-tuned recognizer: native false alarms 2.6% → 2.1%, Turkish precision 81.3% → 78.2%, recall 64.0% → 68.1%, F1 0.716 → 0.728; 7 Turkish *into* labels became correct (the expert heard u), and the freed false-alarm budget moved the chosen GOP threshold from -1.0 to 0.0.
+- **w → v.** The fine-tuned recognizer caught Turkish w → v far less often than the original (36% vs 70%): it tends to write w. Its probabilities still tell the two apart: in the frames of an expected w, the margin max log p(v/β/ʋ) - log p(w) separates the experts' w → v/β/ʋ errors from correct w with AUC 0.960 (95% speaker bootstrap 0.898-0.995; 33 errors, 75 correct w), and the median margin is -0.97 for errors against -5.56 for correct Turkish w and -8.35 for native w (`scripts/w_margin.py`). So a w the recognizer wrote as w is reported as w → v when the margin is above a threshold chosen with the GOP thresholds. Words with such a w are often wrong for other sounds too, so word precision cannot judge the rule; its own reports must be right at least 70% of the time:
+
+| Margin threshold | Hidden-w reports on a real w error (Turkish) | Native words reported |
+| --- | --- | --- |
+| 0.0 | 0 of 0 | 0 |
+| -1.0 | 6 of 7 (86%) | 0 |
+| -2.0 | 9 of 10 (90%) | 0 |
+| -3.0 | 14 of 17 (82%) | 0 |
+| -4.0 | 16 of 22 (73%) | 0 |
+| -5.0 | 18 of 27 (67%) | 0 |
+| -6.0 | 20 of 33 (61%) | 1 |
+
+  With the chosen -4.0, honest estimate: recall 68.1% → 71.5% (+3.4 points, paired bootstrap [+1.8, +5.4]), F1 0.728 → 0.747, w → v catch 36% → 88%, precision and native false alarms unchanged.
+
+**Final dev comparison** (SAA dev; v1 = the original recognizer with the same rules and thresholds re-chosen the same way, so the difference is the recognizer and the w rule):
+
+| System | Thresholds (GOP / typical errors / hidden w) | Turkish precision | recall | F1 | error-level catch | native false alarm |
+| --- | --- | --- | --- | --- | --- | --- |
+| v1 | as is: -2.5 / -1 / w off | 82.3% | 43.2% | 0.567 | 40.2% | 2.1% |
+| v1 | re-selected (dev, optimistic): -2 / 0 / w -2 | 79.2% | 50.6% | 0.617 | 44.7% | 2.3% |
+| v1 | re-selected, honest (CV): per fold | 79.0% | 50.0% | 0.612 | 43.5% | 2.4% |
+| v1 | no GOP check (recognizer alone): none / none / w off | 65.0% | 58.8% | 0.617 | 48.4% | 12.0% |
+| v2 | as is: 0 / none / w -4 | 78.3% | 71.5% | 0.747 | 61.2% | 2.1% |
+| v2 | re-selected (dev, optimistic): 0 / none / w -4 | 78.3% | 71.5% | 0.747 | 61.2% | 2.1% |
+| v2 | re-selected, honest (CV): per fold | 78.3% | 71.5% | 0.747 | 61.4% | 2.1% |
+| v2 | no GOP check (recognizer alone): none / none / w off | 73.3% | 71.5% | 0.724 | 59.6% | 5.9% |
+
+| System | final devoicing | z → s | ð | θ | w → v | ɪ → i | r |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| v1 (as is) | 38% | 39% | 29% | 89% | 64% | 18% | 24% |
+| v1 (re-selected, honest (CV)) | 40% | 40% | 33% | 94% | 76% | 20% | 31% |
+| v2 (as is) | 63% | 79% | 90% | 91% | 85% | 40% | 45% |
+| v2 (re-selected, honest (CV)) | 63% | 79% | 90% | 91% | 88% | 40% | 45% |
+
+Reported w errors on Turkish speakers that the expert also marked (the w tip's precision): v1: as is 91% of 23, re-selected, honest (CV) 86% of 29; v2: as is 80% of 35, re-selected, honest (CV) 78% of 37.
+
+Honest (CV) comparison, paired bootstrap over speakers:
+
+| Metric | v1 (CV) | v2 (CV) | Difference | 95% CI | Real? |
+| --- | --- | --- | --- | --- | --- |
+| SAA dev, Turkish: recall | 50.0% | 71.5% | +21.5% | [+15.3%, +28.4%] | yes |
+| SAA dev, Turkish: precision | 79.0% | 78.3% | -0.7% | [-5.8%, +4.1%] | no |
+| SAA dev, Turkish: F1 | 61.2% | 74.7% | +13.5% | [+9.7%, +18.3%] | yes |
+| SAA dev, Turkish: false alarm | 10.0% | 14.9% | +4.9% | [+0.2%, +9.7%] | yes |
+| SAA dev, Turkish: error-level catch | 43.5% | 61.4% | +17.9% | [+12.4%, +24.6%] | yes |
+| SAA dev, Turkish: final devoicing catch | 39.7% | 63.0% | +23.3% | [+9.5%, +37.3%] | yes |
+| SAA dev, Turkish: z → s catch | 40.0% | 78.9% | +38.9% | [+23.9%, +55.3%] | yes |
+| SAA dev, Turkish: ð catch | 32.7% | 89.8% | +57.1% | [+38.5%, +73.1%] | yes |
+| SAA dev, Turkish: θ catch | 94.3% | 91.4% | -2.9% | [-20.0%, +15.0%] | no |
+| SAA dev, Turkish: w catch | 75.8% | 87.9% | +12.1% | [+2.9%, +25.0%] | yes |
+| SAA dev, Turkish: ɪ → i catch | 20.0% | 40.0% | +20.0% | [+6.7%, +34.1%] | yes |
+| SAA dev, Turkish: r catch | 31.0% | 44.8% | +13.8% | [+6.2%, +25.0%] | yes |
+| SAA dev, English: false alarm | 2.4% | 2.1% | -0.3% | [-2.2%, +1.4%] | no |
+
+Regression sets (v1 → v2; see Limitations):
+
+| Metric | v1 | v2 | Difference | 95% CI | Real? |
+| --- | --- | --- | --- | --- | --- |
+| speechocean val: recall | 83.5% | 94.7% | +11.2% | [+8.0%, +16.0%] | yes |
+| speechocean val: precision | 31.9% | 25.5% | -6.3% | [-8.7%, -4.1%] | yes |
+| speechocean val: false alarm | 26.8% | 41.5% | +14.7% | [+12.0%, +17.2%] | yes |
+| speechocean val: F1 | 46.1% | 40.2% | -5.9% | [-8.5%, -3.3%] | yes |
+| synthetic Kokoro: catch | 88.7% | 78.0% | -10.7% | [-14.5%, -6.9%] | yes |
+| synthetic Kokoro: false alarm | 3.6% | 6.5% | +3.0% | [+0.6%, +5.6%] | yes |
+
+**Frozen system** (commit `e24d251`): `experiments/v2.json`, the epoch-14 fine-tuned recognizer (`model.safetensors` SHA-256 `09187fde3a07ad6c38511d7efb9098c8a5b351d6c917ba228a5f4e69c9abbae6`) with the v1 rules, the *into* pronunciations and the hidden-w rule; thresholds: GOP below 0.0 for other differences, typical Turkish-speaker errors always reported, hidden w above -4.0. Nothing in it changes any more; v2-4 runs the locked test sets once with it.
 
 ## Project structure
 
@@ -336,6 +406,8 @@ scripts/
   package_kaggle.py     pack the fine-tuning data and code into one zip for Kaggle
   tune_gop_thresholds.py  re-choose the GOP thresholds for each recognizer on SAA dev (honest CV estimate)
   saa_examples.py       SAA dev words where two systems disagree (new catches, new false alarms)
+  saa_word.py           one paragraph word on SAA dev: what every expert wrote and each system heard
+  w_margin.py           how well v/β/ʋ vs w probabilities separate Turkish w -> v (SAA dev)
   plot_training.py      fine-tuning curves for the README (results/finetune/)
 experiments/      system definitions (v1.json, ...)
   train_scorer.py       train and evaluate the scoring model
@@ -377,6 +449,8 @@ The free CPU hardware of Hugging Face Spaces is enough.
 - eSpeak gives one pronunciation per word. Words with several correct pronunciations can cause false alarms.
 - The recognizer can mishear, especially with background noise. Treat the feedback as a guide, not a verdict.
 - The recognizer often does not hear some typical Turkish errors. A final *z* said as *s* and *ð* said as *d* are the most common errors that the experts heard and we missed (45 and 36 words in the Speech Accent Archive test half): the model outputs the expected sound, so no rule on its output can catch them. This would need a recognizer fine-tuned on accented speech.
+- v2 (the fine-tuned recognizer, see Results) buys its recall with some regressions: on the synthetic Kokoro set, an extra vowel before a consonant cluster right after a vowel-final word (*say ɪschool*) is caught 10% of the time instead of 98% (no drop on real Turkish speakers: 7 of 11 such errors on SAA dev, 5 for v1), and ð → z and æ → ɛ are caught less (38% vs 65%, 61% vs 81%). On speechocean762 val, whose Mandarin-speaking experts accept accented sounds, false alarms rise from 26.8% to 41.5% (37.0% with the v2-3b thresholds).
+- In v2, w → v is caught through a special rule: L2-ARCTIC has only 33 w → v errors to learn from, and the fine-tuned recognizer seems to decide w or v more from the word than from the sound, so it writes w; the rule reports w → v when v/β/ʋ came close. On dev, 78% of the reported w errors are right (cross-validated).
 - On real Turkish speakers the feedback is precise but misses many errors: on the Speech Accent Archive test half it finds about a third of the words the experts marked (see Results), from only 12 test speakers.
 - The scoring model is trained on speechocean762, whose speakers are Mandarin native speakers (half of them children). The tips target Turkish speakers, but no Turkish-speaker data was used for training.
 - Word stress and intonation are not assessed.
