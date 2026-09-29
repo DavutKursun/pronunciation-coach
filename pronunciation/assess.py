@@ -9,7 +9,7 @@ import numpy as np
 
 from .align import align
 from .ctc import forced_align, gop_scores
-from .feedback import WordResult, build_word_results, confirm_with_gop, top_tips
+from .feedback import WordResult, build_word_results, confirm_with_gop, report_hidden_w, top_tips
 from .g2p import phonemize_words, tokenize
 from .phonemes import FUNCTION_WORDS, SPLITS, WORD_VARIANTS, merge_repeats, normalize
 
@@ -22,6 +22,7 @@ FEATURE_NAMES = [
 ]
 GOP_FLOOR = -20.0      # used when forced alignment is impossible (e.g. almost silent audio)
 GOP_BAD = -2.0         # lpr below this counts as a badly pronounced phoneme
+W_RIVALS = ("v", "β", "ʋ")   # how a Turkish speaker's w can sound: v, a bilabial β, a labiodental ʋ
 # A word's differences are reported only if its GOP is below this. Chosen on speechocean762
 # train (scripts/evaluate_words.py --sweep): fewer false alarms without losing detected errors.
 GOP_CONFIRM: float | None = -2.5
@@ -147,9 +148,30 @@ def compute_features(
     }
 
 
+def measure_hidden_w(word_results: list[WordResult], alignment: "GopAlignment", log_probs: np.ndarray,
+                     token_to_id: dict[str, int]) -> None:
+    """For every expected w the recognizer heard as w: the largest log p(v/β/ʋ) - log p(w) in its frames."""
+    rivals = [c for c in W_RIVALS if c in token_to_id]
+    if not rivals or "w" not in token_to_id or alignment.spans is None:
+        return
+    rival_ids, w_id = [token_to_id[c] for c in rivals], token_to_id["w"]
+    for word in word_results:
+        for op in word.ops:
+            target = alignment.phone_target[op.exp_pos] if op.exp_pos is not None else None
+            if op.expected != "w" or op.kind != "match" or target is None:
+                continue
+            start, end = alignment.spans[target]
+            frames = log_probs[start:end + 1]
+            margins = frames[:, rival_ids] - frames[:, [w_id]]
+            frame, rival = np.unravel_index(margins.argmax(), margins.shape)
+            if word.w_margin is None or margins[frame, rival] > word.w_margin:
+                word.w_margin, word.w_rival, word.w_pos = float(margins[frame, rival]), rivals[rival], op.exp_pos
+
+
 def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_id: dict[str, int], blank_id: int,
             gop_threshold: float | None = GOP_CONFIRM,
-            pattern_threshold: float | None = GOP_CONFIRM_PATTERN) -> Assessment:
+            pattern_threshold: float | None = GOP_CONFIRM_PATTERN,
+            w_margin_threshold: float | None = None) -> Assessment:
     """Everything after recognition. Kept separate from the model so it can be unit-tested."""
     words = tokenize(text)
     heard = normalize(recognition.phones)
@@ -171,6 +193,10 @@ def analyze(text: str, raw_word_phones: list[list[str]], recognition, token_to_i
         lpp = lpr = np.array([GOP_FLOOR])
 
     features = compute_features(word_results, n_expected, heard, lpp, lpr, spans is not None, recognition.seconds)
+    # after the scoring features, like the GOP check: feedback rules do not change what the scorer sees
+    measure_hidden_w(word_results, alignment, recognition.log_probs, token_to_id)
+    for w, word in enumerate(word_results):
+        report_hidden_w(word, w, w_margin_threshold)
     return Assessment(
         text=text,
         words=word_results,

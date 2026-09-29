@@ -29,6 +29,9 @@ class WordResult:
     gop: float | None = None                               # lowest GOP (lpr) of the word's sounds
     level: str | None = None          # learned detector only: "red" (sure error), "yellow" (possible error) or None
     error_prob: float | None = None   # learned detector only: highest error probability of the word's sounds
+    w_margin: float | None = None     # an expected w heard as w: how close v/β/ʋ came to it (log-probability)
+    w_rival: str | None = None        # which of v/β/ʋ came closest
+    w_pos: int | None = None          # position of that w among the expected sounds
 
     @property
     def heard(self) -> list[str]:
@@ -162,6 +165,25 @@ def confirm_with_gop(word: WordResult, threshold: float | None, pattern_threshol
         return
     word.dismissed = [i for i in word.issues if not is_confirmed(i, word.gop, threshold, pattern_threshold)]
     word.issues = [i for i in word.issues if is_confirmed(i, word.gop, threshold, pattern_threshold)]
+
+
+def hidden_w_issue(word_index: int, rival: str) -> Issue:
+    return Issue(word_index, "sub", "w", rival, SUBSTITUTION_TIPS.get(("w", rival)),
+                 f"{describe('w')} sounded like {describe(rival)}")
+
+
+def report_hidden_w(word: WordResult, word_index: int, threshold: float | None) -> None:
+    """Report w -> v although the recognizer wrote w, when v/β/ʋ came within `threshold` of w.
+
+    Turkish speakers often say English w as [v] or [β]. The fine-tuned recognizer still ranks such
+    sounds a little above or below w, and greedy decoding keeps the w, but the log-probability
+    margin of the closest rival separates real w -> v errors well (Speech Accent Archive dev).
+    """
+    if threshold is None or word.w_margin is None or word.w_margin <= threshold:
+        return
+    word.ops = [Op("sub", op.expected, word.w_rival, op.exp_pos, op.heard_pos) if op.exp_pos == word.w_pos else op
+                for op in word.ops]
+    word.issues.append(hidden_w_issue(word_index, word.w_rival))
 
 
 def top_tips(results: list[WordResult], limit: int | None = None) -> list[str]:

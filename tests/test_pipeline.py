@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from conftest import BLANK, TOKEN_TO_ID, fake_recognition, needs_espeak
 
 from pronunciation.assess import FEATURE_NAMES, analyze
@@ -138,3 +139,30 @@ def test_expected_targets_link_every_expected_phoneme_to_its_token():
     assert all(target_word[t] == w for t, w in zip(phone_target, exp_word) if t is not None)
     # "zero": the test vocabulary has no iə token, so that sound gets no GOP
     assert phone_target[9:13][1] is None and None not in phone_target[9:13][::2]
+
+
+WE = [["w", "iː"]]
+
+
+def test_hidden_w_is_reported_when_v_comes_close():
+    # the recognizer wrote w, but v was almost as likely in the w frames (Turkish speakers' [v]/[β] for w)
+    recognition = near_tie(["w", "iː"], said="w", expected="v", p_said=0.5, p_expected=0.3)
+    [word] = analyze("we", WE, recognition, TOKEN_TO_ID, BLANK, w_margin_threshold=-3.0).words
+    assert [(i.expected, i.heard, i.tip) for i in word.issues] == [("w", "v", "w")]
+    assert word.w_margin == pytest.approx(np.log(0.3 / 0.5))
+    assert word.heard == ["v", "iː"] and word.score == 0.5         # the word's ops agree with the report
+
+
+def test_hidden_w_needs_the_rule_and_a_close_rival():
+    recognition = near_tie(["w", "iː"], said="w", expected="v", p_said=0.5, p_expected=0.3)
+    [word] = analyze("we", WE, recognition, TOKEN_TO_ID, BLANK).words              # rule off by default
+    assert word.issues == [] and word.w_margin is not None
+    clear = fake_recognition(["w", "iː"], confidence=0.95)                          # v far below w
+    [word] = analyze("we", WE, clear, TOKEN_TO_ID, BLANK, w_margin_threshold=-3.0).words
+    assert word.issues == [] and word.w_margin < -3.0
+
+
+def test_w_heard_as_v_is_reported_once():
+    recognition = fake_recognition(["v", "iː"], confidence=0.999)
+    [word] = analyze("we", WE, recognition, TOKEN_TO_ID, BLANK, w_margin_threshold=-3.0).words
+    assert [(i.expected, i.heard) for i in word.issues] == [("w", "v")] and word.w_margin is None

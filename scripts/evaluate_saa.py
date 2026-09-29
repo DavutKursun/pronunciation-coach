@@ -112,7 +112,7 @@ def evaluate(decoder: Decoder, data, system: System = V1) -> pd.DataFrame:
                 "dismissed": bool(ours.dismissed) and not ours.issues, "gop": ours.gop,
                 "level": ours.level, "error_prob": ours.error_prob,
                 "expected_phones": word_phones[k], "expert_phones": expert[k], "expert_ipa": ipa.get(id(expert[k])),
-                "heard_phones": ours.heard,
+                "heard_phones": ours.heard, "w_margin": ours.w_margin, "w_rival": ours.w_rival,
             })
     return pd.DataFrame(rows)
 

@@ -13,7 +13,8 @@ GRID = [math.inf, 0.0, -1.0, -2.0, -3.0]
 
 
 def word(speaker, group, wrong, gop, *issues):
-    return {"speaker": speaker, "group": group, "expert_wrong": wrong, "gop": gop, "our_errors": list(issues)}
+    return {"speaker": speaker, "group": group, "expert_wrong": wrong, "gop": gop, "our_errors": list(issues),
+            "expert_errors": []}
 
 
 def table():
@@ -79,3 +80,59 @@ def test_cross_validation_holds_every_speaker_out_once():
 def test_cross_validation_falls_back_when_no_pair_fits():
     result = cross_validate_gop_thresholds(table(), GRID, n_folds=2, fallback=(-2.5, -1.0), min_precision=1.01)
     assert all(fold["fallback"] and fold["thresholds"] == (-2.5, -1.0) for fold in result["folds"])
+
+
+def test_apply_w_margin_adds_the_hidden_w_like_the_app():
+    from pronunciation.thresholds import apply_w_margin
+
+    rows = pd.DataFrame([word("t1", "turkish", True, 0.0), word("e1", "english", False, 0.0)])
+    rows["w_margin"], rows["w_rival"] = [-1.0, -6.0], ["β", "v"]
+    out = apply_w_margin(rows, -3.0)
+    assert out.flagged.tolist() == [True, False]
+    [issue] = out.our_errors[0]
+    assert (issue.kind, issue.expected, issue.heard, issue.tip) == ("sub", "w", "β", "w")
+    assert apply_w_margin(rows, None).flagged.tolist() == [False, False]     # rule off
+
+
+def test_selection_can_include_the_w_threshold():
+    rows = table()
+    rows["w_margin"], rows["w_rival"] = None, None
+    rows.loc[5, ["w_margin", "w_rival"]] = [-1.0, "v"]     # the missed Turkish word: a hidden w -> v
+    rows.at[5, "expert_errors"] = [Issue(0, "sub", "w", "v", "w", "")]
+    rows.loc[6, ["w_margin", "w_rival"]] = [-4.0, "v"]     # a native word with v further away
+    chosen = select_gop_thresholds(rows, GRID, w_grid=[None, -2.0, -5.0], min_precision=0.70, max_false_alarm=0.025)
+    assert chosen["thresholds"] == (-2.0, 0.0, -2.0)       # -2 catches the hidden w and leaves the native word alone
+    assert chosen["scores"]["recall"] == 1.0
+
+
+W_ERROR = Issue(0, "sub", "w", "v", "w", "")              # what the expert wrote: w said as v
+
+
+def hidden_w_table():
+    rows = table()
+    rows["w_margin"], rows["w_rival"] = None, None
+    rows.loc[5, ["w_margin", "w_rival"]] = [-1.0, "v"]      # a missed Turkish word: a real hidden w -> v
+    rows.at[5, "expert_errors"] = [W_ERROR]
+    rows.loc[2, ["w_margin", "w_rival"]] = [-1.8, "v"]      # wrong for its θ only: a w report there would be wrong
+    rows.at[2, "expert_errors"] = [TH]
+    extra = pd.DataFrame([word("t3", "turkish", True, None)])   # another missed word with a real hidden w
+    extra["w_margin"], extra["w_rival"] = -1.9, "v"
+    extra.at[0, "expert_errors"] = [W_ERROR]
+    return pd.concat([rows, extra], ignore_index=True)
+
+
+def test_hidden_w_precision_counts_reports_on_a_real_w_error():
+    from pronunciation.thresholds import hidden_w_precision
+
+    rows = hidden_w_table()
+    assert hidden_w_precision(rows, -1.5) == (1, 1)          # only the -1.0 word: right
+    assert hidden_w_precision(rows, -2.0) == (2, 3)          # the θ word gets a wrong w report
+    assert hidden_w_precision(rows, None) == (0, 0)
+
+
+def test_w_threshold_keeps_the_w_reports_precise():
+    rows = hidden_w_table()
+    lenient = select_gop_thresholds(rows, GRID, w_grid=[None, -1.5, -2.0], min_w_precision=0.6)
+    strict = select_gop_thresholds(rows, GRID, w_grid=[None, -1.5, -2.0])     # default: at least 70%, like precision
+    assert lenient["thresholds"][2] == -2.0 and strict["thresholds"][2] == -1.5
+    assert strict["scores"]["w_report_precision"] == 1.0
