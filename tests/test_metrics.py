@@ -89,3 +89,69 @@ def test_bootstrap_ci_over_speakers():
     low, high = bootstrap_ci(mixed, share, n_resamples=500, seed=1)
     assert 0.0 <= low < share(mixed) < high <= 1.0
     assert bootstrap_ci(mixed, share, n_resamples=500, seed=1) == (low, high)   # reproducible
+
+
+def test_edit_distance_and_per():
+    from pronunciation.metrics import edit_distance, phone_error_rate
+
+    assert edit_distance(["θ", "ɪ", "ŋ", "k"], ["t", "ɪ", "ŋ"]) == 2          # one substitution, one deletion
+    assert edit_distance([], ["a"]) == 1 and edit_distance(["a"], ["a"]) == 0
+    # PER over a set of sentences: total edits / total reference phonemes
+    assert phone_error_rate([(["a", "b"], ["a", "c"]), (["d", "e"], ["d", "e"])]) == pytest.approx(1 / 4)
+
+
+def test_mdd_counts_on_hand_made_examples():
+    from pronunciation.metrics import mdd_counts
+
+    canonical = ["θ", "ɪ", "ŋ", "k"]
+    # the speaker said "tink"; the model heard "tink": a true rejection with the right diagnosis
+    c = mdd_counts(canonical, ["t", "ɪ", "ŋ", "k"], ["t", "ɪ", "ŋ", "k"])
+    assert (c["ta"], c["fr"], c["fa"], c["tr"], c["diagnosis_ok"]) == (3, 0, 0, 1, 1)
+    # the model heard "sink": detected, but diagnosed wrong
+    c = mdd_counts(canonical, ["t", "ɪ", "ŋ", "k"], ["s", "ɪ", "ŋ", "k"])
+    assert (c["tr"], c["diagnosis_ok"]) == (1, 0)
+    # the model heard "think": the error is missed (false acceptance)
+    c = mdd_counts(canonical, ["t", "ɪ", "ŋ", "k"], canonical)
+    assert (c["ta"], c["fa"], c["tr"]) == (3, 1, 0)
+    # a correct "think" heard as "thin": a false rejection (deletion)
+    c = mdd_counts(canonical, canonical, ["θ", "ɪ", "n"])
+    assert (c["ta"], c["fr"]) == (2, 2)
+
+
+def test_mdd_counts_insertions_and_deletions():
+    from pronunciation.metrics import mdd_counts
+
+    canonical = ["s", "k", "uː", "l"]
+    # "is-chool": an added vowel; the model also heard an added vowel (a different one): detected
+    c = mdd_counts(canonical, ["ɪ", "s", "k", "uː", "l"], ["ə", "s", "k", "uː", "l"])
+    assert (c["ta"], c["tr"], c["diagnosis_ok"], c["fa"], c["fr"]) == (4, 1, 0, 0, 0)
+    # an added vowel the model did not hear: false acceptance
+    c = mdd_counts(canonical, ["ɪ", "s", "k", "uː", "l"], canonical)
+    assert (c["ta"], c["fa"]) == (4, 1)
+    # a sound the model added although the speaker did not: false rejection
+    c = mdd_counts(canonical, canonical, ["ɪ", "s", "k", "uː", "l"])
+    assert (c["ta"], c["fr"]) == (4, 1)
+    # the final l dropped, and the model heard it dropped: true rejection, right diagnosis
+    c = mdd_counts(canonical, ["s", "k", "uː"], ["s", "k", "uː"])
+    assert (c["ta"], c["tr"], c["diagnosis_ok"]) == (3, 1, 1)
+
+
+def test_mdd_counts_accepted_variants_are_not_errors():
+    from pronunciation.metrics import mdd_counts
+
+    # "better" with a flap on both sides: our feedback accepts ɾ for t, so nothing is wrong
+    c = mdd_counts(["b", "ɛ", "t", "ɚ"], ["b", "ɛ", "ɾ", "ɚ"], ["b", "ɛ", "ɾ", "ɚ"])
+    assert (c["ta"], c["fr"], c["fa"], c["tr"]) == (4, 0, 0, 0)
+
+
+def test_mdd_metrics():
+    from collections import Counter
+
+    from pronunciation.metrics import mdd_metrics
+
+    m = mdd_metrics(Counter(ta=80, fr=5, fa=10, tr=15, diagnosis_ok=9))
+    assert m["precision"] == pytest.approx(15 / 20)
+    assert m["recall"] == pytest.approx(15 / 25)
+    assert m["f1"] == pytest.approx(2 * 0.75 * 0.6 / 1.35)
+    assert m["diagnosis_accuracy"] == pytest.approx(9 / 15)
+    assert m["false_rejection_rate"] == pytest.approx(5 / 85)

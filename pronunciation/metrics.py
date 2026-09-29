@@ -11,7 +11,18 @@ confusion matrix (tp = both, fp = only we, fn = only the expert, tn = neither) a
 Error level: a word can have several errors ("things" said "tins": θ → t and z → s). Each expert
 error counts on its own: did we report an error on the same sound?
 
-Used by scripts/evaluate_words.py, scripts/evaluate_saa.py and scripts/train_scorer.py.
+Phone level (mispronunciation detection and diagnosis, MDD, as on L2-ARCTIC): for every expected
+sound, compare what the annotator heard with what the recognizer output:
+
+  TA  said right, recognized right     FR  said right, recognized as an error (false rejection)
+  FA  said wrong, recognized right     TR  said wrong, recognized as an error (true rejection)
+
+  precision TR / (TR + FR), recall TR / (TR + FA), F1; diagnosis accuracy = share of TR where the
+  recognizer heard the same sound as the annotator. PER = edit distance to what the annotator
+  heard / its length. "Right" uses our accepted variants (a flap for t is not an error).
+
+Used by scripts/evaluate_words.py, scripts/evaluate_saa.py, scripts/train_scorer.py and
+scripts/evaluate_l2arctic.py.
 """
 
 from __future__ import annotations
@@ -21,7 +32,9 @@ from typing import Callable, Iterable, Sequence
 
 import numpy as np
 
+from .align import align
 from .feedback import Issue
+from .phonemes import is_acceptable
 
 # speechocean762 word accuracy (0-10): 10 = "the pronunciation of the word is perfect",
 # 7-9 = "most phones are pronounced correctly but have accents", 4-6 = "less than 30% of the
@@ -160,3 +173,82 @@ def format_confusion(m: dict) -> str:
     return ("                      we flagged   we did not\n"
             f"  expert: wrong       {c['tp']:>10}   {c['fn']:>10}\n"
             f"  expert: correct     {c['fp']:>10}   {c['tn']:>10}")
+
+
+def edit_distance(a: Sequence[str], b: Sequence[str]) -> int:
+    """Plain Levenshtein distance: every substitution, deletion and insertion costs 1."""
+    previous = list(range(len(b) + 1))
+    for i, x in enumerate(a, 1):
+        current = [i]
+        for j, y in enumerate(b, 1):
+            current.append(min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + (x != y)))
+        previous = current
+    return previous[-1]
+
+
+def phone_error_rate(pairs: Iterable[tuple[Sequence[str], Sequence[str]]]) -> float:
+    """PER over (reference, hypothesis) pairs: total edits / total reference phonemes."""
+    edits = length = 0
+    for reference, hypothesis in pairs:
+        edits += edit_distance(reference, hypothesis)
+        length += len(reference)
+    return edits / length if length else 0.0
+
+
+def phone_states(canonical: Sequence[str], other: Sequence[str], flags: Sequence[bool]):
+    """Per expected sound: None (said as expected) or the other sound ("" = left out); per gap: added sounds."""
+    state: list[str | None] = [None] * len(canonical)
+    added: dict[int, list[str]] = {}
+    seen = 0                                       # expected sounds before the current position
+    for op in align(list(canonical), list(other), list(flags)):
+        if op.exp_pos is None:
+            added.setdefault(seen, []).append(op.heard)
+            continue
+        seen = op.exp_pos + 1
+        if op.kind == "del":
+            state[op.exp_pos] = ""
+        elif op.kind == "sub":
+            state[op.exp_pos] = op.heard
+    return state, added
+
+
+def mdd_counts(canonical: Sequence[str], perceived: Sequence[str], recognized: Sequence[str],
+               function_flags: Sequence[bool] | None = None) -> Counter:
+    """TA, FR, FA, TR and correct diagnoses for one sentence (see the module docstring).
+
+    Both the annotator's and the recognizer's version are aligned with the expected sounds. Every
+    expected sound is one decision; every gap where either side added a sound is one more (TR if
+    both added something, FA if only the annotator did, FR if only the recognizer did).
+    """
+    flags = function_flags or [False] * len(canonical)
+    p_state, p_added = phone_states(canonical, perceived, flags)
+    r_state, r_added = phone_states(canonical, recognized, flags)
+    counts: Counter = Counter()
+    for expected, p, r in zip(canonical, p_state, r_state):
+        if p is None:
+            counts["fr" if r is not None else "ta"] += 1
+        elif r is None:
+            counts["fa"] += 1
+        else:
+            counts["tr"] += 1
+            counts["diagnosis_ok"] += p == r or (p != "" and r != "" and is_acceptable(p, r))
+    for gap in set(p_added) | set(r_added):
+        if gap in p_added and gap in r_added:
+            counts["tr"] += 1
+            counts["diagnosis_ok"] += p_added[gap] == r_added[gap]
+        else:
+            counts["fa" if gap in p_added else "fr"] += 1
+    return counts
+
+
+def mdd_metrics(counts: Counter) -> dict:
+    ta, fr, fa, tr = (counts.get(k, 0) for k in ("ta", "fr", "fa", "tr"))
+    precision = tr / (tr + fr) if tr + fr else 0.0
+    recall = tr / (tr + fa) if tr + fa else 0.0
+    return {
+        "ta": ta, "fr": fr, "fa": fa, "tr": tr,
+        "precision": precision, "recall": recall,
+        "f1": 2 * precision * recall / (precision + recall) if precision + recall else 0.0,
+        "diagnosis_accuracy": counts.get("diagnosis_ok", 0) / tr if tr else 0.0,
+        "false_rejection_rate": fr / (ta + fr) if ta + fr else 0.0,
+    }
