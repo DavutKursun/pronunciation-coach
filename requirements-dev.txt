@@ -1,3 +1,4 @@
 -r requirements.txt
 pytest
 openpyxl              # only needed by scripts/download_saa.py
+matplotlib            # only needed by scripts/plot_training.py

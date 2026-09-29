@@ -1,0 +1,44 @@
+{
+  "base": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+  "args": {
+    "data": "/kaggle/input/datasets/davutkurun/pronunciation-coach-finetune",
+    "manifests": "None",
+    "out": "/kaggle/working/recognizer",
+    "base": "facebook/wav2vec2-lv-60-espeak-cv-ft",
+    "epochs": "15",
+    "lr": "3e-05",
+    "batch_size": "8",
+    "grad_accum": "2",
+    "max_seconds": "15.0",
+    "patience": "3",
+    "max_hours": "2.75",
+    "early_epoch": "3",
+    "seed": "762",
+    "workers": "2",
+    "smoke": "False"
+  },
+  "versions": {
+    "python": "3.12.13",
+    "torch": "2.10.0+cu128",
+    "transformers": "5.17.0",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "soundfile": "0.14.0",
+    "cuda": "12.8",
+    "gpus_visible": 1,
+    "gpu": "Tesla T4"
+  },
+  "train_sentences": {
+    "l2arctic": 1626,
+    "native": 4424
+  },
+  "license": "CC BY-NC 4.0 (fine-tuned on L2-ARCTIC); base model Apache-2.0",
+  "epoch": 14,
+  "dev": {
+    "l2_dev_per": 0.13404567196420306,
+    "l2_dev_f1": 0.48696229862149143,
+    "l2_dev_precision": 0.5550927678909504,
+    "l2_dev_recall": 0.43372781065088756,
+    "native_dev_per": 0.018661137440758292
+  }
+}
