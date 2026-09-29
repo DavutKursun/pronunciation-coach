@@ -1,0 +1,5380 @@
+{
+  "name": "v2-3-best-tuned",
+  "system": {
+    "name": "v2-3-best-tuned",
+    "recognizer": "models/recognizer-l2arctic/best",
+    "decision": "rules",
+    "settings": {
+      "gop_threshold": -1.0,
+      "pattern_threshold": Infinity
+    }
+  },
+  "code": "fb2fe62",
+  "date": "2026-09-29T21:02:31",
+  "saa_dev": {
+    "definitions": {
+      "main": "a word is wrong when the expert transcription differs from the expected phonemes outside our accepted variants (flap, reduced vowels, weak forms of function words...)",
+      "raw": "a word is wrong when the expert transcription differs from the expected phonemes at all (only narrow-IPA detail and vowel length are ignored)"
+    },
+    "main": {
+      "english": {
+        "words": 686,
+        "expert_wrong": 72,
+        "confusion": {
+          "tp": 10,
+          "fp": 15,
+          "fn": 62,
+          "tn": 599
+        },
+        "false_alarm": 0.024429967426710098,
+        "recall": 0.1388888888888889,
+        "precision": 0.4,
+        "f1": 0.20618556701030927,
+        "speakers": 10,
+        "ci95": {
+          "false_alarm": [
+            0.014240506329113924,
+            0.0374176016246629
+          ],
+          "recall": [
+            0.03569862155388471,
+            0.22225177304964522
+          ],
+          "precision": [
+            0.18181818181818182,
+            0.48650381150381145
+          ],
+          "f1": [
+            0.058823529411764705,
+            0.3016015758821513
+          ]
+        }
+      },
+      "turkish": {
+        "words": 823,
+        "expert_wrong": 361,
+        "confusion": {
+          "tp": 237,
+          "fp": 52,
+          "fn": 124,
+          "tn": 410
+        },
+        "false_alarm": 0.11255411255411256,
+        "recall": 0.6565096952908587,
+        "precision": 0.8200692041522492,
+        "f1": 0.7292307692307691,
+        "speakers": 12,
+        "ci95": {
+          "false_alarm": [
+            0.07228553492527223,
+            0.16985809472188995
+          ],
+          "recall": [
+            0.5865301724137931,
+            0.7169036372224846
+          ],
+          "precision": [
+            0.7488466637207246,
+            0.8789808917197452
+          ],
+          "f1": [
+            0.6725978647686833,
+            0.7751557078603556
+          ]
+        }
+      },
+      "turkish_error_level": {
+        "expert_errors": 499,
+        "found": 282,
+        "found_exact": 196,
+        "catch": 0.5651302605210421,
+        "exact": 0.3927855711422846,
+        "multi_error_words": 100,
+        "multi_all": 37,
+        "multi_some": 46,
+        "multi_none": 17,
+        "by_tip": {
+          "r": {
+            "errors": 29,
+            "found": 11
+          },
+          "short_i": {
+            "errors": 40,
+            "found": 16
+          },
+          "ng": {
+            "errors": 3,
+            "found": 0
+          },
+          "th_voiced": {
+            "errors": 49,
+            "found": 44
+          },
+          "long_ee": {
+            "errors": 6,
+            "found": 2
+          },
+          "final_voicing": {
+            "errors": 146,
+            "found": 91
+          },
+          "th_voiceless": {
+            "errors": 35,
+            "found": 32
+          },
+          "ae": {
+            "errors": 27,
+            "found": 22
+          },
+          "w": {
+            "errors": 33,
+            "found": 12
+          },
+          "epenthesis": {
+            "errors": 11,
+            "found": 7
+          },
+          "short_u": {
+            "errors": 7,
+            "found": 3
+          },
+          "long_oo": {
+            "errors": 3,
+            "found": 0
+          },
+          "er": {
+            "errors": 1,
+            "found": 0
+          }
+        },
+        "ci95": {
+          "catch": [
+            0.4939239886907351,
+            0.6247678571428571
+          ]
+        }
+      },
+      "turkish_patterns": [
+        {
+          "pattern": "th_voiceless",
+          "words": 35,
+          "word_caught": 0.9142857142857143,
+          "right_tip": 0.9142857142857143,
+          "errors": 35,
+          "error_caught": 0.9142857142857143,
+          "hidden_by_gop": 0
+        },
+        {
+          "pattern": "th_voiced",
+          "words": 49,
+          "word_caught": 0.9387755102040817,
+          "right_tip": 0.8367346938775511,
+          "errors": 49,
+          "error_caught": 0.8979591836734694,
+          "hidden_by_gop": 1
+        },
+        {
+          "pattern": "w",
+          "words": 33,
+          "word_caught": 0.5151515151515151,
+          "right_tip": 0.3333333333333333,
+          "errors": 33,
+          "error_caught": 0.36363636363636365,
+          "hidden_by_gop": 0
+        },
+        {
+          "pattern": "long_ee",
+          "words": 6,
+          "word_caught": 1.0,
+          "right_tip": 0.3333333333333333,
+          "errors": 6,
+          "error_caught": 0.3333333333333333,
+          "hidden_by_gop": 0
+        },
+        {
+          "pattern": "short_i",
+          "words": 40,
+          "word_caught": 0.675,
+          "right_tip": 0.4,
+          "errors": 40,
+          "error_caught": 0.4,
+          "hidden_by_gop": 2
+        },
+        {
+          "pattern": "ae",
+          "words": 27,
+          "word_caught": 0.8518518518518519,
+          "right_tip": 0.4074074074074074,
+          "errors": 27,
+          "error_caught": 0.8148148148148148,
+          "hidden_by_gop": 0
+        },
+        {
+          "pattern": "short_u",
+          "words": 7,
+          "word_caught": 0.7142857142857143,
+          "right_tip": 0.42857142857142855,
+          "errors": 7,
+          "error_caught": 0.42857142857142855,
+          "hidden_by_gop": 0
+        },
+        {
+          "pattern": "long_oo",
+          "words": 3,
+          "word_caught": 0.3333333333333333,
+          "right_tip": 0.0,
+          "errors": 3,
+          "error_caught": 0.0,
+          "hidden_by_gop": 1
+        },
+        {
+          "pattern": "er",
+          "words": 1,
+          "word_caught": 0.0,
+          "right_tip": 0.0,
+          "errors": 1,
+          "error_caught": 0.0,
+          "hidden_by_gop": 0
+        },
+        {
+          "pattern": "ng",
+          "words": 3,
+          "word_caught": 0.6666666666666666,
+          "right_tip": 0.0,
+          "errors": 3,
+          "error_caught": 0.0,
+          "hidden_by_gop": 1
+        },
+        {
+          "pattern": "r",
+          "words": 29,
+          "word_caught": 0.6551724137931034,
+          "right_tip": 0.3103448275862069,
+          "errors": 29,
+          "error_caught": 0.3793103448275862,
+          "hidden_by_gop": 6
+        },
+        {
+          "pattern": "final_voicing",
+          "words": 131,
+          "word_caught": 0.7175572519083969,
+          "right_tip": 0.5954198473282443,
+          "errors": 146,
+          "error_caught": 0.6232876712328768,
+          "hidden_by_gop": 6
+        },
+        {
+          "pattern": "epenthesis",
+          "words": 11,
+          "word_caught": 0.8181818181818182,
+          "right_tip": 0.5454545454545454,
+          "errors": 11,
+          "error_caught": 0.6363636363636364,
+          "hidden_by_gop": 1
+        }
+      ]
+    },
+    "raw": {
+      "english": {
+        "words": 686,
+        "expert_wrong": 280,
+        "confusion": {
+          "tp": 16,
+          "fp": 9,
+          "fn": 264,
+          "tn": 397
+        },
+        "false_alarm": 0.022167487684729065,
+        "recall": 0.05714285714285714,
+        "precision": 0.64,
+        "f1": 0.10491803278688525,
+        "speakers": 10,
+        "ci95": {
+          "false_alarm": [
+            0.004796163069544364,
+            0.04239401496259352
+          ],
+          "recall": [
+            0.031246960116731518,
+            0.08421149026412184
+          ],
+          "precision": [
+            0.5416666666666666,
+            0.8461538461538461
+          ],
+          "f1": [
+            0.06019377951473701,
+            0.14749761742682094
+          ]
+        }
+      },
+      "turkish": {
+        "words": 823,
+        "expert_wrong": 536,
+        "confusion": {
+          "tp": 248,
+          "fp": 41,
+          "fn": 288,
+          "tn": 246
+        },
+        "false_alarm": 0.14285714285714285,
+        "recall": 0.4626865671641791,
+        "precision": 0.8581314878892734,
+        "f1": 0.6012121212121212,
+        "speakers": 12,
+        "ci95": {
+          "false_alarm": [
+            0.08013588850174215,
+            0.22073886369698584
+          ],
+          "recall": [
+            0.38621826961654265,
+            0.5331007751937985
+          ],
+          "precision": [
+            0.7900736437818565,
+            0.9148385721184968
+          ],
+          "f1": [
+            0.5292470766660806,
+            0.6584835039198607
+          ]
+        }
+      }
+    },
+    "canonical_bias": {
+      "english": {
+        "recordings": 10,
+        "per_vs_heard": 0.25251141552511414,
+        "per_vs_expected": 0.03783783783783784,
+        "gap": 0.2146735776872763
+      },
+      "turkish": {
+        "recordings": 12,
+        "per_vs_heard": 0.3466417910447761,
+        "per_vs_expected": 0.2180930930930931,
+        "gap": 0.128548697951683
+      }
+    }
+  },
+  "speechocean_val": {
+    "expert_below_10": {
+      "words": 3201,
+      "expert_wrong": 418,
+      "confusion": {
+        "tp": 388,
+        "fp": 1031,
+        "fn": 30,
+        "tn": 1752
+      },
+      "false_alarm": 0.3704635285662954,
+      "recall": 0.9282296650717703,
+      "precision": 0.2734319943622269,
+      "f1": 0.4224278715296679
+    },
+    "expert_below_7": {
+      "words": 3201,
+      "expert_wrong": 354,
+      "confusion": {
+        "tp": 335,
+        "fp": 1084,
+        "fn": 19,
+        "tn": 1763
+      },
+      "false_alarm": 0.3807516684229013,
+      "recall": 0.9463276836158192,
+      "precision": 0.23608174770965468,
+      "f1": 0.3778905809362662
+    },
+    "word_score_pcc": 0.41483450917590114,
+    "utterances": 500
+  },
+  "synthetic": {
+    "espeak": [
+      {
+        "pattern": "th \u2192 t",
+        "pairs": 48.0,
+        "catch": 0.8958333333333334,
+        "right_tip": 0.75,
+        "false_alarm": 0.3333333333333333,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "th \u2192 s",
+        "pairs": 48.0,
+        "catch": 0.7291666666666666,
+        "right_tip": 0.5208333333333334,
+        "false_alarm": 0.375,
+        "hidden_by_gop": 1.0
+      },
+      {
+        "pattern": "\u00f0 \u2192 d",
+        "pairs": 48.0,
+        "catch": 0.6458333333333334,
+        "right_tip": 0.5208333333333334,
+        "false_alarm": 0.3541666666666667,
+        "hidden_by_gop": 2.0
+      },
+      {
+        "pattern": "\u00f0 \u2192 z",
+        "pairs": 48.0,
+        "catch": 0.14583333333333334,
+        "right_tip": 0.041666666666666664,
+        "false_alarm": 0.3333333333333333,
+        "hidden_by_gop": 11.0
+      },
+      {
+        "pattern": "w \u2192 v",
+        "pairs": 36.0,
+        "catch": 1.0,
+        "right_tip": 0.3611111111111111,
+        "false_alarm": 0.3888888888888889,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u026a \u2192 i\u02d0",
+        "pairs": 36.0,
+        "catch": 1.0,
+        "right_tip": 1.0,
+        "false_alarm": 0.4722222222222222,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "i\u02d0 \u2192 \u026a",
+        "pairs": 36.0,
+        "catch": 0.9722222222222222,
+        "right_tip": 0.6666666666666666,
+        "false_alarm": 0.3055555555555556,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u00e6 \u2192 \u025b",
+        "pairs": 36.0,
+        "catch": 0.6111111111111112,
+        "right_tip": 0.2777777777777778,
+        "false_alarm": 0.5,
+        "hidden_by_gop": 2.0
+      },
+      {
+        "pattern": "\u028a \u2192 u\u02d0",
+        "pairs": 36.0,
+        "catch": 1.0,
+        "right_tip": 0.9722222222222222,
+        "false_alarm": 0.75,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "final devoicing",
+        "pairs": 48.0,
+        "catch": 0.9791666666666666,
+        "right_tip": 0.8541666666666666,
+        "false_alarm": 0.7291666666666666,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "extra vowel before cluster",
+        "pairs": 48.0,
+        "catch": 0.5833333333333334,
+        "right_tip": 0.5208333333333334,
+        "false_alarm": 0.2916666666666667,
+        "hidden_by_gop": 5.0
+      },
+      {
+        "pattern": "\u014b + g",
+        "pairs": 36.0,
+        "catch": 0.9166666666666666,
+        "right_tip": 0.7777777777777778,
+        "false_alarm": 0.4722222222222222,
+        "hidden_by_gop": 1.0
+      },
+      {
+        "pattern": "ALL",
+        "pairs": 504.0,
+        "catch": 0.7718253968253969,
+        "right_tip": 0.5952380952380952,
+        "false_alarm": 0.4365079365079365,
+        "hidden_by_gop": 22.0
+      }
+    ],
+    "kokoro": [
+      {
+        "pattern": "th \u2192 t",
+        "pairs": 48.0,
+        "catch": 1.0,
+        "right_tip": 1.0,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "th \u2192 s",
+        "pairs": 48.0,
+        "catch": 0.8125,
+        "right_tip": 0.8125,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u00f0 \u2192 d",
+        "pairs": 48.0,
+        "catch": 0.9583333333333334,
+        "right_tip": 0.6875,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u00f0 \u2192 z",
+        "pairs": 48.0,
+        "catch": 0.3541666666666667,
+        "right_tip": 0.3541666666666667,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 1.0
+      },
+      {
+        "pattern": "w \u2192 v",
+        "pairs": 36.0,
+        "catch": 1.0,
+        "right_tip": 1.0,
+        "false_alarm": 0.05555555555555555,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u026a \u2192 i\u02d0",
+        "pairs": 36.0,
+        "catch": 1.0,
+        "right_tip": 1.0,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "i\u02d0 \u2192 \u026a",
+        "pairs": 36.0,
+        "catch": 1.0,
+        "right_tip": 1.0,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u00e6 \u2192 \u025b",
+        "pairs": 36.0,
+        "catch": 0.5833333333333334,
+        "right_tip": 0.4444444444444444,
+        "false_alarm": 0.3055555555555556,
+        "hidden_by_gop": 1.0
+      },
+      {
+        "pattern": "\u028a \u2192 u\u02d0",
+        "pairs": 36.0,
+        "catch": 0.9444444444444444,
+        "right_tip": 0.9444444444444444,
+        "false_alarm": 0.08333333333333333,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "final devoicing",
+        "pairs": 48.0,
+        "catch": 1.0,
+        "right_tip": 1.0,
+        "false_alarm": 0.3333333333333333,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "extra vowel before cluster",
+        "pairs": 48.0,
+        "catch": 0.10416666666666667,
+        "right_tip": 0.10416666666666667,
+        "false_alarm": 0.0,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "\u014b + g",
+        "pairs": 36.0,
+        "catch": 0.6944444444444444,
+        "right_tip": 0.6666666666666666,
+        "false_alarm": 0.027777777777777776,
+        "hidden_by_gop": 0.0
+      },
+      {
+        "pattern": "ALL",
+        "pairs": 504.0,
+        "catch": 0.7757936507936508,
+        "right_tip": 0.7380952380952381,
+        "false_alarm": 0.06547619047619048,
+        "hidden_by_gop": 2.0
+      }
+    ]
+  },
+  "targets_on_saa_dev": [
+    {
+      "target": "Turkish precision",
+      "value": 0.8200692041522492,
+      "goal": ">= 70.0%",
+      "met": true
+    },
+    {
+      "target": "Turkish recall",
+      "value": 0.6565096952908587,
+      "goal": ">= 50.0%",
+      "met": true
+    },
+    {
+      "target": "English false alarm",
+      "value": 0.024429967426710098,
+      "goal": "<= 2.5%",
+      "met": true
+    },
+    {
+      "target": "final devoicing catch",
+      "value": 0.6232876712328768,
+      "goal": ">= 60.0%",
+      "met": true
+    },
+    {
+      "target": "\u00f0 catch",
+      "value": 0.8979591836734694,
+      "goal": ">= 40.0%",
+      "met": true
+    },
+    {
+      "target": "\u03b8 catch",
+      "value": 0.9142857142857143,
+      "goal": ">= 75.0%",
+      "met": true
+    }
+  ],
+  "z_to_s_catch": 0.7888888888888889,
+  "pattern_catch_on_saa_dev": {
+    "final_voicing": 0.6232876712328768,
+    "z_to_s": 0.7888888888888889,
+    "th_voiced": 0.8979591836734694,
+    "th_voiceless": 0.9142857142857143,
+    "w": 0.36363636363636365,
+    "short_i": 0.4,
+    "r": 0.3793103448275862
+  },
+  "units": {
+    "saa_dev_turkish": {
+      "turkish1": [
+        26,
+        6,
+        11,
+        26
+      ],
+      "turkish10": [
+        12,
+        4,
+        10,
+        41
+      ],
+      "turkish12": [
+        25,
+        1,
+        11,
+        32
+      ],
+      "turkish14": [
+        20,
+        14,
+        5,
+        30
+      ],
+      "turkish17": [
+        25,
+        4,
+        10,
+        30
+      ],
+      "turkish19": [
+        32,
+        6,
+        16,
+        15
+      ],
+      "turkish2": [
+        30,
+        3,
+        6,
+        28
+      ],
+      "turkish21": [
+        5,
+        3,
+        9,
+        52
+      ],
+      "turkish23": [
+        23,
+        2,
+        9,
+        34
+      ],
+      "turkish24": [
+        10,
+        3,
+        12,
+        44
+      ],
+      "turkish6": [
+        15,
+        4,
+        10,
+        40
+      ],
+      "turkish7": [
+        14,
+        2,
+        15,
+        38
+      ]
+    },
+    "saa_dev_english": {
+      "english1": [
+        0,
+        1,
+        0,
+        68
+      ],
+      "english124": [
+        0,
+        1,
+        7,
+        61
+      ],
+      "english133": [
+        0,
+        1,
+        3,
+        65
+      ],
+      "english142": [
+        1,
+        1,
+        6,
+        61
+      ],
+      "english158": [
+        0,
+        1,
+        3,
+        65
+      ],
+      "english161": [
+        3,
+        4,
+        7,
+        55
+      ],
+      "english17": [
+        4,
+        3,
+        10,
+        50
+      ],
+      "english18": [
+        2,
+        2,
+        8,
+        57
+      ],
+      "english21": [
+        0,
+        0,
+        10,
+        57
+      ],
+      "english81": [
+        0,
+        1,
+        8,
+        60
+      ]
+    },
+    "saa_dev_turkish_errors": {
+      "turkish1": [
+        27,
+        54
+      ],
+      "turkish10": [
+        12,
+        26
+      ],
+      "turkish12": [
+        36,
+        53
+      ],
+      "turkish14": [
+        25,
+        33
+      ],
+      "turkish17": [
+        31,
+        54
+      ],
+      "turkish19": [
+        39,
+        63
+      ],
+      "turkish2": [
+        40,
+        58
+      ],
+      "turkish21": [
+        3,
+        15
+      ],
+      "turkish23": [
+        26,
+        45
+      ],
+      "turkish24": [
+        10,
+        23
+      ],
+      "turkish6": [
+        16,
+        31
+      ],
+      "turkish7": [
+        17,
+        44
+      ]
+    },
+    "saa_dev_final_voicing": {
+      "turkish1": [
+        9,
+        12
+      ],
+      "turkish10": [
+        6,
+        10
+      ],
+      "turkish12": [
+        13,
+        20
+      ],
+      "turkish14": [
+        9,
+        11
+      ],
+      "turkish17": [
+        10,
+        14
+      ],
+      "turkish19": [
+        7,
+        12
+      ],
+      "turkish2": [
+        9,
+        11
+      ],
+      "turkish21": [
+        2,
+        8
+      ],
+      "turkish23": [
+        6,
+        12
+      ],
+      "turkish24": [
+        0,
+        4
+      ],
+      "turkish6": [
+        10,
+        15
+      ],
+      "turkish7": [
+        10,
+        17
+      ]
+    },
+    "saa_dev_z_to_s": {
+      "turkish1": [
+        7,
+        7
+      ],
+      "turkish10": [
+        6,
+        7
+      ],
+      "turkish12": [
+        10,
+        11
+      ],
+      "turkish14": [
+        5,
+        5
+      ],
+      "turkish17": [
+        7,
+        7
+      ],
+      "turkish19": [
+        6,
+        6
+      ],
+      "turkish2": [
+        5,
+        6
+      ],
+      "turkish21": [
+        2,
+        9
+      ],
+      "turkish23": [
+        5,
+        8
+      ],
+      "turkish24": [
+        0,
+        4
+      ],
+      "turkish6": [
+        10,
+        10
+      ],
+      "turkish7": [
+        8,
+        10
+      ]
+    },
+    "saa_dev_th_voiced": {
+      "turkish1": [
+        4,
+        4
+      ],
+      "turkish10": [
+        1,
+        2
+      ],
+      "turkish12": [
+        5,
+        5
+      ],
+      "turkish14": [
+        6,
+        6
+      ],
+      "turkish17": [
+        6,
+        6
+      ],
+      "turkish19": [
+        5,
+        5
+      ],
+      "turkish2": [
+        4,
+        4
+      ],
+      "turkish21": [
+        1,
+        2
+      ],
+      "turkish23": [
+        4,
+        4
+      ],
+      "turkish24": [
+        5,
+        6
+      ],
+      "turkish6": [
+        1,
+        1
+      ],
+      "turkish7": [
+        2,
+        4
+      ]
+    },
+    "saa_dev_th_voiceless": {
+      "turkish1": [
+        4,
+        4
+      ],
+      "turkish10": [
+        1,
+        3
+      ],
+      "turkish12": [
+        4,
+        4
+      ],
+      "turkish14": [
+        4,
+        4
+      ],
+      "turkish17": [
+        4,
+        4
+      ],
+      "turkish19": [
+        4,
+        4
+      ],
+      "turkish2": [
+        4,
+        4
+      ],
+      "turkish21": [
+        0,
+        0
+      ],
+      "turkish23": [
+        3,
+        4
+      ],
+      "turkish24": [
+        2,
+        2
+      ],
+      "turkish6": [
+        0,
+        0
+      ],
+      "turkish7": [
+        2,
+        2
+      ]
+    },
+    "saa_dev_w": {
+      "turkish1": [
+        0,
+        4
+      ],
+      "turkish10": [
+        0,
+        1
+      ],
+      "turkish12": [
+        2,
+        5
+      ],
+      "turkish14": [
+        0,
+        0
+      ],
+      "turkish17": [
+        2,
+        3
+      ],
+      "turkish19": [
+        3,
+        5
+      ],
+      "turkish2": [
+        0,
+        0
+      ],
+      "turkish21": [
+        0,
+        0
+      ],
+      "turkish23": [
+        4,
+        5
+      ],
+      "turkish24": [
+        0,
+        4
+      ],
+      "turkish6": [
+        1,
+        3
+      ],
+      "turkish7": [
+        0,
+        3
+      ]
+    },
+    "saa_dev_short_i": {
+      "turkish1": [
+        1,
+        6
+      ],
+      "turkish10": [
+        0,
+        2
+      ],
+      "turkish12": [
+        5,
+        7
+      ],
+      "turkish14": [
+        1,
+        2
+      ],
+      "turkish17": [
+        0,
+        6
+      ],
+      "turkish19": [
+        3,
+        3
+      ],
+      "turkish2": [
+        4,
+        6
+      ],
+      "turkish21": [
+        0,
+        1
+      ],
+      "turkish23": [
+        1,
+        3
+      ],
+      "turkish24": [
+        0,
+        0
+      ],
+      "turkish6": [
+        1,
+        3
+      ],
+      "turkish7": [
+        0,
+        1
+      ]
+    },
+    "saa_dev_r": {
+      "turkish1": [
+        1,
+        6
+      ],
+      "turkish10": [
+        0,
+        0
+      ],
+      "turkish12": [
+        0,
+        2
+      ],
+      "turkish14": [
+        0,
+        2
+      ],
+      "turkish17": [
+        1,
+        3
+      ],
+      "turkish19": [
+        8,
+        11
+      ],
+      "turkish2": [
+        0,
+        1
+      ],
+      "turkish21": [
+        0,
+        0
+      ],
+      "turkish23": [
+        1,
+        2
+      ],
+      "turkish24": [
+        0,
+        1
+      ],
+      "turkish6": [
+        0,
+        0
+      ],
+      "turkish7": [
+        0,
+        1
+      ]
+    },
+    "speechocean_val": {
+      "0053": [
+        12,
+        34,
+        3,
+        43
+      ],
+      "0070": [
+        10,
+        37,
+        0,
+        33
+      ],
+      "0103": [
+        6,
+        33,
+        0,
+        51
+      ],
+      "0145": [
+        11,
+        39,
+        0,
+        37
+      ],
+      "0575": [
+        10,
+        57,
+        1,
+        70
+      ],
+      "1029": [
+        1,
+        40,
+        0,
+        105
+      ],
+      "1064": [
+        10,
+        53,
+        0,
+        90
+      ],
+      "1092": [
+        13,
+        48,
+        1,
+        36
+      ],
+      "1197": [
+        7,
+        50,
+        0,
+        43
+      ],
+      "1309": [
+        2,
+        34,
+        2,
+        102
+      ],
+      "2036": [
+        1,
+        26,
+        0,
+        112
+      ],
+      "2380": [
+        2,
+        32,
+        2,
+        109
+      ],
+      "2981": [
+        4,
+        21,
+        0,
+        103
+      ],
+      "3023": [
+        0,
+        43,
+        2,
+        102
+      ],
+      "3068": [
+        5,
+        45,
+        1,
+        54
+      ],
+      "5218": [
+        4,
+        30,
+        0,
+        100
+      ],
+      "5551": [
+        1,
+        41,
+        3,
+        81
+      ],
+      "6048": [
+        2,
+        35,
+        0,
+        87
+      ],
+      "8002": [
+        39,
+        40,
+        1,
+        47
+      ],
+      "9607": [
+        36,
+        55,
+        6,
+        61
+      ],
+      "9615": [
+        22,
+        72,
+        2,
+        78
+      ],
+      "9616": [
+        41,
+        39,
+        3,
+        76
+      ],
+      "9628": [
+        50,
+        45,
+        2,
+        48
+      ],
+      "9630": [
+        41,
+        41,
+        1,
+        51
+      ],
+      "9645": [
+        58,
+        41,
+        0,
+        33
+      ]
+    },
+    "synthetic_kokoro_catch": {
+      "th \u2192 t|think|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|think|af_bella|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|thank|af_bella|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|three|af_bella|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 t|both|af_bella|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|think|af_bella|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|thank|af_bella|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_heart|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|af_heart|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|af_heart|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|three|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_michael|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|both|am_michael|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|both|am_michael|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|both|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "th \u2192 s|both|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_bella|0.8": [
+        1,
+        1
+      ],
+      "th \u2192 s|both|af_bella|1.0": [
+        1,
+        1
+      ],
+      "th \u2192 s|both|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_bella|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_michael|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|am_michael|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|am_michael|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|af_heart|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|af_heart|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|af_heart|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|af_bella|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|af_bella|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|west|af_bella|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|am_michael|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|am_michael|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|am_michael|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_heart|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_heart|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_heart|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_bella|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_bella|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_bella|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|am_michael|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|am_michael|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|am_michael|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|af_heart|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|af_heart|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|af_heart|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|af_bella|0.8": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|af_bella|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|window|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_bella|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_michael|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_michael|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_michael|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_heart|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_heart|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_heart|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_bella|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_bella|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_bella|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_michael|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_michael|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_michael|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_heart|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_heart|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_heart|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_bella|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_bella|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_bella|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_michael|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_michael|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_michael|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_heart|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_heart|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_heart|1.2": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_bella|0.8": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_bella|1.0": [
+        1,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_bella|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_michael|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_michael|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_michael|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_heart|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_heart|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_heart|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_bella|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_bella|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_bella|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_michael|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_michael|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_michael|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|dog|af_heart|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|dog|af_heart|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|dog|af_heart|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|dog|af_bella|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|dog|af_bella|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|dog|af_bella|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_michael|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_michael|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_michael|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_heart|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_heart|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_heart|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_bella|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_bella|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_bella|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_michael|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_michael|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_michael|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|love|af_heart|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|love|af_heart|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|love|af_heart|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|love|af_bella|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|love|af_bella|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|love|af_bella|1.2": [
+        1,
+        1
+      ],
+      "extra vowel before cluster|school|am_michael|0.8": [
+        1,
+        1
+      ],
+      "extra vowel before cluster|school|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_michael|1.2": [
+        1,
+        1
+      ],
+      "extra vowel before cluster|speak|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_heart|0.8": [
+        1,
+        1
+      ],
+      "extra vowel before cluster|speak|af_heart|1.0": [
+        1,
+        1
+      ],
+      "extra vowel before cluster|speak|af_heart|1.2": [
+        1,
+        1
+      ],
+      "extra vowel before cluster|speak|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|sing|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|sing|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|sing|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|sing|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|sing|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|long|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|long|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|long|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|long|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|long|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|long|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|long|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|long|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|am_michael|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_bella|1.2": [
+        0,
+        1
+      ]
+    },
+    "synthetic_kokoro_false_alarm": {
+      "th \u2192 t|think|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|think|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|thank|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|three|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 t|both|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|think|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|thank|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|three|af_bella|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_michael|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_michael|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_michael|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_heart|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_heart|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_heart|1.2": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_bella|0.8": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_bella|1.0": [
+        0,
+        1
+      ],
+      "th \u2192 s|both|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|this|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|that|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|they|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 d|mother|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|this|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|that|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|they|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00f0 \u2192 z|mother|af_bella|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_michael|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_michael|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_michael|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|af_heart|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|af_heart|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|af_heart|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|af_bella|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|af_bella|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|west|af_bella|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|am_michael|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|am_michael|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|am_michael|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_heart|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|af_heart|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|af_heart|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|af_bella|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|wine|af_bella|1.0": [
+        1,
+        1
+      ],
+      "w \u2192 v|wine|af_bella|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|am_michael|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|am_michael|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|am_michael|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|af_heart|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|af_heart|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|af_heart|1.2": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|af_bella|0.8": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|af_bella|1.0": [
+        0,
+        1
+      ],
+      "w \u2192 v|window|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|ship|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|sit|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u026a \u2192 i\u02d0|fill|af_bella|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_michael|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_michael|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_michael|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_heart|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_heart|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_heart|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_bella|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_bella|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|sheep|af_bella|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_michael|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_michael|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_michael|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_heart|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_heart|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_heart|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_bella|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_bella|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|seat|af_bella|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_michael|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_michael|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_michael|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_heart|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_heart|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_heart|1.2": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_bella|0.8": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_bella|1.0": [
+        0,
+        1
+      ],
+      "i\u02d0 \u2192 \u026a|feel|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_michael|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_michael|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_heart|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_heart|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_heart|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_bella|0.8": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|bad|af_bella|1.2": [
+        1,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|man|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u00e6 \u2192 \u025b|cat|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|pull|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_bella|1.0": [
+        1,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|full|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u028a \u2192 u\u02d0|book|af_bella|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|bed|am_michael|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_michael|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_michael|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_fenrir|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|bed|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|bed|af_heart|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|bed|af_heart|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_heart|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_bella|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bed|af_bella|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|bed|af_bella|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|dog|am_michael|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|dog|am_michael|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|dog|am_michael|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|dog|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|dog|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|dog|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|dog|af_heart|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|dog|af_heart|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|dog|af_heart|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|dog|af_bella|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|dog|af_bella|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|dog|af_bella|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|bag|am_michael|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|bag|am_michael|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|bag|am_michael|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|bag|am_fenrir|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_heart|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|bag|af_heart|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_heart|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_bella|0.8": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_bella|1.0": [
+        1,
+        1
+      ],
+      "final devoicing|bag|af_bella|1.2": [
+        1,
+        1
+      ],
+      "final devoicing|love|am_michael|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|love|am_michael|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|love|am_michael|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|love|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|love|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|love|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|love|af_heart|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|love|af_heart|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|love|af_heart|1.2": [
+        0,
+        1
+      ],
+      "final devoicing|love|af_bella|0.8": [
+        0,
+        1
+      ],
+      "final devoicing|love|af_bella|1.0": [
+        0,
+        1
+      ],
+      "final devoicing|love|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|school|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|street|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|sport|af_bella|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_michael|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_michael|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_michael|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_heart|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_heart|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_heart|1.2": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_bella|0.8": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_bella|1.0": [
+        0,
+        1
+      ],
+      "extra vowel before cluster|speak|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|sing|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|long|am_fenrir|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|long|af_bella|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|am_michael|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|am_michael|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|am_michael|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|am_fenrir|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|am_fenrir|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|am_fenrir|1.2": [
+        1,
+        1
+      ],
+      "\u014b + g|singer|af_heart|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|af_heart|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|af_heart|1.2": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|af_bella|0.8": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|af_bella|1.0": [
+        0,
+        1
+      ],
+      "\u014b + g|singer|af_bella|1.2": [
+        0,
+        1
+      ]
+    }
+  }
+}
