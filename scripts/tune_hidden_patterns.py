@@ -46,9 +46,10 @@ from tune_gop_thresholds import W_GRID  # noqa: E402
 from pronunciation.metrics import error_level_catch  # noqa: E402
 from pronunciation.phonemes import TIPS  # noqa: E402
 from pronunciation.systems import System, load_system  # noqa: E402
-from pronunciation.thresholds import (HIDDEN_PATTERNS, V1_THRESHOLDS, apply_gop_thresholds, apply_settings,  # noqa: E402
-                                      apply_thresholds, cross_validate_generalized, cross_validate_gop_thresholds,
-                                      names_the_expert_error, scores, select_generalized)
+from pronunciation.thresholds import (HIDDEN_PATTERNS, PATTERN_GRID, V1_THRESHOLDS, apply_gop_thresholds,  # noqa: E402
+                                      apply_hidden, apply_settings, apply_thresholds, cross_validate_generalized,
+                                      cross_validate_gop_thresholds, diagnosis_precision, names_the_expert_error,
+                                      scores, select_generalized)
 
 OUT_DIR = ROOT / "results" / "hidden"
 V2_3C_DIR = ROOT / "results" / "thresholds"
@@ -195,6 +196,44 @@ def print_pattern_thresholds(results: list[dict]) -> None:
         print()
 
 
+def print_search(results: list[dict]) -> None:
+    """What the one-pass search saw on all dev speakers: for every pattern (the patterns before it as chosen,
+    the ones after it off) and margin threshold, its hidden reports on Turkish speakers that name the
+    expert's error, of all; and for every chosen pattern, its reports per speaker."""
+    print("\nHidden reports on all dev speakers (Turkish), right of all, per margin threshold (* = chosen; "
+          "† = at least 10 reports and 70% right, but Turkish precision or native false alarms out of the limits):\n")
+    for r in results:
+        s = r["pick"]["settings"]
+        checked = apply_gop_thresholds(r["raw"], s["gop_threshold"], s["pattern_threshold"])
+        print(f"{r['gen'].name}:\n")
+        print("| Pattern | " + " | ".join(f"{v:g}" for v in PATTERN_GRID) + " |")
+        print("| --- |" + " --- |" * len(PATTERN_GRID))
+        before: dict = {}
+        per_speaker = []
+        for tip in HIDDEN_PATTERNS:
+            cells = []
+            for value in PATTERN_GRID:
+                out = apply_hidden(checked, {**before, tip: value})
+                right, total = diagnosis_precision(out, tip)
+                mark = "*" if value == s["hidden_thresholds"][tip] else ""
+                if not mark and total >= 10 and right / total >= MIN_PRECISION:
+                    limits = scores(out)
+                    if limits["precision"] < MIN_PRECISION or limits["english_false_alarm"] > MAX_NATIVE_FALSE_ALARM:
+                        mark = "†"
+                cells.append(f"{right}/{total}{mark}")
+                if value == s["hidden_thresholds"][tip]:
+                    turkish = out[(out.group == "turkish") & out.expert_wrong.notna()]
+                    counts = {}
+                    for speaker, issues in zip(turkish.speaker, turkish.our_errors):
+                        for issue in issues:
+                            if issue.hidden and issue.tip == tip:
+                                counts[speaker] = counts.get(speaker, 0) + 1
+                    per_speaker.append(f"{tip} at {value:g}: " + ", ".join(f"{k} {n}" for k, n in sorted(counts.items(), key=lambda x: -x[1])))
+            print(f"| {TIPS[tip]['title']} | " + " | ".join(cells) + " |")
+            before[tip] = s["hidden_thresholds"][tip]
+        print("\nReports per Turkish speaker at the chosen thresholds: " + "; ".join(per_speaker) + "\n")
+
+
 def print_dev_table(named: list[tuple[str, dict]]) -> None:
     print("\n## 3. SAA dev, honest (speaker cross-validation; 95% speaker-bootstrap intervals)\n")
     print("| System | Turkish precision | recall | F1 | native false alarm | false alarm on Turkish speakers' correct words |")
@@ -288,6 +327,7 @@ def main() -> None:
 
     print_gop_step(results)
     print_pattern_thresholds(results)
+    print_search(results)
     print_dev_table(named)
     print("\n## 4. Differences\n")
     frozen = next(r for r in results if r["system"].name == args.frozen)
