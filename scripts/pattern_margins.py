@@ -78,10 +78,11 @@ def sound_items(recognizer: str) -> list[dict]:
                 for tip, sounds in patterns.items():
                     if op.kind == "match":
                         label = 0
-                    elif op.kind == "sub" and substitution_tip(op.expected, op.heard, final) == tip:
+                    elif op.kind == "sub" and substitution_tip(op.expected, op.heard, final) == tip \
+                            and speaker.startswith("turkish"):
                         label = 1
                     else:
-                        continue                                # another error: in neither group
+                        continue                                # another error, or a native one: in neither group
                     ids = [decoder.token_to_id[s] for s in sounds if s in decoder.token_to_id]
                     if not ids:
                         continue
