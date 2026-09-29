@@ -48,3 +48,44 @@ def test_speech_and_collate_pad_the_labels(tmp_path):
 def test_unknown_target_token_is_an_error(tmp_path):
     with pytest.raises(ValueError):
         ft.Speech([{"audio": "a.flac", "tokens": "θ ə1"}], tmp_path, tokenizer(tmp_path))
+
+
+def test_checkpoints_are_saved_in_float16_and_load_as_float32(tmp_path):
+    from test_recognizer import save_tiny_model
+    from transformers import AutoFeatureExtractor, AutoTokenizer, Wav2Vec2ForCTC
+
+    (tmp_path / "base").mkdir()
+    save_tiny_model(tmp_path / "base")
+    model = Wav2Vec2ForCTC.from_pretrained(tmp_path / "base")
+    extractor = AutoFeatureExtractor.from_pretrained(tmp_path / "base")
+    tok = AutoTokenizer.from_pretrained(tmp_path / "base", do_phonemize=False)
+    ft.save(model, extractor, tok, tmp_path / "best", {"epoch": 1})
+
+    from safetensors.torch import load_file
+
+    weights = load_file(tmp_path / "best" / "model.safetensors")
+    assert all(w.dtype == torch.float16 for w in weights.values() if w.is_floating_point())
+    loaded = Wav2Vec2ForCTC.from_pretrained(tmp_path / "best")
+    assert next(loaded.parameters()).dtype == torch.float32
+    for (name, a), b in zip(model.state_dict().items(), loaded.state_dict().values()):
+        assert torch.allclose(a.float(), b.float(), atol=1e-2), name
+    assert (tmp_path / "best" / "training_info.json").exists() and (tmp_path / "best" / "vocab.json").exists()
+
+
+@pytest.mark.parametrize("best_epoch, kept", [(0, True), (2, False), (3, False), (5, True)])
+def test_early_checkpoint_is_kept_only_if_a_later_epoch_won(tmp_path, best_epoch, kept):
+    (tmp_path / "epoch3").mkdir()
+    assert ft.keep_early_checkpoint(tmp_path, best_epoch, early_epoch=3) is kept
+    assert (tmp_path / "epoch3").exists() is kept
+
+
+def test_training_refuses_to_run_without_a_gpu(tmp_path, monkeypatch):
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    monkeypatch.setattr(sys, "argv", ["finetune_recognizer.py", "--data", str(tmp_path), "--out", str(tmp_path / "o")])
+    with pytest.raises(SystemExit, match="No GPU"):
+        ft.main()
+
+
+def test_versions_are_recorded():
+    v = ft.versions()
+    assert {"python", "torch", "transformers", "numpy", "soundfile", "gpus_visible"} <= set(v)

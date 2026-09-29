@@ -7,7 +7,14 @@ tokens, sampled so that non-native and native speech weigh about the same.
 
 After every epoch: PER and mispronunciation-detection F1 on the L2-ARCTIC dev speakers, and PER on a
 small native dev set. The best checkpoint by F1 is kept; training stops early when F1 stops
-improving or the time budget runs out. Seeded; the loss curve and the dev metrics go to files.
+improving or the time budget runs out. The dev sentences are also in the training data (read by
+other speakers), so a late checkpoint may win by memorizing sentences: an early one (epoch 3) is
+kept too, unless the best is already that early, and both are compared on the Speech Accent Archive
+in v2-3b. Weights are saved in float16 (half the download; they load back as float32). Seeded;
+the loss curve, the dev metrics and the package versions go to files.
+
+Needs a GPU (only --smoke runs on a CPU) and uses exactly one: with two GPUs (Kaggle "T4 x2") the
+second one is hidden, as the code was only checked on one device.
 
 A model fine-tuned on L2-ARCTIC is CC BY-NC 4.0 (non-commercial), like its training data.
 
@@ -24,15 +31,19 @@ import csv
 import json
 import math
 import os
+import platform
 import random
+import shutil
 import sys
 import time
 from collections import Counter
 from pathlib import Path
 
-import numpy as np
-import soundfile as sf
-import torch
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")   # one GPU, before torch touches CUDA
+
+import numpy as np  # noqa: E402
+import soundfile as sf  # noqa: E402
+import torch  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
@@ -134,12 +145,33 @@ def evaluate(model, loaders: dict, rows: dict, decoder: Decoder, device: str, fp
     }
 
 
+def versions() -> dict:
+    """Package versions and the GPU, written to the training log."""
+    import scipy
+    import transformers
+
+    return {"python": platform.python_version(), "torch": torch.__version__, "transformers": transformers.__version__,
+            "numpy": np.__version__, "scipy": scipy.__version__, "soundfile": sf.__version__,
+            "cuda": torch.version.cuda, "gpus_visible": torch.cuda.device_count(),
+            "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None}
+
+
 def save(model, feature_extractor, tokenizer, folder: Path, info: dict) -> None:
+    """Weights in float16 (half the size); from_pretrained loads them back as float32."""
     folder.mkdir(parents=True, exist_ok=True)
-    model.save_pretrained(folder, safe_serialization=True)
+    half = {k: v.half() if v.is_floating_point() else v for k, v in model.state_dict().items()}
+    model.save_pretrained(folder, state_dict=half, safe_serialization=True)
     feature_extractor.save_pretrained(folder)
     tokenizer.save_pretrained(folder)
     (folder / "training_info.json").write_text(json.dumps(info, indent=2) + "\n")
+
+
+def keep_early_checkpoint(out: Path, best_epoch: int, early_epoch: int) -> bool:
+    """The early checkpoint is only worth keeping if a later epoch became the best one."""
+    early = out / f"epoch{early_epoch}"
+    if early.exists() and 0 < best_epoch <= early_epoch:
+        shutil.rmtree(early)
+    return early.exists()
 
 
 def main() -> int:
@@ -155,6 +187,7 @@ def main() -> int:
     parser.add_argument("--max-seconds", type=float, default=15.0, help="leave out longer recordings")
     parser.add_argument("--patience", type=int, default=3, help="epochs without a better dev F1 before stopping")
     parser.add_argument("--max-hours", type=float, default=2.75, help="time budget (Kaggle: stay under 3 h on a T4)")
+    parser.add_argument("--early-epoch", type=int, default=3, help="also keep this epoch's checkpoint")
     parser.add_argument("--seed", type=int, default=762)
     parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--smoke", action="store_true", help="tiny subset, 2 steps, 1 epoch: checks the code end to end")
@@ -163,6 +196,8 @@ def main() -> int:
     from transformers import AutoFeatureExtractor, AutoTokenizer, Wav2Vec2ForCTC, get_linear_schedule_with_warmup
 
     start = time.time()
+    if not torch.cuda.is_available() and not args.smoke:
+        sys.exit("No GPU found. Turn on a GPU accelerator (Kaggle: Settings -> Accelerator -> GPU T4).")
     set_seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     fp16 = device == "cuda"
@@ -174,7 +209,7 @@ def main() -> int:
     if args.smoke:
         train_rows = rows["l2arctic_train"][:6] + rows["native_train"][:6]
         dev_rows = {"l2_dev": rows["l2arctic_dev"][:4], "native_dev": rows["native_dev"][:2]}
-        args.epochs, args.batch_size, args.grad_accum, args.workers = 1, 2, 1, 0
+        args.epochs, args.early_epoch, args.batch_size, args.grad_accum, args.workers = 2, 1, 2, 1, 0
 
     token = hf_token()
     feature_extractor = AutoFeatureExtractor.from_pretrained(args.base, token=token)
@@ -213,9 +248,11 @@ def main() -> int:
         with log_path.open("a") as f:
             f.write(json.dumps(entry) + "\n")
 
-    info = {"base": args.base, "args": {k: str(v) for k, v in vars(args).items()},
-            "train_sentences": {"l2arctic": len(rows["l2arctic_train"]), "native": len(rows["native_train"])},
+    info = {"base": args.base, "args": {k: str(v) for k, v in vars(args).items()}, "versions": versions(),
+            "train_sentences": {"l2arctic": sum(r["l1"] != "English" for r in train_rows),
+                                "native": sum(r["l1"] == "English" for r in train_rows)},
             "license": "CC BY-NC 4.0 (fine-tuned on L2-ARCTIC); base model Apache-2.0"}
+    log({"versions": info["versions"], "train_sentences": info["train_sentences"]})
     base = evaluate(model, loaders, dev_rows, decoder, device, fp16)   # the original model, for reference
     log({"epoch": 0, "step": 0, **base})
     best_f1, best_epoch, step = base["l2_dev_f1"], 0, 0
@@ -248,6 +285,8 @@ def main() -> int:
         if metrics["l2_dev_f1"] > best_f1:
             best_f1, best_epoch = metrics["l2_dev_f1"], epoch
             save(model, feature_extractor, tokenizer, args.out / "best", {**info, "epoch": epoch, "dev": metrics})
+        if epoch == args.early_epoch:   # even if it is the best so far: a later epoch may replace "best"
+            save(model, feature_extractor, tokenizer, args.out / f"epoch{epoch}", {**info, "epoch": epoch, "dev": metrics})
         epoch_seconds.append(time.time() - epoch_start)
         if epoch - best_epoch >= args.patience:
             print(f"Stopping early: no better dev F1 for {args.patience} epochs.")
@@ -255,11 +294,14 @@ def main() -> int:
         if time.time() - start + max(epoch_seconds) > args.max_hours * 3600:
             print("Stopping: another epoch would exceed the time budget.")
             break
+    early = keep_early_checkpoint(args.out, best_epoch, args.early_epoch)
     if best_epoch == 0:
-        print(f"No epoch beat the original model (dev F1 {best_f1:.3f}); nothing saved.")
+        print(f"No epoch beat the original model (dev F1 {best_f1:.3f}); no best checkpoint.")
     else:
         print(f"Best dev F1 {best_f1:.3f} at epoch {best_epoch} (original model {base['l2_dev_f1']:.3f}); "
               f"model in {args.out / 'best'}")
+    if early:
+        print(f"Early checkpoint (epoch {args.early_epoch}) in {args.out / f'epoch{args.early_epoch}'}")
     return 0
 
 

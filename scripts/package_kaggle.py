@@ -15,6 +15,7 @@ import io
 import json
 import sys
 import zipfile
+from importlib.metadata import version
 from pathlib import Path
 
 import soundfile as sf
@@ -28,12 +29,15 @@ DATA = ROOT / "data"
 MANIFESTS = DATA / "finetune"
 OUT = MANIFESTS / "kaggle" / "pronunciation-coach-finetune.zip"
 PARTS = ["l2arctic_train", "l2arctic_dev", "native_train", "native_dev"]
+# installed on Kaggle with the versions used here (torch stays Kaggle's own, built for its GPU)
+PINNED = ["transformers", "tokenizers", "huggingface-hub", "safetensors", "numpy", "scipy", "soundfile"]
 README = """Pronunciation Coach: fine-tuning data for the phoneme recognizer (v2-3)
 https://github.com/DavutKursun/pronunciation-coach
 
 manifests/*.jsonl   one sentence per line; "tokens" is the training target, "audio" a path in this folder
 audio/              16 kHz mono FLAC
 pronunciation/, scripts/finetune_recognizer.py   the training code
+requirements-finetune.txt   package versions the code was tested with (torch: Kaggle's own)
 
 Data (see licenses/):
 - L2-ARCTIC (Zhao et al., Interspeech 2018), CC BY-NC 4.0: non-commercial use only. Only the
@@ -82,6 +86,8 @@ def main() -> None:
         z.write(DATA / "l2arctic" / "LICENSE", "licenses/L2-ARCTIC_LICENSE", compress_type=zipfile.ZIP_DEFLATED)
         z.write(DATA / "cmu_arctic" / "COPYING", "licenses/CMU_ARCTIC_COPYING", compress_type=zipfile.ZIP_DEFLATED)
         z.writestr("README.txt", README, compress_type=zipfile.ZIP_DEFLATED)
+        z.writestr("requirements-finetune.txt", "".join(f"{p}=={version(p)}\n" for p in PINNED),
+                   compress_type=zipfile.ZIP_DEFLATED)
     print(f"{OUT.relative_to(ROOT)}: {OUT.stat().st_size / 1e6:.0f} MB, sentences {counts}")
 
 

@@ -238,6 +238,6 @@ The free CPU hardware of Hugging Face Spaces is enough.
 **Which recognizer, which license.** The app uses the original recognizer (Apache-2.0) by default. A recognizer fine-tuned on L2-ARCTIC (`scripts/finetune_recognizer.py`) inherits the data's **CC BY-NC 4.0** license: non-commercial use only. The recognizer is chosen with one setting, `MODEL_ID` (a Hugging Face id or a local folder), so a commercial version can switch back to the original model:
 
 ```bash
-MODEL_ID=models/recognizer-l2arctic python app.py     # the fine-tuned recognizer (non-commercial)
+MODEL_ID=models/recognizer-l2arctic/best python app.py   # the fine-tuned recognizer (non-commercial)
 python app.py                                         # the original one (default)
 ```
