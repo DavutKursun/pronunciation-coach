@@ -78,8 +78,10 @@ item []:
     ("IY1", PhoneLabel("IY1", "IY1", "correct")),
     ("DH,D,s ", PhoneLabel("DH", "D", "sub")),               # trailing space in the corpus
     ("Z, S, s", PhoneLabel("Z", "S", "sub")),                # spaces after commas
-    ("R,R*,s", PhoneLabel("R", "R", "correct", accented=True)),   # "*" = an accented R: the base sound
+    ("P,P*,s", PhoneLabel("P", "P", "correct", accented=True)),   # "*" = an accented P: still a P
     ("AH0,AO*,s", PhoneLabel("AH0", "AO", "sub", accented=True)),
+    ("R,R*,s", PhoneLabel("R", "R*", "sub", accented=True)),      # an accented R is a tapped/trilled r
+    ("sil,R*,a", PhoneLabel(None, "R*", "ins", accented=True)),
     ("Z,sil,d", PhoneLabel("Z", None, "del")),
     ("sil,G,a", PhoneLabel(None, "G", "ins")),
     ("R,err,s", PhoneLabel("R", None, "sub", unsure=True)),
@@ -99,6 +101,7 @@ def test_silence_is_not_a_phone(label):
     ("AH", None, "ə"),                                        # an added vowel is a schwa
     ("ER", "ER0", "ɚ"), ("ER", "ER1", "ɜː"), ("ER", None, "ɚ"),
     ("AX", "IH0", "ə"), ("IY", "IH1", "iː"), ("S", "Z", "s"),
+    ("R*", "R", "ɾ"), ("R*", None, "ɾ"),                     # like the SAA experts write Turkish r
 ])
 def test_perceived_vowels_take_the_stress_of_the_expected_vowel(perceived, canonical, ipa):
     assert perceived_to_ipa(perceived, canonical) == ipa
@@ -138,9 +141,17 @@ def test_build_target_keeps_espeak_tokens_where_nothing_changed():
 
 
 def test_build_target_accented_sound_is_not_an_error():
+    words = word_annotations([(0, 1, "pen")], [(0, .3, "P,P*,s"), (.3, .6, "EH1"), (.6, 1, "N")])
+    target = build_target(words, [["p", "ɛ", "n"]])
+    assert target.tokens == ["p", "ɛ", "n"] and target.errors == [] and target.accented == 1
+
+
+def test_build_target_accented_r_is_a_tapped_r():
+    # otherwise the model would learn to hear a Turkish r as English ɹ (the v2-2 trap, for r)
     words = word_annotations([(0, 1, "red")], [(0, .3, "R,R*,s"), (.3, .6, "EH1"), (.6, 1, "D")])
     target = build_target(words, [["ɹ", "ɛ", "d"]])
-    assert target.tokens == ["ɹ", "ɛ", "d"] and target.errors == [] and target.accented == 1
+    assert target.tokens == ["ɾ", "ɛ", "d"]
+    assert [(e.kind, e.expected, e.heard, e.tip) for e in target.errors] == [("sub", "ɹ", "ɾ", "r")]
 
 
 def test_build_target_rejects_unsure_or_unreliable_sentences():

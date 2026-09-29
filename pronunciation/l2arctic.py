@@ -7,6 +7,10 @@ Annotators marked every phone of ~150 sentences per speaker (README of the corpu
   "sil,PPL,a"      addition
   "err"            the annotator could not tell what was said;  "*" = an accented version of PPL
 
+An accented sound counts as its base sound (T* = t), except R*: a tapped or trilled r, which the
+Speech Accent Archive experts write as ɾ or r and our feedback treats as an error (the "r" tip).
+Mapping R* to ɹ would teach the recognizer to hear a Turkish r as English ɹ.
+
 The recognizer is fine-tuned to output what the annotator HEARD, in its own phoneme style: the
 target of a sentence is our eSpeak expected phonemes, changed only where the annotator marked an
 error. So the model keeps its output format and only learns to hear the errors (training on the
@@ -27,6 +31,7 @@ from .speechocean import ARPABET, UNSTRESSED, arpabet_to_ipa
 
 SPLIT_FILE = Path(__file__).resolve().parents[1] / "data" / "l2arctic_split.json"
 SILENCE = {"sil", "sp", "spn", ""}
+ACCENTED = {"R": "ɾ"}      # accented sounds that are a different phoneme for us (see the module docstring)
 
 # speaker: (native language, gender), from the corpus README
 SPEAKERS = {
@@ -67,6 +72,8 @@ def parse_phone_label(label: str) -> PhoneLabel | None:
     cpl, ppl, tag = parts[0], parts[1], parts[2].lower()
     accented = ppl.endswith("*")
     ppl = ppl.rstrip("*").strip()
+    if accented and ppl.upper() in ACCENTED:
+        ppl += "*"                               # keep the mark: R* is heard as ɾ, not as R
     unsure = ppl.lower() == "err"
     if tag == "d":
         return PhoneLabel(cpl, None, "del")
@@ -81,7 +88,10 @@ def parse_phone_label(label: str) -> PhoneLabel | None:
 
 def perceived_to_ipa(perceived: str, canonical: str | None) -> str:
     """Perceived labels have no stress digit. AH and ER then follow the expected sound: after an
-    unstressed (or no) expected sound they are the reduced vowels ə and ɚ, otherwise ʌ and ɜː. AX is ə."""
+    unstressed (or no) expected sound they are the reduced vowels ə and ɚ, otherwise ʌ and ɜː. AX is ə.
+    R* (an accented r) is ɾ."""
+    if perceived.endswith("*"):
+        return ACCENTED[perceived.rstrip("*").upper()]
     base = re.sub(r"\d", "", perceived).upper()
     if base == "AX":
         return "ə"
