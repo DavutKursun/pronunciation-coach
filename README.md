@@ -299,7 +299,7 @@ Examples from SAA dev (`scripts/saa_examples.py`):
 **v2-3c: two last fixes on dev, then v2 is frozen.** Every decision that uses dev data ends here; a fix was kept only if the honest (cross-validated) estimate improved and Turkish precision stayed at least 70% and native false alarms at most 2.5%.
 
 - ***into*.** 7 of the 10 US English speakers of SAA dev got a false alarm on *into*: the fine-tuned recognizer heard ɪntuː, a standard dictionary form, while eSpeak expects ɪntʊ. Their experts wrote the weak form ə 8 times, ʊ once and u once (`scripts/saa_word.py into ...`), so ɪntuː is not what most of them said, but it is a correct pronunciation, and flagging it is our mistake. *into* now also accepts uː and u for its last vowel (`WORD_VARIANTS` in `pronunciation/phonemes.py`); ʊ → uː stays an error in other words (*pull*/*pool*). Honest estimate with the fine-tuned recognizer: native false alarms 2.6% → 2.1%, Turkish precision 81.3% → 78.2%, recall 64.0% → 68.1%, F1 0.716 → 0.728; 7 Turkish *into* labels became correct (the expert heard u), and the freed false-alarm budget moved the chosen GOP threshold from -1.0 to 0.0.
-- **w → v.** The fine-tuned recognizer caught Turkish w → v far less often than the original (36% vs 70%): it tends to write w. Its probabilities still tell the two apart: in the frames of an expected w, the margin max log p(v/β/ʋ) - log p(w) separates the experts' w → v/β/ʋ errors from correct w with AUC 0.960 (95% speaker bootstrap 0.898-0.995; 33 errors, 75 correct w), and the median margin is -0.97 for errors against -5.56 for correct Turkish w and -8.35 for native w (`scripts/w_margin.py`). So a w the recognizer wrote as w is reported as w → v when the margin is above a threshold chosen with the GOP thresholds. Words with such a w are often wrong for other sounds too, so word precision cannot judge the rule; its own reports must be right at least 70% of the time:
+- **w → v.** The fine-tuned recognizer caught Turkish w → v far less often than the original (36% vs 70%): it tends to write w. Its probabilities still tell the two apart: in the frames of an expected w, the margin max log p(v/β/ʋ) - log p(w) separates the experts' w → v/β/ʋ errors from correct w with AUC 0.960 (95% speaker bootstrap 0.898-0.995; 33 errors, 75 correct w), and the median margin is -0.97 for errors against -5.56 for correct Turkish w and -8.35 for native w (`scripts/pattern_margins.py --w-rule`). So a w the recognizer wrote as w is reported as w → v when the margin is above a threshold chosen with the GOP thresholds. Words with such a w are often wrong for other sounds too, so word precision cannot judge the rule; its own reports must be right at least 70% of the time:
 
 | Margin threshold | Hidden-w reports on a real w error (Turkish) | Native words reported |
 | --- | --- | --- |
@@ -364,7 +364,116 @@ Regression sets (v1 → v2; see Limitations):
 | synthetic Kokoro: catch | 88.7% | 78.0% | -10.7% | [-14.5%, -6.9%] | yes |
 | synthetic Kokoro: false alarm | 3.6% | 6.5% | +3.0% | [+0.6%, +5.6%] | yes |
 
-**Frozen system** (commit `e24d251`): `experiments/v2.json`, the epoch-14 fine-tuned recognizer (`model.safetensors` SHA-256 `09187fde3a07ad6c38511d7efb9098c8a5b351d6c917ba228a5f4e69c9abbae6`) with the v1 rules, the *into* pronunciations and the hidden-w rule; thresholds: GOP below 0.0 for other differences, typical Turkish-speaker errors always reported, hidden w above -4.0. Nothing in it changes any more; v2-4 runs the locked test sets once with it.
+**Frozen system** (step v2-3c, commit `e24d251`; superseded by the v2-3d freeze below, with the same settings): `experiments/v2.json`, the epoch-14 fine-tuned recognizer (`model.safetensors` SHA-256 `09187fde3a07ad6c38511d7efb9098c8a5b351d6c917ba228a5f4e69c9abbae6`) with the v1 rules, the *into* pronunciations and the hidden-w rule; thresholds: GOP below 0.0 for other differences, typical Turkish-speaker errors always reported, hidden w above -4.0. Nothing in it changes any more; v2-4 runs the locked test sets once with it.
+
+**v2-3d: hidden errors for every pattern (tried, not kept).** The hidden-w rule works because the recognizer's probabilities still separate w → v from a correct w when greedy decoding writes w. v2-3d tried the same rule for every Turkish-speaker pattern: for every sound the recognizer wrote as expected and every pattern of that sound (the substitutions of `SUBSTITUTION_TIPS`, the same table that gives the tips, and final devoicing only in the word's final consonant group; added sounds such as an extra vowel are left out, and so are sounds that are fine in the word, like θ at the end of *with*), margin = the largest log p(pattern's sound) - log p(expected sound) in the frames aligned to the expected sound (`measure_hidden` in `pronunciation/assess.py`, `report_hidden` in `pronunciation/feedback.py`). Each pattern is reported above its own threshold, or is off.
+
+How well the margin separates the experts' errors (Turkish speakers) from correct sounds (Turkish and native speakers), SAA dev (`scripts/pattern_margins.py`). Only a report: no pattern was chosen or left out by looking at it.
+
+| Pattern | Expert errors (Turkish) | Correct sounds (Turkish / native) | v1: errors greedy wrote as expected | v1: AUC [95% CI] | v2: errors greedy wrote as expected | v2: AUC [95% CI] |
+| --- | --- | --- | --- | --- | --- | --- |
+| 'th' as in think /θ/ | 35 | 12 / 35 | 2 | 0.976 [0.930–1.000] | 3 | 0.991 [0.971–1.000] |
+| 'th' as in this /ð/ | 49 | 21 / 61 | 33 | 0.890 [0.837–0.936] | 4 | 0.944 [0.889–0.987] |
+| 'w' as in west /w/ | 33 | 25 / 50 | 10 | 0.958 [0.890–0.994] | 21 | 0.954 [0.887–0.994] |
+| 'v' as in very /v/ | 0 | 15 / 27 | 0 | – | 0 | – |
+| long 'ee' as in sheep /iː/ | 6 | 102 / 87 | 2 | 0.871 [0.690–0.995] | 4 | 0.822 [0.649–0.965] |
+| short 'i' as in ship /ɪ/ | 40 | 92 / 107 | 32 | 0.833 [0.733–0.916] | 24 | 0.841 [0.739–0.920] |
+| 'a' as in cat /æ/ | 27 | 92 / 99 | 11 | 0.843 [0.709–0.943] | 5 | 0.924 [0.841–0.973] |
+| 'u' as in cup /ʌ/ | 0 | 46 / 40 | 0 | – | 0 | – |
+| short 'oo' as in pull /ʊ/ | 0 | 0 / 0 | 0 | – | 0 | – |
+| long 'oo' as in pool /uː/ | 3 | 45 / 39 | 3 | 0.440 [0.376–0.523] | 3 | 0.556 [0.361–0.690] |
+| 'er' as in bird /ɜː/ | 1 | 43 / 39 | 1 | 0.500 [0.333–0.639] | 1 | 0.780 [0.630–0.914] |
+| 'ng' as in sing /ŋ/ | 2 | 34 / 30 | 2 | 0.750 [0.578–0.921] | 2 | 0.781 [0.617–0.938] |
+| English 'r' /ɹ/ | 29 | 97 / 107 | 19 | 0.881 [0.664–0.967] | 14 | 0.876 [0.745–0.959] |
+| voiced sound at the end of a word | 146 | 149 / 236 | 81 | 0.821 [0.759–0.879] | 52 | 0.866 [0.811–0.914] |
+
+The w row also counts ɹ as a rival of w, because `SUBSTITUTION_TIPS` lists it (the v2-3c rule used v/β/ʋ: AUC 0.960). The AUC counts every sound, including the errors greedy decoding already writes; the hidden rule only sees the sounds it wrote as expected.
+
+**Choice** (`scripts/tune_hidden_patterns.py`, `pronunciation/thresholds.py`): first the two GOP thresholds exactly as in v2 (same grid, same limits, no hidden errors); then one pass over the patterns in `phonemes.py` order, each getting the most lenient margin threshold (0 to -8) at which Turkish precision stays at least 70%, native false alarms at most 2.5%, and the pattern's own hidden reports on Turkish speakers number at least 10, at least 70% of them on the error the expert heard there (diagnosis precision); otherwise it stays off. All of it runs inside each of the 6 folds of the speaker cross-validation, on the fold's training speakers only; the final thresholds are chosen the same way on all dev speakers. The original recognizer (v1) gets the same treatment.
+
+- GOP thresholds: v2 gets 0.0 / none (as in v2-3c) in five folds and 0.0 / 0.0 in one. 0.0 is the loosest finite value of the grid, but the range is not cut short: GOP is never above 0, and the only looser choice, no GOP check at all, was tried too and gives 5.9% native false alarms. The two differ on 59 words (23 native) whose GOP is exactly 0.
+- Pattern thresholds: every pattern except w and r stayed off in every fold for v2, and every pattern except r and (in one fold) final devoicing for v1:
+
+| Pattern | v1-gen: all dev speakers | v1-gen: folds 1-6 | v2-gen: all dev speakers | v2-gen: folds 1-6 |
+| --- | --- | --- | --- | --- |
+| w | off | off in all | -4 | -4, -5, -3, -5, -5, -3 |
+| English r | -4 | off, -4, -4, -4, -4, -4 | -2 | off, -2, off, -2, off, -2 |
+| final devoicing | off | -1, off, off, off, off, off | off | off in all |
+
+  What the search saw on all dev speakers with the fine-tuned recognizer: hidden reports on Turkish speakers that name the expert's error, of all, per margin threshold (each pattern with the ones before it as chosen and the ones after it off; * = chosen):
+
+| Pattern | 0 | -1 | -2 | -3 | -4 | -5 | -6 | -7 | -8 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 'th' as in think /θ/ | 0/0 | 2/3 | 3/6 | 3/11 | 3/12 | 3/12 | 3/13 | 3/13 | 3/13 |
+| 'th' as in this /ð/ | 0/0 | 2/7 | 3/12 | 3/13 | 3/14 | 3/16 | 4/17 | 4/17 | 4/17 |
+| 'w' as in west /w/ | 0/0 | 6/7 | 9/10 | 14/17 | 16/22* | 18/26 | 20/32 | 21/39 | 21/41 |
+| 'v' as in very /v/ | 0/0 | 0/0 | 0/0 | 0/0 | 0/1 | 0/6 | 0/13 | 0/24 | 0/28 |
+| long 'ee' as in sheep /iː/ | 0/0 | 0/5 | 0/9 | 1/15 | 1/20 | 2/35 | 4/67 | 4/92 | 4/101 |
+| short 'i' as in ship /ɪ/ | 0/0 | 11/34 | 20/59 | 23/78 | 24/92 | 24/95 | 24/95 | 24/95 | 24/95 |
+| 'a' as in cat /æ/ | 0/0 | 0/1 | 1/8 | 3/18 | 4/37 | 5/47 | 5/53 | 5/56 | 5/67 |
+| 'u' as in cup /ʌ/ | 0/0 | 0/2 | 0/4 | 0/6 | 0/6 | 0/7 | 0/7 | 0/8 | 0/18 |
+| short 'oo' as in pull /ʊ/ | 0/0 | 0/0 | 0/0 | 0/0 | 0/0 | 0/0 | 0/0 | 0/0 | 0/0 |
+| long 'oo' as in pool /uː/ | 0/0 | 0/0 | 0/0 | 0/4 | 1/11 | 1/23 | 3/36 | 3/40 | 3/40 |
+| 'er' as in bird /ɜː/ | 0/0 | 0/0 | 0/0 | 0/0 | 0/7 | 1/19 | 1/34 | 1/39 | 1/40 |
+| 'ng' as in sing /ŋ/ | 0/0 | 0/1 | 0/2 | 0/3 | 0/8 | 1/12 | 2/27 | 2/34 | 2/34 |
+| English 'r' /ɹ/ | 1/1 | 4/5 | 8/10* | 8/17 | 10/28 | 11/39 | 13/59 | 13/72 | 13/81 |
+| voiced sound at the end of a word | 0/0 | 23/34 | 38/61 | 47/92 | 51/108 | 51/129 | 52/144 | 52/147 | 52/147 |
+
+  Final devoicing, the pattern with the most errors that greedy decoding writes as expected (52 of 146), never reaches 70%: 23 of 34 at -1, 38 of 61 at -2. With the original recognizer, ð at -3 and -4 and final devoicing at -1 met the two conditions on their own reports but broke the precision or native false-alarm limit. For r, 6 of the 10 reports at -2 come from one speaker (turkish1) and 2 each from two more: every fold that holds one of them out has fewer than 10 reports and turns r off, and the speakers held out by the other folds get no r report. The rule does not carry over to new speakers, which is what the at-least-10 condition guards against.
+
+**Final dev comparison** (SAA dev, honest (CV), 95% speaker-bootstrap intervals; v1 = the original recognizer with the same rules, its thresholds chosen the same way):
+
+| System | Turkish precision | recall | F1 | native false alarm | false alarm on Turkish speakers' correct words |
+| --- | --- | --- | --- | --- | --- |
+| v1 (v2-3c rules) | 79.0% [74.0%–84.7%] | 50.0% [40.5%–57.7%] | 0.612 [0.532–0.667] | 2.4% [0.8%–4.5%] | 10.0% [5.3%–16.6%] |
+| v1-gen | 79.6% [74.6%–85.3%] | 50.6% [40.1%–59.3%] | 0.618 [0.530–0.679] | 2.6% [1.1%–4.6%] | 9.8% [5.1%–16.5%] |
+| v2 (v2-3c rules) | 78.3% [71.3%–84.8%] | 71.5% [64.5%–77.1%] | 0.747 [0.698–0.790] | 2.1% [0.8%–3.9%] | 14.9% [9.5%–22.4%] |
+| v2-gen | 78.3% [71.3%–84.8%] | 71.5% [64.5%–77.1%] | 0.747 [0.698–0.790] | 2.1% [0.8%–3.9%] | 14.9% [9.5%–22.4%] |
+
+v2-gen flags exactly the same words as frozen v2 on every held-out speaker: every difference is 0.0 [0.0, 0.0] (paired bootstrap). v1-gen → v2-gen: recall +20.9 points [+14.2, +28.8], F1 +12.9 points [+8.7, +18.7], precision -1.2 [-6.3, +3.7], native false alarm -0.5 [-2.4, +1.3], false alarm on Turkish speakers' correct words +5.1 [+0.4, +9.8]; v1 → v2 as in v2-3c above. v1-gen's honest native false alarm (2.6%) is just above the limit: the limits hold on each fold's training speakers, not always on the held-out ones.
+
+**Decision rule** (the generalized system replaces frozen v2 only if all hold): recall gain over frozen v2 real by paired bootstrap: +0.0% [+0.0%, +0.0%], **not met**; Turkish precision ≥ 70% (CV): 78.3%, met; native false alarm ≤ 2.5% (CV): 2.1%, met; false alarm on Turkish speakers' correct words rises by at most 2 points: 14.9% → 14.9%, met. **v2 stays as frozen in v2-3c.**
+
+Per pattern, Turkish speakers (CV). Catch: expert errors we found on the same sound. Diagnosis: our reports with the pattern's tip that name the error the expert heard on that sound.
+
+| Pattern | expert errors | catch: v1 (v2-3c rules) | catch: v1-gen | catch: v2 (v2-3c rules) | catch: v2-gen | diagnosis: v1 (v2-3c rules) | diagnosis: v1-gen | diagnosis: v2 (v2-3c rules) | diagnosis: v2-gen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 'th' as in think /θ/ | 35 | 94% | 94% | 91% | 91% | 89% of 37 | 89% of 37 | 97% of 33 | 97% of 33 |
+| 'th' as in this /ð/ | 49 | 33% | 33% | 90% | 90% | 75% of 16 | 75% of 16 | 73% of 56 | 73% of 56 |
+| 'w' as in west /w/ | 33 | 76% | 70% | 88% | 88% | 89% of 28 | 92% of 25 | 82% of 34 | 78% of 36 |
+| long 'ee' as in sheep /iː/ | 6 | 67% | 67% | 33% | 33% | 30% of 10 | 30% of 10 | 67% of 3 | 67% of 3 |
+| short 'i' as in ship /ɪ/ | 40 | 20% | 20% | 40% | 40% | 89% of 9 | 89% of 9 | 53% of 30 | 53% of 30 |
+| 'a' as in cat /æ/ | 27 | 56% | 56% | 81% | 81% | 62% of 16 | 62% of 16 | 65% of 17 | 65% of 17 |
+| 'u' as in cup /ʌ/ | 0 | – | – | – | – | 0% of 2 | 0% of 2 | 0% of 2 | 0% of 2 |
+| long 'oo' as in pool /uː/ | 3 | 0% | 0% | 0% | 0% | 0% of 7 | 0% of 7 | 0% of 3 | 0% of 3 |
+| 'er' as in bird /ɜː/ | 1 | 0% | 0% | 0% | 0% | – | – | – | – |
+| 'ng' as in sing /ŋ/ | 3 | 0% | 0% | 0% | 0% | 0% of 1 | 0% of 1 | – | – |
+| English 'r' /ɹ/ | 29 | 31% | 48% | 45% | 45% | 100% of 8 | 100% of 13 | 90% of 10 | 90% of 10 |
+| voiced sound at the end of a word | 146 | 40% | 42% | 63% | 63% | 63% of 83 | 64% of 86 | 68% of 123 | 68% of 123 |
+| extra vowel in a consonant group | 11 | 45% | 45% | 64% | 64% | 26% of 19 | 26% of 19 | 60% of 10 | 60% of 10 |
+
+Hidden reports alone (right of all, Turkish speakers, CV): v1 (v2-3c rules) w 2 of 3; v1-gen r 5 of 5, final devoicing 3 of 3; v2 (v2-3c rules) w 17 of 23; v2-gen w 17 of 25. The two extra w reports are wrong but fall on words already flagged; they come from fold 5, which chose -5 instead of v2-3c's -4: the new rule takes the most lenient threshold within the limits, while v2-3c took the one with the most recall and, on a tie, the stricter one.
+
+Precision by kind of report (CV). Word: Turkish words with such a report that the expert found wrong. Sound: reports on a sound the expert marked wrong. Diagnosis: reports that name the expert's error. Native: correct native words with such a report. v2 has no red/yellow levels (the learned detector of v2-2 was not kept), so v2-4 reports this breakdown instead of a red-level target.
+
+| System | Kind of report | word precision | sound precision | pattern (diagnosis) precision | native words |
+| --- | --- | --- | --- | --- | --- |
+| v1 (v2-3c rules) | Turkish pattern greedy decoding heard | 83% of 179 | 69% of 233 | 66% | 4 of 615 |
+| v1 (v2-3c rules) | other difference | 73% of 86 | 44% of 124 | – | 12 of 615 |
+| v1 (v2-3c rules) | hidden pattern | 67% of 3 | 67% of 3 | 67% | 0 of 615 |
+| v1-gen | Turkish pattern greedy decoding heard | 83% of 179 | 69% of 233 | 66% | 4 of 615 |
+| v1-gen | other difference | 73% of 86 | 44% of 124 | – | 12 of 615 |
+| v1-gen | hidden pattern | 100% of 8 | 100% of 8 | 100% | 1 of 615 |
+| v2 (v2-3c rules) | Turkish pattern greedy decoding heard | 84% of 231 | 74% of 298 | 71% | 4 of 615 |
+| v2 (v2-3c rules) | other difference | 70% of 127 | 36% of 179 | – | 10 of 615 |
+| v2 (v2-3c rules) | hidden pattern | 78% of 23 | 74% of 23 | 74% | 0 of 615 |
+| v2-gen | Turkish pattern greedy decoding heard | 84% of 231 | 74% of 298 | 71% | 4 of 615 |
+| v2-gen | other difference | 70% of 127 | 36% of 179 | – | 10 of 615 |
+| v2-gen | hidden pattern | 76% of 25 | 68% of 25 | 68% | 0 of 615 |
+
+Regression sets, once (thresholds chosen on all dev speakers, `scripts/run_experiment.py`): v2-gen is identical to frozen v2 on speechocean762 val (false alarm 41.5%, F1 0.402) and on the synthetic Kokoro set (catch 78.0%, false alarm 6.5%). v1-gen against v1 as is: speechocean762 val false alarm 26.8% → 30.8%, synthetic Kokoro catch 88.7% → 92.5%, mostly from its re-chosen GOP thresholds (-2 / 0 instead of -2.5 / -1).
+
+**Frozen system** (step v2-3d, commit `9e365b9`; it superseded commit `e24d251` of step v2-3c, with the same system): `experiments/v2.json`, unchanged. The generalized systems stay as experiments (`experiments/v1-gen.json`, `experiments/v2-gen.json`).
 
 ## Project structure
 
@@ -407,7 +516,8 @@ scripts/
   tune_gop_thresholds.py  re-choose the GOP thresholds for each recognizer on SAA dev (honest CV estimate)
   saa_examples.py       SAA dev words where two systems disagree (new catches, new false alarms)
   saa_word.py           one paragraph word on SAA dev: what every expert wrote and each system heard
-  w_margin.py           how well v/β/ʋ vs w probabilities separate Turkish w -> v (SAA dev)
+  pattern_margins.py    how well the probabilities separate each pattern's errors from correct sounds (SAA dev)
+  tune_hidden_patterns.py  hidden errors for every pattern: thresholds by speaker CV, decision against frozen v2
   plot_training.py      fine-tuning curves for the README (results/finetune/)
 experiments/      system definitions (v1.json, ...)
   train_scorer.py       train and evaluate the scoring model
@@ -450,7 +560,7 @@ The free CPU hardware of Hugging Face Spaces is enough.
 - The recognizer can mishear, especially with background noise. Treat the feedback as a guide, not a verdict.
 - The recognizer often does not hear some typical Turkish errors. A final *z* said as *s* and *ð* said as *d* are the most common errors that the experts heard and we missed (45 and 36 words in the Speech Accent Archive test half): the model outputs the expected sound, so no rule on its output can catch them. This would need a recognizer fine-tuned on accented speech.
 - v2 (the fine-tuned recognizer, see Results) buys its recall with some regressions: on the synthetic Kokoro set, an extra vowel before a consonant cluster right after a vowel-final word (*say ɪschool*) is caught 10% of the time instead of 98% (no drop on real Turkish speakers: 7 of 11 such errors on SAA dev, 5 for v1), and ð → z and æ → ɛ are caught less (38% vs 65%, 61% vs 81%). On speechocean762 val, whose Mandarin-speaking experts accept accented sounds, false alarms rise from 26.8% to 41.5% (37.0% with the v2-3b thresholds).
-- In v2, w → v is caught through a special rule: L2-ARCTIC has only 33 w → v errors to learn from, and the fine-tuned recognizer seems to decide w or v more from the word than from the sound, so it writes w; the rule reports w → v when v/β/ʋ came close. On dev, 78% of the reported w errors are right (cross-validated).
+- In v2, w → v is caught through a special rule: L2-ARCTIC has only 33 w → v errors to learn from, and the fine-tuned recognizer seems to decide w or v more from the word than from the sound, so it writes w; the rule reports w → v when v/β/ʋ came close. On dev, 78% of the reported w errors are right (cross-validated). v2-3d tried the same rule for every pattern; only w carried over to held-out speakers, so v2 keeps the w rule alone.
 - On real Turkish speakers the feedback is precise but misses many errors: on the Speech Accent Archive test half it finds about a third of the words the experts marked (see Results), from only 12 test speakers.
 - The scoring model is trained on speechocean762, whose speakers are Mandarin native speakers (half of them children). The tips target Turkish speakers, but no Turkish-speaker data was used for training.
 - Word stress and intonation are not assessed.

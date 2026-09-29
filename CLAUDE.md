@@ -19,7 +19,8 @@ A learner reads an English sentence aloud. A wav2vec2 CTC model recognizes the p
 - `scripts/extract_features.py` → `data/features/*.csv`; `scripts/train_scorer.py` → `models/scorer.joblib` + `results/metrics.json`.
 - Word-level checks (model output cached per model in `data/cache/<model>/`, rule changes re-run in seconds): `scripts/evaluate_words.py` (speechocean762 val speakers), `scripts/evaluate_saa.py` (Speech Accent Archive dev half; `download_saa.py` + `split_saa.py` first), `scripts/synthetic_errors.py --kokoro` (synthetic error set; Kokoro runs in `.venv-tts`). Run all three after every rule change.
 - Recognizer fine-tuning (v2-3): `scripts/prepare_l2arctic.py` (annotated L2-ARCTIC sentences → `data/l2arctic/`), `scripts/build_finetune_data.py` (targets → `data/finetune/*.jsonl`), `scripts/evaluate_l2arctic.py` (PER + MDD per model), `scripts/package_kaggle.py` (zip for a private Kaggle dataset), `scripts/finetune_recognizer.py` (training; `--smoke` for a quick end-to-end check) run by `notebooks/finetune_kaggle.ipynb`.
-- Comparing recognizers (v2-3b): `scripts/tune_gop_thresholds.py` re-chooses the two GOP thresholds per recognizer on SAA dev and gives the honest estimate by speaker cross-validation; `scripts/saa_examples.py` lists words where two systems disagree; `scripts/plot_training.py` draws the fine-tuning curves from `results/finetune/`; `scripts/saa_word.py` shows one paragraph word per speaker (expert vs systems); `scripts/w_margin.py` measures the w → v margin behind the hidden-w rule.
+- Comparing recognizers (v2-3b): `scripts/tune_gop_thresholds.py` re-chooses the two GOP thresholds per recognizer on SAA dev and gives the honest estimate by speaker cross-validation; `scripts/saa_examples.py` lists words where two systems disagree; `scripts/plot_training.py` draws the fine-tuning curves from `results/finetune/`; `scripts/saa_word.py` shows one paragraph word per speaker (expert vs systems).
+- Hidden errors (v2-3c, v2-3d): `scripts/pattern_margins.py` measures how well the probability margin separates each pattern's errors from correct sounds (AUC; `--w-rule`: the v2-3c hidden-w evidence); `scripts/tune_hidden_patterns.py` chooses one margin threshold per pattern by speaker cross-validation for both recognizers and applies the v2-3d decision rule against frozen v2 (`results/hidden/`).
 - `app.py`: Gradio demo. `space/README.md`: Space config. `scripts/deploy_space.py`: publishing.
 - `notebooks/colab.ipynb`: feature extraction + training on Colab.
 
@@ -58,6 +59,9 @@ about 9 points from dev to test):
 - false alarms for native English speakers at most 2.5% on dev (10 speakers × 69 words ≈ 690 words: 0.5 points
   is 3–4 words, within the noise; v1 had 1.7% on the SAA test half)
 - error-level catch: final devoicing (z → s) at least 60%, ð at least 40%, θ at least 75% (kept)
+- v2 has no red/yellow levels, so v2-4 reports the precision per kind of report (Turkish pattern heard by
+  greedy decoding, other difference, hidden pattern; as in `scripts/tune_hidden_patterns.py`) instead of a
+  red-level target.
 
 **Data rules:**
 - The SAA test half and the speechocean762 test split stay locked until v2-4.
@@ -66,8 +70,10 @@ about 9 points from dev to test):
 - The SAA dev half may be used to choose thresholds and for early stopping, never as training data.
 - Synthetic recordings may be used as a regression check, not as training data for the detector.
 
-**v2 is frozen** (step v2-3c, commit `e24d251`): `experiments/v2.json` is the system for the final
-test: the fine-tuned recognizer `models/recognizer-l2arctic/best` (epoch 14; `model.safetensors`
+**v2 is frozen** (step v2-3d, commit `9e365b9`; it superseded the v2-3c freeze, commit `e24d251`, with the
+same system: v2-3d tried hidden errors for every pattern, `experiments/v2-gen.json`, and by its decision
+rule did not keep them): `experiments/v2.json` is the system for the final test: the fine-tuned
+recognizer `models/recognizer-l2arctic/best` (epoch 14; `model.safetensors`
 SHA-256 `09187fde3a07ad6c38511d7efb9098c8a5b351d6c917ba228a5f4e69c9abbae6`), the v1 rules with the
 *into* pronunciations (`WORD_VARIANTS`) and the hidden-w rule, and the thresholds chosen on SAA dev:
 GOP 0.0 for other differences, typical Turkish-speaker errors always reported, hidden w above -4.0.
@@ -121,6 +127,7 @@ The author gives the work one step at a time. At the end of every step:
 - [x] v2-3a. Fine-tuning data and training setup
 - [x] v2-3b. Evaluate the fine-tuned recognizer
 - [x] v2-3c. Last dev fixes and freeze v2
+- [x] v2-3d. Hidden errors for every pattern (tried, not kept; v2 re-frozen unchanged)
 - [ ] v2-4. Final v1 vs v2 comparison
 - [ ] 10. Train on Colab
 - [ ] 11. Add results to the project
