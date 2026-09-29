@@ -162,6 +162,7 @@ pronunciation/
   systems.py      a "system": recognizer + decision mechanism + settings (for experiments)
   speechocean.py  speechocean762 phone labels (ARPAbet) moved onto our expected phonemes
   detector.py     v2 learned error detector: features per expected sound, red/yellow decision
+  l2arctic.py     L2-ARCTIC annotations -> what the annotator heard, in our phoneme style
 scripts/
   extract_features.py   run the pipeline on speechocean762
   evaluate_words.py     word-level false alarm / catch rates on speechocean762 (val speakers)
@@ -175,6 +176,11 @@ scripts/
   run_experiment.py     run a system on every development set -> results/experiments/<name>.json
   compare_experiments.py  compare two systems on the same speakers (paired bootstrap)
   train_detector.py     train the v2 error detector and choose its thresholds (one command)
+  prepare_l2arctic.py   extract the annotated L2-ARCTIC sentences (16 kHz FLAC) from the release zip
+  build_finetune_data.py  fine-tuning targets from L2-ARCTIC + CMU ARCTIC -> data/finetune/*.jsonl
+  evaluate_l2arctic.py  PER and mispronunciation detection (MDD) of a recognizer on L2-ARCTIC
+  finetune_recognizer.py  fine-tune the recognizer (run on Kaggle: notebooks/finetune_kaggle.ipynb)
+  package_kaggle.py     pack the fine-tuning data and code into one zip for Kaggle
 experiments/      system definitions (v1.json, ...)
   train_scorer.py       train and evaluate the scoring model
   deploy_space.py       publish the demo to Hugging Face Spaces
@@ -224,7 +230,14 @@ The free CPU hardware of Hugging Face Spaces is enough.
 - Recognizer: [facebook/wav2vec2-lv-60-espeak-cv-ft](https://huggingface.co/facebook/wav2vec2-lv-60-espeak-cv-ft) (Apache-2.0)
 - Data: [speechocean762](https://huggingface.co/datasets/mispeech/speechocean762) ([OpenSLR 101](https://www.openslr.org/101/), CC BY 4.0)
 - Evaluation data: [Speech Accent Archive](https://accent.gmu.edu/) (Weinberger, S. H. & Kelley, M. C., George Mason University), recordings and IPA transcriptions [on OSF](https://accent.gmu.edu/download), CC BY-NC-SA 4.0. Used for non-commercial evaluation only; the recordings are downloaded by `scripts/download_saa.py` and are not part of this repository.
-- Synthetic test voices: [eSpeak NG](https://github.com/espeak-ng/espeak-ng) and [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0)
+- Synthetic test voices (not part of the app): [eSpeak NG](https://github.com/espeak-ng/espeak-ng) and [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0)
+- Fine-tuning data (v2-3): [L2-ARCTIC](https://psi.engr.tamu.edu/l2-arctic-corpus/) (Zhao et al., Interspeech 2018), CC BY-NC 4.0, and [CMU ARCTIC](http://festvox.org/cmu_arctic/) (Kominek & Black, Carnegie Mellon University; free for any use with its copyright notice kept). Neither is part of this repository.
 - G2P and speech synthesis: [phonemizer](https://github.com/bootphon/phonemizer) and [eSpeak NG](https://github.com/espeak-ng/espeak-ng) (GPL-3.0)
-- Synthetic test voices (not part of the app): [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0)
 - Code: MIT (see LICENSE)
+
+**Which recognizer, which license.** The app uses the original recognizer (Apache-2.0) by default. A recognizer fine-tuned on L2-ARCTIC (`scripts/finetune_recognizer.py`) inherits the data's **CC BY-NC 4.0** license: non-commercial use only. The recognizer is chosen with one setting, `MODEL_ID` (a Hugging Face id or a local folder), so a commercial version can switch back to the original model:
+
+```bash
+MODEL_ID=models/recognizer-l2arctic python app.py     # the fine-tuned recognizer (non-commercial)
+python app.py                                         # the original one (default)
+```

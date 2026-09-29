@@ -18,6 +18,7 @@ A learner reads an English sentence aloud. A wav2vec2 CTC model recognizes the p
 - `tests/`: pytest; `conftest.py` has `fake_recognition()` to simulate what the model "heard" without downloading it.
 - `scripts/extract_features.py` → `data/features/*.csv`; `scripts/train_scorer.py` → `models/scorer.joblib` + `results/metrics.json`.
 - Word-level checks (model output cached per model in `data/cache/<model>/`, rule changes re-run in seconds): `scripts/evaluate_words.py` (speechocean762 val speakers), `scripts/evaluate_saa.py` (Speech Accent Archive dev half; `download_saa.py` + `split_saa.py` first), `scripts/synthetic_errors.py --kokoro` (synthetic error set; Kokoro runs in `.venv-tts`). Run all three after every rule change.
+- Recognizer fine-tuning (v2-3): `scripts/prepare_l2arctic.py` (annotated L2-ARCTIC sentences → `data/l2arctic/`), `scripts/build_finetune_data.py` (targets → `data/finetune/*.jsonl`), `scripts/evaluate_l2arctic.py` (PER + MDD per model), `scripts/package_kaggle.py` (zip for a private Kaggle dataset), `scripts/finetune_recognizer.py` (training; `--smoke` for a quick end-to-end check) run by `notebooks/finetune_kaggle.ipynb`.
 - `app.py`: Gradio demo. `space/README.md`: Space config. `scripts/deploy_space.py`: publishing.
 - `notebooks/colab.ipynb`: feature extraction + training on Colab.
 
@@ -103,7 +104,7 @@ The author gives the work one step at a time. At the end of every step:
 - [ ] 9. GitHub Actions CI
 - [x] v2-1. Experiment setup
 - [x] v2-2. Learned error detector
-- [ ] v2-3a. Fine-tuning data and training setup
+- [x] v2-3a. Fine-tuning data and training setup
 - [ ] v2-3b. Evaluate the fine-tuned recognizer
 - [ ] v2-4. Final v1 vs v2 comparison
 - [ ] 10. Train on Colab
