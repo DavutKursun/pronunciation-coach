@@ -1,0 +1,6 @@
+{
+  "name": "v2",
+  "recognizer": "models/recognizer-l2arctic/best",
+  "decision": "rules",
+  "settings": {"gop_threshold": 0.0, "pattern_threshold": Infinity, "w_margin_threshold": -4.0}
+}

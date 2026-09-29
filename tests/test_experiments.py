@@ -144,3 +144,15 @@ def test_tuned_experiment_uses_the_thresholds_chosen_on_saa_dev():
     assert system.settings == {"gop_threshold": -1.0, "pattern_threshold": math.inf}
     chosen = json.loads((root / "results" / "thresholds" / "v2-3-best.json").read_text())["selected"]["thresholds"]
     assert (system.settings["gop_threshold"], system.settings["pattern_threshold"]) == tuple(chosen)
+
+
+def test_frozen_v2_is_the_system_chosen_on_saa_dev():
+    import math
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    v2 = load_system(root / "experiments" / "v2.json")
+    assert v2.recognizer == "models/recognizer-l2arctic/best" and v2.decision == "rules"
+    assert v2.settings == {"gop_threshold": 0.0, "pattern_threshold": math.inf, "w_margin_threshold": -4.0}
+    chosen = json.loads((root / "results" / "thresholds" / "v2.json").read_text())["selected"]["thresholds"]
+    assert [v2.settings[k] for k in ("gop_threshold", "pattern_threshold", "w_margin_threshold")] == chosen
